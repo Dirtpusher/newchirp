@@ -5,6 +5,7 @@
 *.swp
 .DS_Store
 ._*
+.newchirp-deploy
 .atom/
 .build/
 .buildlog/
