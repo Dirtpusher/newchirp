@@ -6,6 +6,9 @@
 #ifdef GDK_WINDOWING_X11
 #include <gdk/gdkx.h>
 #endif
+#ifdef GDK_WINDOWING_WAYLAND
+#include <gdk/gdkwayland.h>
+#endif
 
 #include "flutter/generated_plugin_registrant.h"
 
@@ -23,9 +26,19 @@ struct _MyApplication {
   gboolean have_restored_size;
   gint restored_width;
   gint restored_height;
+  gboolean start_maximized;
 };
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
+
+static gboolean is_wayland_display() {
+#ifdef GDK_WINDOWING_WAYLAND
+  GdkDisplay* display = gdk_display_get_default();
+  return display != nullptr && GDK_IS_WAYLAND_DISPLAY(display);
+#else
+  return FALSE;
+#endif
+}
 
 static char* window_state_path() {
   return g_build_filename(
@@ -162,6 +175,9 @@ static gboolean on_configure_event(GtkWidget* widget, GdkEventConfigure* event,
 static void first_frame_cb(MyApplication* self, FlView* view) {
   GtkWidget* toplevel = gtk_widget_get_toplevel(GTK_WIDGET(view));
   gtk_widget_show(toplevel);
+  if (self->start_maximized) {
+    gtk_window_maximize(GTK_WINDOW(toplevel));
+  }
   self->window_state_ready = TRUE;
 }
 
@@ -172,6 +188,7 @@ static void my_application_activate(GApplication* application) {
   self->have_restored_size = FALSE;
   self->restored_width = 0;
   self->restored_height = 0;
+  self->start_maximized = is_wayland_display();
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
 
@@ -206,7 +223,9 @@ static void my_application_activate(GApplication* application) {
   g_signal_connect(window, "delete-event", G_CALLBACK(on_delete_event), nullptr);
   g_signal_connect(window, "configure-event", G_CALLBACK(on_configure_event),
                    self);
-  load_window_state(self, window);
+  if (!self->start_maximized) {
+    load_window_state(self, window);
+  }
 
   g_autoptr(FlDartProject) project = fl_dart_project_new();
   fl_dart_project_set_dart_entrypoint_arguments(
