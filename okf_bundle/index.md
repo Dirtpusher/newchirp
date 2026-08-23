@@ -1,14 +1,14 @@
 ---
 description: OKF v0.2 bundle generated from the okf_bundle codebase
 okf_version: '0.2'
-timestamp: '2026-08-23T09:56:48Z'
+timestamp: '2026-08-23T10:03:33Z'
 title: okf_bundle
 type: Index
 ---
 
 # okf_bundle
 
-OKF v0.2 knowledge bundle — 152 concepts across 3 top-level directories.
+OKF v0.2 knowledge bundle — 157 concepts across 3 top-level directories.
 
 ## Top-level Directories
 

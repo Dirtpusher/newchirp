@@ -1,44 +1,60 @@
 {
   "okf_version": "0.2",
   "manifest_version": 2,
-  "source_root": "/Volumes/DEV BACK3/desktop/newchirp/scripts",
+  "source_root": "/home/rlopez/newchirp/scripts",
   "files": {
     "chirp_bridge.py": {
       "path": "chirp_bridge.py",
-      "mtime_ns": 1787399758000000000,
+      "mtime_ns": 1787428608748149376,
       "hash": "efc1bc713f97f278a678e4869e3d170197f7ce1838d9aa68e24c4d1c6af1a295",
       "concept_ids": [
-        "chirp_bridge",
-        "chirp_bridge/load_chirp",
-        "chirp_bridge/memory_json",
+        "chirp_bridge/apply_json",
         "chirp_bridge/extra_fields_json",
         "chirp_bridge/features_json",
-        "chirp_bridge/apply_json",
+        "chirp_bridge/load_chirp",
+        "chirp_bridge/main",
+        "chirp_bridge/memory_json",
         "chirp_bridge/open_serial",
         "chirp_bridge/radio_for",
-        "chirp_bridge/main"
+        "chirp_bridge"
       ]
     },
     "generate_gmrs_frs_pdf.py": {
       "path": "generate_gmrs_frs_pdf.py",
-      "mtime_ns": 1787422693000000000,
+      "mtime_ns": 1787428608750097717,
       "hash": "df1a1f0a1b83f1e4347450ea7480e921a0268146a2aa1ad640f71d44348ff7ac",
       "concept_ids": [
-        "generate_gmrs_frs_pdf",
+        "generate_gmrs_frs_pdf/PdfWriter",
+        "generate_gmrs_frs_pdf/as_pdf",
         "generate_gmrs_frs_pdf/esc",
-        "generate_gmrs_frs_pdf/rgb",
         "generate_gmrs_frs_pdf/init",
+        "generate_gmrs_frs_pdf/line",
+        "generate_gmrs_frs_pdf/main",
+        "generate_gmrs_frs_pdf/rect",
+        "generate_gmrs_frs_pdf/rgb",
+        "generate_gmrs_frs_pdf/row_color",
         "generate_gmrs_frs_pdf/set_fill",
         "generate_gmrs_frs_pdf/set_stroke",
-        "generate_gmrs_frs_pdf/rect",
-        "generate_gmrs_frs_pdf/line",
+        "generate_gmrs_frs_pdf/table_cell",
         "generate_gmrs_frs_pdf/text",
         "generate_gmrs_frs_pdf/text_in_rect",
-        "generate_gmrs_frs_pdf/table_cell",
-        "generate_gmrs_frs_pdf/as_pdf",
-        "generate_gmrs_frs_pdf/row_color",
-        "generate_gmrs_frs_pdf/main",
-        "generate_gmrs_frs_pdf/PdfWriter"
+        "generate_gmrs_frs_pdf"
+      ]
+    },
+    "._chirp_bridge.py": {
+      "path": "._chirp_bridge.py",
+      "mtime_ns": 1787428608749678735,
+      "hash": "7251223363f90e0a81946591a66d43e9ed99286263ae34349275744f8d260636",
+      "concept_ids": [
+        "._chirp_bridge"
+      ]
+    },
+    "._generate_gmrs_frs_pdf.py": {
+      "path": "._generate_gmrs_frs_pdf.py",
+      "mtime_ns": 1787428608750476957,
+      "hash": "7251223363f90e0a81946591a66d43e9ed99286263ae34349275744f8d260636",
+      "concept_ids": [
+        "._generate_gmrs_frs_pdf"
       ]
     }
   },
@@ -234,7 +250,23 @@
       "render_hash": "stale",
       "edge_hash": "b99bd08529bdcdb4dfd5a13bebfcf0a7de864709aefaa04f647fc65d2c4f4e92",
       "enriched": false
+    },
+    "._chirp_bridge": {
+      "concept_id": "._chirp_bridge",
+      "type": "Module",
+      "resource": "._chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "enriched": false
+    },
+    "._generate_gmrs_frs_pdf": {
+      "concept_id": "._generate_gmrs_frs_pdf",
+      "type": "Module",
+      "resource": "._generate_gmrs_frs_pdf.py",
+      "render_hash": "stale",
+      "edge_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "enriched": false
     }
   },
-  "generated_at": "2026-08-22T18:51:43Z"
+  "generated_at": "2026-08-23T10:03:33Z"
 }
