@@ -2,7 +2,7 @@
 okf_version: "0.2"
 type: Function
 title: RadioBridgeException
-resource: services/radio_bridge.dart
+resource: services\radio_bridge.dart
 tags:
   - "lang:dart"
   - "type:Function"
@@ -10,7 +10,7 @@ tags:
   - "domain:radio_bridge.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T09:55:43Z"
+timestamp: "2026-08-23T13:43:31Z"
 concept_id: services/radio_bridge/RadioBridgeException
 language: dart
 ---
@@ -24,7 +24,7 @@ RadioBridgeException(this.message)
 ```
 
 ## Source
-Lines 9–9 in `services/radio_bridge.dart`
+Lines 9–9 in `services\radio_bridge.dart`
 
 ## Relationships
 

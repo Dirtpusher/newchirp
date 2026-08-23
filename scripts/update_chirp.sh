@@ -12,7 +12,7 @@ mkdir -p "$BUILD_SUPPORT_DIR" "$CACHE_DIR"
 
 apply_newchirp_patches() {
   local target="$1"
-  python3 - "$target" <<'PY'
+  "${NEWCHIRP_PYTHON:-python3}" - "$target" <<'PY'
 import sys
 
 path = sys.argv[1] + "/chirp/drivers/baofeng_uv17Pro.py"

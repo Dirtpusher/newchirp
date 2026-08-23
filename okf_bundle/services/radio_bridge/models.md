@@ -2,7 +2,7 @@
 okf_version: "0.2"
 type: Function
 title: models
-resource: services/radio_bridge.dart
+resource: services\radio_bridge.dart
 tags:
   - "lang:dart"
   - "type:Function"
@@ -10,7 +10,7 @@ tags:
   - "domain:radio_bridge.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T09:55:43Z"
+timestamp: "2026-08-23T13:43:31Z"
 concept_id: services/radio_bridge/models
 language: dart
 ---
@@ -24,7 +24,7 @@ Futuremodelsmodels
 ```
 
 ## Source
-Lines 114–114 in `services/radio_bridge.dart`
+Lines 114–114 in `services\radio_bridge.dart`
 
 ## Relationships
 

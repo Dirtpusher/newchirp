@@ -7,7 +7,9 @@ tags:
   - "lang:python"
   - "type:Function"
   - "module:generate_gmrs_frs_pdf.py"
-timestamp: "2026-08-22T18:18:13Z"
+  - "git:branch:main"
+  - "git:repo:newchirp"
+timestamp: "2026-08-23T13:43:31Z"
 concept_id: generate_gmrs_frs_pdf/line
 language: python
 ---
@@ -51,3 +53,5 @@ Lines 72–85 in `generate_gmrs_frs_pdf.py`
 | related | [PdfWriter](/generate_gmrs_frs_pdf/PdfWriter.md) |
 | calls | [set_stroke](/generate_gmrs_frs_pdf/set_stroke.md) |
 | called_by | [build_background](/build_macos_dmg/build_background.md) |
+| called_by | [main](/generate_gmrs_frs_pdf/main.md) |
+| called_by | [table_cell](/generate_gmrs_frs_pdf/table_cell.md) |

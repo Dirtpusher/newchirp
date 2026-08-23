@@ -2,13 +2,15 @@
 okf_version: "0.2"
 type: Module
 title: column_layout_store
-resource: services/column_layout_store.dart
+resource: services\column_layout_store.dart
 tags:
   - "lang:dart"
   - "type:Module"
   - "module:services"
   - "domain:column_layout_store.dart"
-timestamp: "2026-07-06T13:35:16Z"
+  - "git:branch:main"
+  - "git:repo:newchirp"
+timestamp: "2026-08-23T13:43:31Z"
 concept_id: services/column_layout_store
 language: dart
 ---

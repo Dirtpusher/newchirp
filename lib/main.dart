@@ -5,6 +5,8 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:screen_retriever/screen_retriever.dart';
+import 'package:window_manager/window_manager.dart';
 
 import 'models/radio_channel.dart';
 import 'services/chirp_csv.dart';
@@ -12,10 +14,11 @@ import 'services/column_layout_store.dart';
 import 'services/radio_image_store.dart';
 import 'services/radio_selection_store.dart';
 import 'services/radio_bridge.dart';
+import 'services/window_state_store.dart';
 
 const _menuChannel = MethodChannel('newchirp/menu');
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   LicenseRegistry.addLicense(() async* {
     yield LicenseEntryWithLineBreaks(const [
@@ -26,7 +29,144 @@ void main() {
       await rootBundle.loadString('assets/licenses/PYSERIAL-BSD-3-CLAUSE.txt'),
     );
   });
+  await windowManager.ensureInitialized();
+  final windowStateStore = WindowStateStore();
+  final saved = await _clampWindowState(await windowStateStore.load());
+  final windowOptions = WindowOptions(
+    size: Size(saved?.width ?? 1280, saved?.height ?? 720),
+    minimumSize: const Size(900, 600),
+    center: saved == null,
+  );
+  final windowStateManager = _WindowStateManager(windowStateStore, saved);
+  await windowManager.waitUntilReadyToShow(windowOptions, () async {
+    if (saved != null) {
+      await windowManager.setPosition(Offset(saved.x, saved.y));
+      if (saved.maximized) {
+        await windowManager.maximize();
+      }
+    }
+    await windowManager.show();
+    await windowManager.focus();
+    windowStateManager.start();
+  });
   runApp(const NewChirpApp());
+}
+
+Future<WindowState?> _clampWindowState(WindowState? state) async {
+  if (state == null) return null;
+  try {
+    final rect = Rect.fromLTWH(state.x, state.y, state.width, state.height);
+    final displays = await screenRetriever.getAllDisplays();
+    if (displays.isEmpty) return state;
+    for (final display in displays) {
+      final visible = Rect.fromLTWH(
+        display.visiblePosition?.dx ?? 0.0,
+        display.visiblePosition?.dy ?? 0.0,
+        display.visibleSize?.width ?? display.size.width,
+        display.visibleSize?.height ?? display.size.height,
+      );
+      final overlap = rect.intersect(visible);
+      if (overlap.width >= 100 && overlap.height >= 100) return state;
+    }
+    final primary = await screenRetriever.getPrimaryDisplay();
+    final visible = Rect.fromLTWH(
+      primary.visiblePosition?.dx ?? 0.0,
+      primary.visiblePosition?.dy ?? 0.0,
+      primary.visibleSize?.width ?? primary.size.width,
+      primary.visibleSize?.height ?? primary.size.height,
+    );
+    final x =
+        visible.left +
+        (((visible.width - state.width) / 2).clamp(0.0, double.infinity))
+            .toDouble();
+    final y =
+        visible.top +
+        (((visible.height - state.height) / 2).clamp(0.0, double.infinity))
+            .toDouble();
+    return WindowState(
+      width: state.width,
+      height: state.height,
+      x: x,
+      y: y,
+      maximized: state.maximized,
+    );
+  } on Exception {
+    return state;
+  }
+}
+
+class _WindowStateManager with WindowListener {
+  _WindowStateManager(this._store, this._initial);
+
+  final WindowStateStore _store;
+  final WindowState? _initial;
+  Rect _normalBounds = const Rect.fromLTWH(0, 0, 1280, 720);
+  bool _maximized = false;
+  Timer? _saveTimer;
+
+  void start() {
+    final initial = _initial;
+    if (initial != null) {
+      _normalBounds = Rect.fromLTWH(
+        initial.x,
+        initial.y,
+        initial.width,
+        initial.height,
+      );
+      _maximized = initial.maximized;
+    }
+    windowManager.addListener(this);
+  }
+
+  @override
+  void onWindowResized() => _scheduleSave();
+
+  @override
+  void onWindowMoved() => _scheduleSave();
+
+  @override
+  void onWindowMaximize() {
+    _maximized = true;
+    _scheduleSave();
+  }
+
+  @override
+  void onWindowUnmaximize() {
+    _maximized = false;
+    _scheduleSave();
+  }
+
+  @override
+  void onWindowClose() {
+    _saveTimer?.cancel();
+    unawaited(_save());
+  }
+
+  void _scheduleSave() {
+    _saveTimer?.cancel();
+    _saveTimer = Timer(const Duration(milliseconds: 400), _save);
+  }
+
+  Future<void> _save() async {
+    try {
+      final maximized = await windowManager.isMaximized();
+      _maximized = maximized;
+      if (!maximized) {
+        _normalBounds = await windowManager.getBounds();
+      }
+      await _store.save(
+        WindowState(
+          width: _normalBounds.width,
+          height: _normalBounds.height,
+          x: _normalBounds.left,
+          y: _normalBounds.top,
+          maximized: _maximized,
+        ),
+      );
+    } on Exception {
+      // Window persistence should never interrupt the app.
+    }
+  }
 }
 
 class NewChirpApp extends StatelessWidget {
@@ -1189,7 +1329,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                               ?.copyWith(fontWeight: FontWeight.w700),
                         ),
                         const Text(
-                          'Desktop radio programmer · Version 1.0.0',
+                          'Desktop radio programmer · Version 1.0.1',
                           style: TextStyle(color: Colors.black54),
                         ),
                         const SizedBox(height: 3),
@@ -1272,7 +1412,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                               onPressed: () => showLicensePage(
                                 context: context,
                                 applicationName: 'NewChirp',
-                                applicationVersion: '1.0.0',
+                                applicationVersion: '1.0.1',
                                 applicationLegalese:
                                     'CHIRP is licensed under GPL-3.0-or-later. NewChirp is not affiliated with or endorsed by the CHIRP project.',
                               ),
@@ -2539,7 +2679,7 @@ class _Sidebar extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.all(10),
             child: Text(
-              'DESKTOP RADIO PROGRAMMER\nRick Lopez · Lead Programmer\nrick@newchirp.net\nVersion 1.0.0',
+              'DESKTOP RADIO PROGRAMMER\nRick Lopez · Lead Programmer\nrick@newchirp.net\nVersion 1.0.1',
               style: TextStyle(
                 color: Color(0xFF8FA59B),
                 fontSize: 10,

@@ -50,6 +50,32 @@ locked until a matching radio image has been downloaded in the current session.
 "/Volumes/DEV BACK3/flutter/bin/flutter" build macos
 ```
 
+### Windows
+
+Build status and resumption checklist: `docs/BUILD_PROGRESS.md`.
+
+On a Windows machine with the Flutter SDK and Visual Studio (C++ workload)
+installed, build the release bundle and Inno Setup installer with:
+
+```powershell
+.\scripts\build_windows_installer.ps1
+```
+
+The script runs `flutter pub get`, `flutter build windows --release`, bundles a
+private Python runtime and the CHIRP driver tree next to `newchirp.exe`, and
+then compiles `build\NewChirp-Installer-<version>.exe`. Pass
+`-Configuration debug` to build a JIT debug app instead, or `-BundleDir` to
+package an already-built bundle. The runtime and CHIRP sources are downloaded
+the first time and cached under `build_support\`.
+
+Release AOT builds need `gen_snapshot.exe`, which Windows Smart App Control
+blocks when it is enabled. If `flutter build windows --release` fails with an
+Application Control message, turn Smart App Control off (Windows Security →
+App & browser control → Smart App Control), restart, and re-run the script.
+Use `-Configuration debug` only for a local dev build; debug Flutter binaries
+link the Visual Studio debug CRT and are not intended for clean end-user
+machines.
+
 ## Code knowledge graph
 
 This project keeps OKF knowledge bundles for coding agents:

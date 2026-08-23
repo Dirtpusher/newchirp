@@ -50,6 +50,14 @@ The macOS app is now self-contained at build time, but it is not yet signed,
 notarized, or legally packaged as a public release. See the release-critical
 roadmap below.
 
+A Windows debug build and Inno Setup installer are also produced by
+`scripts/build_windows_installer.ps1`. The Windows installer currently packages
+a JIT debug Flutter bundle because Smart App Control blocks the unsigned
+`gen_snapshot.exe` used by release AOT builds; a release build is expected to
+succeed once Smart App Control is turned off and the machine is restarted.
+Because the debug build links the Visual Studio debug CRT, it should be treated
+as a development artifact; the release build is the clean-machine package.
+
 ## Completed work
 
 ### Startup and navigation
@@ -323,7 +331,9 @@ Development run:
 
 ### Platform gaps
 
-- macOS is the only platform manually tested and built during this work.
+- macOS is the only platform manually hardware-tested. Windows debug builds and
+  an Inno Setup installer are now produced by the build script, but release AOT
+  Windows builds are blocked by Smart App Control.
 - Windows serial discovery is currently a placeholder list of `COM1` through
   `COM4`, not actual device enumeration.
 - Linux serial access and group/permission guidance are not implemented.

@@ -94,7 +94,7 @@ class RadioBridge {
   }
 
   Future<List<String>> serialPorts() async {
-    if (Platform.isWindows) return const ['COM1', 'COM2', 'COM3', 'COM4'];
+    if (Platform.isWindows) return _windowsSerialPorts();
     final dev = Directory('/dev');
     if (!dev.existsSync()) return [];
     final patterns = Platform.isMacOS
@@ -109,6 +109,51 @@ class RadioBridge {
             .toList()
           ..sort();
     return ports;
+  }
+
+  /// Windows: read the live COM ports from the SERIALCOMM registry key, then
+  /// fall back to .NET's SerialPort.GetPortNames() so only real ports show up.
+  Future<List<String>> _windowsSerialPorts() async {
+    try {
+      final result = await Process.run('reg', [
+        'query',
+        r'HKEY_LOCAL_MACHINE\HARDWARE\DEVICEMAP\SERIALCOMM',
+      ]);
+      if (result.exitCode == 0) {
+        final ports = _parseComPorts('${result.stdout}');
+        if (ports.isNotEmpty) return ports;
+      }
+    } on ProcessException {
+      // reg.exe unavailable; fall through to the .NET lookup below.
+    }
+    try {
+      final result = await Process.run('powershell', [
+        '-NoProfile',
+        '-Command',
+        '[System.IO.Ports.SerialPort]::GetPortNames()',
+      ]);
+      if (result.exitCode == 0) return _parseComPorts('${result.stdout}');
+    } on ProcessException {
+      // Fall through; no ports available.
+    }
+    return const [];
+  }
+
+  List<String> _parseComPorts(String output) {
+    final ports = <String>{};
+    for (final line in output.split('\n')) {
+      final parts = line.trim().split(RegExp(r'\s+'));
+      if (parts.isEmpty) continue;
+      final last = parts.last;
+      if (RegExp(r'^COM\d+$', caseSensitive: false).hasMatch(last)) {
+        ports.add(last.toUpperCase());
+      }
+    }
+    final list = ports.toList();
+    list.sort((a, b) {
+      return int.parse(a.substring(3)).compareTo(int.parse(b.substring(3)));
+    });
+    return list;
   }
 
   Future<List<String>> models() async {
@@ -242,7 +287,7 @@ class RadioBridge {
     final candidates = <String>[
       if (configured != null && configured.isNotEmpty) configured,
       if (resources != null && Platform.isWindows)
-        '${resources.path}\python\python.exe',
+        '${resources.path}/python/python.exe',
       if (resources != null && !Platform.isWindows)
         '${resources.path}/python/bin/python3',
       if (Platform.isMacOS) '/opt/homebrew/bin/python3',

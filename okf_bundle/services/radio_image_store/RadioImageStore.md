@@ -2,13 +2,15 @@
 okf_version: "0.2"
 type: Function
 title: RadioImageStore
-resource: services/radio_image_store.dart
+resource: services\radio_image_store.dart
 tags:
   - "lang:dart"
   - "type:Function"
   - "module:services"
   - "domain:radio_image_store.dart"
-timestamp: "2026-08-22T11:03:16Z"
+  - "git:branch:main"
+  - "git:repo:newchirp"
+timestamp: "2026-08-23T13:43:31Z"
 concept_id: services/radio_image_store/RadioImageStore
 language: dart
 ---
@@ -22,7 +24,7 @@ RadioImageStore({Directory? rootDirectory})
 ```
 
 ## Source
-Lines 4–4 in `services/radio_image_store.dart`
+Lines 4–4 in `services\radio_image_store.dart`
 
 ## Relationships
 

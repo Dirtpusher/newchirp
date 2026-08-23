@@ -8,7 +8,9 @@ tags:
   - "lang:python"
   - "type:Module"
   - "module:generate_gmrs_frs_pdf.py"
-timestamp: "2026-08-22T18:18:13Z"
+  - "git:branch:main"
+  - "git:repo:newchirp"
+timestamp: "2026-08-23T13:43:31Z"
 concept_id: generate_gmrs_frs_pdf
 language: python
 ---

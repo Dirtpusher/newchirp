@@ -2,13 +2,15 @@
 okf_version: "0.2"
 type: Module
 title: radio_channel
-resource: models/radio_channel.dart
+resource: models\radio_channel.dart
 tags:
   - "lang:dart"
   - "type:Module"
   - "module:models"
   - "domain:radio_channel.dart"
-timestamp: "2026-08-22T18:05:21Z"
+  - "git:branch:main"
+  - "git:repo:newchirp"
+timestamp: "2026-08-23T13:43:31Z"
 concept_id: models/radio_channel
 language: dart
 ---

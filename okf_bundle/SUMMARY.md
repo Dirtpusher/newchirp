@@ -3,7 +3,7 @@ description: 'Top-level OKF summary: 152 concepts across 3 domains and 7 modules
 git_branch: main
 git_repo: newchirp
 okf_version: '0.2'
-timestamp: '2026-08-23T12:41:22Z'
+timestamp: '2026-08-23T18:11:51Z'
 title: okf_bundle — Knowledge Summary
 type: Index
 ---
@@ -41,8 +41,8 @@ Use these links to navigate the bundle or prime an AI agent with focused context
 - [services/radio_bridge](services/radio_bridge/index.md) (19 concepts)
 - [services/chirp_csv](services/chirp_csv/index.md) (10 concepts)
 - [services/column_layout_store](services/column_layout_store/index.md) (6 concepts)
-- [services/radio_image_store](services/radio_image_store/index.md) (6 concepts)
 - [services/radio_selection_store](services/radio_selection_store/index.md) (6 concepts)
+- [services/radio_image_store](services/radio_image_store/index.md) (6 concepts)
 
 ## Key Concepts
 

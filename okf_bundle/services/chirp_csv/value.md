@@ -2,13 +2,15 @@
 okf_version: "0.2"
 type: Function
 title: value
-resource: services/chirp_csv.dart
+resource: services\chirp_csv.dart
 tags:
   - "lang:dart"
   - "type:Function"
   - "module:services"
   - "domain:chirp_csv.dart"
-timestamp: "2026-07-06T12:12:56Z"
+  - "git:branch:main"
+  - "git:repo:newchirp"
+timestamp: "2026-08-23T13:43:31Z"
 concept_id: services/chirp_csv/value
 language: dart
 ---
@@ -22,7 +24,7 @@ Stringvalue(List<String> row, String name, [String fallback = ''])
 ```
 
 ## Source
-Lines 65–65 in `services/chirp_csv.dart`
+Lines 65–65 in `services\chirp_csv.dart`
 
 ## Relationships
 
