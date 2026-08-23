@@ -7,8 +7,8 @@
 
 ## Functions
 
+- [_bundledResourcesDirectory](bundledResourcesDirectory.md)
 - [_findChirpSource](findChirpSource.md)
-- [_macOSResourcesDirectory](macOSResourcesDirectory.md)
 - [_materializeBridge](materializeBridge.md)
 - [_materializePythonDependencies](materializePythonDependencies.md)
 - [_resolvePython](resolvePython.md) — The bundled CHIRP tree uses Python 3.10+ syntax, so prefer an interpreter

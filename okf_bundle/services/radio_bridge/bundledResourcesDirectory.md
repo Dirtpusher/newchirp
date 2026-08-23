@@ -1,28 +1,30 @@
 ---
 okf_version: "0.2"
 type: Function
-title: _macOSResourcesDirectory
+title: _bundledResourcesDirectory
 resource: services/radio_bridge.dart
 tags:
   - "lang:dart"
   - "type:Function"
   - "module:services"
   - "domain:radio_bridge.dart"
-timestamp: "2026-08-22T11:55:44Z"
-concept_id: services/radio_bridge/macOSResourcesDirectory
+  - "git:branch:main"
+  - "git:repo:newchirp"
+timestamp: "2026-08-23T09:55:43Z"
+concept_id: services/radio_bridge/bundledResourcesDirectory
 language: dart
 ---
 
-# _macOSResourcesDirectory
+# _bundledResourcesDirectory
 
 ## Signature
 
 ```dart
-Directory_macOSResourcesDirectory_macOSResourcesDirectory
+Directory_bundledResourcesDirectory_bundledResourcesDirectory
 ```
 
 ## Source
-Lines 271–271 in `services/radio_bridge.dart`
+Lines 275–275 in `services/radio_bridge.dart`
 
 ## Relationships
 

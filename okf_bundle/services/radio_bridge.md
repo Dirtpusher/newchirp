@@ -8,7 +8,9 @@ tags:
   - "type:Module"
   - "module:services"
   - "domain:radio_bridge.dart"
-timestamp: "2026-08-22T11:55:44Z"
+  - "git:branch:main"
+  - "git:repo:newchirp"
+timestamp: "2026-08-23T09:55:43Z"
 concept_id: services/radio_bridge
 language: dart
 ---
@@ -35,7 +37,7 @@ language: dart
 | related | [upload](/services/radio_bridge/upload.md) |
 | related | [_run](/services/radio_bridge/run.md) |
 | related | [_resolvePython](/services/radio_bridge/resolvePython.md) |
-| related | [_macOSResourcesDirectory](/services/radio_bridge/macOSResourcesDirectory.md) |
+| related | [_bundledResourcesDirectory](/services/radio_bridge/bundledResourcesDirectory.md) |
 | related | [_materializeBridge](/services/radio_bridge/materializeBridge.md) |
 | related | [_materializePythonDependencies](/services/radio_bridge/materializePythonDependencies.md) |
 | related | [_findChirpSource](/services/radio_bridge/findChirpSource.md) |

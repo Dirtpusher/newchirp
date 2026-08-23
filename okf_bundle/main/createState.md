@@ -7,7 +7,9 @@ tags:
   - "lang:dart"
   - "type:Function"
   - "module:main.dart"
-timestamp: "2026-08-22T18:44:42Z"
+  - "git:branch:main"
+  - "git:repo:newchirp"
+timestamp: "2026-08-23T09:55:43Z"
 concept_id: main/createState
 language: dart
 ---
@@ -21,7 +23,7 @@ StatecreateStatecreateState
 ```
 
 ## Source
-Lines 4031–4031 in `main.dart`
+Lines 4050–4050 in `main.dart`
 
 ## Relationships
 

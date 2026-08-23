@@ -7,7 +7,9 @@ tags:
   - "lang:dart"
   - "type:Class"
   - "module:main.dart"
-timestamp: "2026-08-22T18:44:42Z"
+  - "git:branch:main"
+  - "git:repo:newchirp"
+timestamp: "2026-08-23T09:55:43Z"
 concept_id: main/NewChirpHomeState
 language: dart
 ---
@@ -39,6 +41,7 @@ class _NewChirpHomeState
 - `_refreshPorts`
 - `_loadModels`
 - `_task`
+- `_friendlyActionError`
 - `_showActionError`
 - `_importCsv`
 - `_chooseChannelApplyMode`
@@ -83,7 +86,7 @@ class _NewChirpHomeState
 - `_buildRadio`
 
 ## Source
-Lines 104–2455 in `main.dart`
+Lines 104–2474 in `main.dart`
 
 ## Relationships
 

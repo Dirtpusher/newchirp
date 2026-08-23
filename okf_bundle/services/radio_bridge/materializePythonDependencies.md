@@ -8,7 +8,9 @@ tags:
   - "type:Function"
   - "module:services"
   - "domain:radio_bridge.dart"
-timestamp: "2026-08-22T11:55:44Z"
+  - "git:branch:main"
+  - "git:repo:newchirp"
+timestamp: "2026-08-23T09:55:43Z"
 concept_id: services/radio_bridge/materializePythonDependencies
 language: dart
 ---
@@ -22,7 +24,7 @@ Future_materializePythonDependencies_materializePythonDependencies
 ```
 
 ## Source
-Lines 288–288 in `services/radio_bridge.dart`
+Lines 294–294 in `services/radio_bridge.dart`
 
 ## Relationships
 

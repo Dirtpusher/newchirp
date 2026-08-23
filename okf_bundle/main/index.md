@@ -53,6 +53,7 @@
 - [_downloadRadio](downloadRadio.md)
 - [_duplicateChannel](duplicateChannel.md)
 - [_duplicateChannelAt](duplicateChannelAt.md)
+- [_friendlyActionError](friendlyActionError.md)
 - [_headerCell](headerCell.md)
 - [_importCsv](importCsv.md)
 - [_loadColumnLayout](loadColumnLayout.md)
