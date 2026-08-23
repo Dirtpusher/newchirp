@@ -26,8 +26,8 @@ implementation history, architecture, known risks, and prioritized next work.
 ## Run
 
 ```sh
-"/Volumes/DEV BACK3/flutter/bin/flutter" pub get
-"/Volumes/DEV BACK3/flutter/bin/flutter" run -d macos
+"/Volumes/RICKEXT/flutter/bin/flutter" pub get
+"/Volumes/RICKEXT/flutter/bin/flutter" run -d macos
 ```
 
 The macOS app build now bundles a private Python runtime and the CHIRP driver
@@ -45,9 +45,9 @@ locked until a matching radio image has been downloaded in the current session.
 ## Verify and build
 
 ```sh
-"/Volumes/DEV BACK3/flutter/bin/flutter" analyze
-"/Volumes/DEV BACK3/flutter/bin/flutter" test
-"/Volumes/DEV BACK3/flutter/bin/flutter" build macos
+"/Volumes/RICKEXT/flutter/bin/flutter" analyze
+"/Volumes/RICKEXT/flutter/bin/flutter" test
+"/Volumes/RICKEXT/flutter/bin/flutter" build macos
 ```
 
 ### Windows

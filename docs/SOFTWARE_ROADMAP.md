@@ -230,9 +230,9 @@ Automated coverage currently includes:
 Last verified commands:
 
 ```sh
-"/Volumes/DEV BACK3/flutter/bin/flutter" analyze
-"/Volumes/DEV BACK3/flutter/bin/flutter" test
-"/Volumes/DEV BACK3/flutter/bin/flutter" build macos --debug
+"/Volumes/RICKEXT/flutter/bin/flutter" analyze
+"/Volumes/RICKEXT/flutter/bin/flutter" test
+"/Volumes/RICKEXT/flutter/bin/flutter" build macos --debug
 ```
 
 Last known result: analysis clean, 14 tests passing, macOS debug build
@@ -271,7 +271,7 @@ catalog packages these files into `AppIcon.icns` during the macOS build.
 
 ## Runtime and development requirements
 
-- Flutter SDK currently used from `/Volumes/DEV BACK3/flutter`.
+- Flutter SDK currently used from `/Volumes/RICKEXT/flutter`.
 - The macOS build bundles a private Python 3.13 runtime and the CHIRP driver
   tree, so users do not need to install Python or keep a CHIRP source folder.
 - No user-installed Python packages are required because pySerial is bundled.
@@ -284,8 +284,8 @@ catalog packages these files into `AppIcon.icns` during the macOS build.
 Development run:
 
 ```sh
-"/Volumes/DEV BACK3/flutter/bin/flutter" pub get
-"/Volumes/DEV BACK3/flutter/bin/flutter" run -d macos
+"/Volumes/RICKEXT/flutter/bin/flutter" pub get
+"/Volumes/RICKEXT/flutter/bin/flutter" run -d macos
 ```
 
 ## Known limitations and risks
