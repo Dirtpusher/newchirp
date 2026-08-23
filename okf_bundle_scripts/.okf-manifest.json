@@ -1,11 +1,11 @@
 {
   "okf_version": "0.2",
   "manifest_version": 2,
-  "source_root": "/home/rlopez/newchirp/scripts",
+  "source_root": "/Volumes/DEV BACK3/desktop/newchirp/scripts",
   "files": {
     "chirp_bridge.py": {
       "path": "chirp_bridge.py",
-      "mtime_ns": 1787428608748149376,
+      "mtime_ns": 1787478943000000000,
       "hash": "efc1bc713f97f278a678e4869e3d170197f7ce1838d9aa68e24c4d1c6af1a295",
       "concept_ids": [
         "chirp_bridge/apply_json",
@@ -21,7 +21,7 @@
     },
     "generate_gmrs_frs_pdf.py": {
       "path": "generate_gmrs_frs_pdf.py",
-      "mtime_ns": 1787428608750097717,
+      "mtime_ns": 1787478943000000000,
       "hash": "df1a1f0a1b83f1e4347450ea7480e921a0268146a2aa1ad640f71d44348ff7ac",
       "concept_ids": [
         "generate_gmrs_frs_pdf/PdfWriter",
@@ -41,20 +41,14 @@
         "generate_gmrs_frs_pdf"
       ]
     },
-    "._chirp_bridge.py": {
-      "path": "._chirp_bridge.py",
-      "mtime_ns": 1787428608749678735,
-      "hash": "7251223363f90e0a81946591a66d43e9ed99286263ae34349275744f8d260636",
+    "build_macos_dmg.py": {
+      "path": "build_macos_dmg.py",
+      "mtime_ns": 1787483003000000000,
+      "hash": "f4f048746a60b6ef84ed889e2ce667ae14418e4810742d092133562da45af2f9",
       "concept_ids": [
-        "._chirp_bridge"
-      ]
-    },
-    "._generate_gmrs_frs_pdf.py": {
-      "path": "._generate_gmrs_frs_pdf.py",
-      "mtime_ns": 1787428608750476957,
-      "hash": "7251223363f90e0a81946591a66d43e9ed99286263ae34349275744f8d260636",
-      "concept_ids": [
-        "._generate_gmrs_frs_pdf"
+        "build_macos_dmg",
+        "build_macos_dmg/build_background",
+        "build_macos_dmg/main"
       ]
     }
   },
@@ -192,7 +186,7 @@
       "type": "Function",
       "resource": "generate_gmrs_frs_pdf.py",
       "render_hash": "stale",
-      "edge_hash": "0984dc71310523ed0d575aca0fe1a608c39bc7c82fc0b5f7d5cf2f76bd5bd171",
+      "edge_hash": "d886a061d823685acbfcb816547ec5496da2984c3768e28871ae9b369fdbff72",
       "enriched": false
     },
     "generate_gmrs_frs_pdf/text": {
@@ -200,7 +194,7 @@
       "type": "Function",
       "resource": "generate_gmrs_frs_pdf.py",
       "render_hash": "stale",
-      "edge_hash": "1c35a2a721c44599ac66e218e1103fdc138c9bf85856f8cbb3c27b536c523164",
+      "edge_hash": "507bc1533da9ec5460fc994cb913106f5f6277c3ca7c593a6e34680c5645425a",
       "enriched": false
     },
     "generate_gmrs_frs_pdf/text_in_rect": {
@@ -266,7 +260,31 @@
       "render_hash": "stale",
       "edge_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "enriched": false
+    },
+    "build_macos_dmg": {
+      "concept_id": "build_macos_dmg",
+      "type": "Module",
+      "resource": "build_macos_dmg.py",
+      "render_hash": "stale",
+      "edge_hash": "ad8f7a08a3558a2e11c18f099ec43a5c9c5bd1c1563fbc189299a072e70ec842",
+      "enriched": false
+    },
+    "build_macos_dmg/build_background": {
+      "concept_id": "build_macos_dmg/build_background",
+      "type": "Function",
+      "resource": "build_macos_dmg.py",
+      "render_hash": "stale",
+      "edge_hash": "0f7ee4097233a07c5aff816564655823f7b4293f5a47e373eed3e00128f4fdfe",
+      "enriched": false
+    },
+    "build_macos_dmg/main": {
+      "concept_id": "build_macos_dmg/main",
+      "type": "Function",
+      "resource": "build_macos_dmg.py",
+      "render_hash": "stale",
+      "edge_hash": "4bd93651848bcfca23f21ea8489bab0e1e9265241e2447ae2892f23458b3596d",
+      "enriched": false
     }
   },
-  "generated_at": "2026-08-23T10:03:33Z"
+  "generated_at": "2026-08-23T12:41:22Z"
 }

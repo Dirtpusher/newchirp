@@ -1,11 +1,11 @@
 {
   "okf_version": "0.2",
   "manifest_version": 2,
-  "source_root": "/home/rlopez/newchirp/lib",
+  "source_root": "/Volumes/DEV BACK3/desktop/newchirp/lib",
   "files": {
     "main.dart": {
       "path": "main.dart",
-      "mtime_ns": 1787473181445696166,
+      "mtime_ns": 1787478943000000000,
       "hash": "1d70da8f0e7511b2a728cee80ca650617f0e81606150d7381278f34dce3c4fd3",
       "concept_ids": [
         "main/ChannelApplyDialog",
@@ -109,7 +109,7 @@
     },
     "models/radio_channel.dart": {
       "path": "models/radio_channel.dart",
-      "mtime_ns": 1787428608535131501,
+      "mtime_ns": 1787478943000000000,
       "hash": "850738d3e858941091b0f6ebe7a0e88662395baed614cf132a0483209e3b1a81",
       "concept_ids": [
         "models/radio_channel/ChannelExtraField",
@@ -124,7 +124,7 @@
     },
     "services/chirp_csv.dart": {
       "path": "services/chirp_csv.dart",
-      "mtime_ns": 1787428608536346699,
+      "mtime_ns": 1787478943000000000,
       "hash": "1d0d2204b57a9fe4753793712ec972cdd40ba6099dca82b4b249a2165a80806f",
       "concept_ids": [
         "services/chirp_csv/ChirpCsv",
@@ -141,7 +141,7 @@
     },
     "services/column_layout_store.dart": {
       "path": "services/column_layout_store.dart",
-      "mtime_ns": 1787428608536972892,
+      "mtime_ns": 1787478943000000000,
       "hash": "3cbc77b232410ab3567a72cdc0fc28a7edd906c0dc0c62cf73150e5e3172f566",
       "concept_ids": [
         "services/column_layout_store/ColumnLayout",
@@ -154,7 +154,7 @@
     },
     "services/radio_bridge.dart": {
       "path": "services/radio_bridge.dart",
-      "mtime_ns": 1787470669621583060,
+      "mtime_ns": 1787478943000000000,
       "hash": "9768835e190d14c8db8db1f43e2bc3acc9611c7dab2a8d260973c6a9922cfc51",
       "concept_ids": [
         "services/radio_bridge/RadioBridge",
@@ -180,7 +180,7 @@
     },
     "services/radio_image_store.dart": {
       "path": "services/radio_image_store.dart",
-      "mtime_ns": 1787428608538177511,
+      "mtime_ns": 1787478943000000000,
       "hash": "01dbc10ad65696e5c963128028ba7d55ab035eba80b6d5da424c7127c7eb8fa7",
       "concept_ids": [
         "services/radio_image_store/RadioImageStore",
@@ -193,7 +193,7 @@
     },
     "services/radio_selection_store.dart": {
       "path": "services/radio_selection_store.dart",
-      "mtime_ns": 1787428608538939757,
+      "mtime_ns": 1787478943000000000,
       "hash": "aefeaa9ad666caf79e256acf1d1af15cf468495cde4e4dd3515b715ba57bd97c",
       "concept_ids": [
         "services/radio_selection_store/RadioSelection",
@@ -202,46 +202,6 @@
         "services/radio_selection_store/load",
         "services/radio_selection_store/save",
         "services/radio_selection_store"
-      ]
-    },
-    "._main.dart": {
-      "path": "._main.dart",
-      "mtime_ns": 1787428608535006461,
-      "hash": "7251223363f90e0a81946591a66d43e9ed99286263ae34349275744f8d260636",
-      "concept_ids": [
-        "._main"
-      ]
-    },
-    "models/._radio_channel.dart": {
-      "path": "models/._radio_channel.dart",
-      "mtime_ns": 1787428608536102335,
-      "hash": "7251223363f90e0a81946591a66d43e9ed99286263ae34349275744f8d260636",
-      "concept_ids": [
-        "models/._radio_channel"
-      ]
-    },
-    "services/._radio_image_store.dart": {
-      "path": "services/._radio_image_store.dart",
-      "mtime_ns": 1787428608538524581,
-      "hash": "7251223363f90e0a81946591a66d43e9ed99286263ae34349275744f8d260636",
-      "concept_ids": [
-        "services/._radio_image_store"
-      ]
-    },
-    "services/._radio_selection_store.dart": {
-      "path": "services/._radio_selection_store.dart",
-      "mtime_ns": 1787428608539269123,
-      "hash": "7251223363f90e0a81946591a66d43e9ed99286263ae34349275744f8d260636",
-      "concept_ids": [
-        "services/._radio_selection_store"
-      ]
-    },
-    "services/._radio_bridge.dart": {
-      "path": "services/._radio_bridge.dart",
-      "mtime_ns": 1787428608537903990,
-      "hash": "7251223363f90e0a81946591a66d43e9ed99286263ae34349275744f8d260636",
-      "concept_ids": [
-        "services/._radio_bridge"
       ]
     }
   },
@@ -1511,5 +1471,5 @@
       "enriched": false
     }
   },
-  "generated_at": "2026-08-23T10:03:33Z"
+  "generated_at": "2026-08-23T12:41:22Z"
 }
