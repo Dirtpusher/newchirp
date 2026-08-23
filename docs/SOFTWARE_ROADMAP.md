@@ -230,9 +230,9 @@ Automated coverage currently includes:
 Last verified commands:
 
 ```sh
-"/Volumes/RICKEXT/flutter/bin/flutter" analyze
-"/Volumes/RICKEXT/flutter/bin/flutter" test
-"/Volumes/RICKEXT/flutter/bin/flutter" build macos --debug
+flutter analyze
+flutter test
+flutter build macos --debug
 ```
 
 Last known result: analysis clean, 14 tests passing, macOS debug build
@@ -271,7 +271,8 @@ catalog packages these files into `AppIcon.icns` during the macOS build.
 
 ## Runtime and development requirements
 
-- Flutter SDK currently used from `/Volumes/RICKEXT/flutter`.
+- Flutter SDK path is set per machine in the local (untracked) VS Code
+  `dart.flutterSdkPath` setting; each machine points it at its own SDK.
 - The macOS build bundles a private Python 3.13 runtime and the CHIRP driver
   tree, so users do not need to install Python or keep a CHIRP source folder.
 - No user-installed Python packages are required because pySerial is bundled.
@@ -284,8 +285,8 @@ catalog packages these files into `AppIcon.icns` during the macOS build.
 Development run:
 
 ```sh
-"/Volumes/RICKEXT/flutter/bin/flutter" pub get
-"/Volumes/RICKEXT/flutter/bin/flutter" run -d macos
+flutter pub get
+flutter run -d macos
 ```
 
 ## Known limitations and risks
