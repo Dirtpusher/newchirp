@@ -19,6 +19,7 @@ static constexpr char kWindowStateMaximized[] = "maximized";
 struct _MyApplication {
   GtkApplication parent_instance;
   char** dart_entrypoint_arguments;
+  gboolean window_state_ready;
 };
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
@@ -143,16 +144,27 @@ static gboolean on_delete_event(GtkWidget* widget, GdkEvent* event,
   return FALSE;
 }
 
+static gboolean on_configure_event(GtkWidget* widget, GdkEventConfigure* event,
+                                   gpointer user_data) {
+  MyApplication* self = MY_APPLICATION(user_data);
+  if (self->window_state_ready) {
+    save_window_state(GTK_WINDOW(widget));
+  }
+  return FALSE;
+}
+
 // Called when first Flutter frame received.
 static void first_frame_cb(MyApplication* self, FlView* view) {
   GtkWidget* toplevel = gtk_widget_get_toplevel(GTK_WIDGET(view));
   gtk_widget_show(toplevel);
   load_window_state(GTK_WINDOW(toplevel));
+  self->window_state_ready = TRUE;
 }
 
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
+  self->window_state_ready = FALSE;
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
 
@@ -185,6 +197,8 @@ static void my_application_activate(GApplication* application) {
 
   gtk_window_set_default_size(window, 1280, 720);
   g_signal_connect(window, "delete-event", G_CALLBACK(on_delete_event), nullptr);
+  g_signal_connect(window, "configure-event", G_CALLBACK(on_configure_event),
+                   self);
 
   g_autoptr(FlDartProject) project = fl_dart_project_new();
   fl_dart_project_set_dart_entrypoint_arguments(
