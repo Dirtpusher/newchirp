@@ -20,6 +20,9 @@ struct _MyApplication {
   GtkApplication parent_instance;
   char** dart_entrypoint_arguments;
   gboolean window_state_ready;
+  gboolean have_restored_size;
+  gint restored_width;
+  gint restored_height;
 };
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
@@ -56,7 +59,7 @@ static gboolean restored_rect_is_visible(gint x,
   return FALSE;
 }
 
-static void load_window_state(GtkWindow* window) {
+static void load_window_state(MyApplication* self, GtkWindow* window) {
   g_autofree char* path = window_state_path();
   g_autoptr(GKeyFile) key_file = g_key_file_new();
   g_autoptr(GError) error = nullptr;
@@ -96,7 +99,9 @@ static void load_window_state(GtkWindow* window) {
     return;
   }
 
-  gtk_window_set_default_size(window, width, height);
+  self->have_restored_size = TRUE;
+  self->restored_width = width;
+  self->restored_height = height;
   gtk_window_move(window, x, y);
 }
 
@@ -164,6 +169,9 @@ static void first_frame_cb(MyApplication* self, FlView* view) {
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
   self->window_state_ready = FALSE;
+  self->have_restored_size = FALSE;
+  self->restored_width = 0;
+  self->restored_height = 0;
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
 
@@ -198,13 +206,17 @@ static void my_application_activate(GApplication* application) {
   g_signal_connect(window, "delete-event", G_CALLBACK(on_delete_event), nullptr);
   g_signal_connect(window, "configure-event", G_CALLBACK(on_configure_event),
                    self);
-  load_window_state(window);
+  load_window_state(self, window);
 
   g_autoptr(FlDartProject) project = fl_dart_project_new();
   fl_dart_project_set_dart_entrypoint_arguments(
       project, self->dart_entrypoint_arguments);
 
   FlView* view = fl_view_new(project);
+  if (self->have_restored_size) {
+    gtk_widget_set_size_request(GTK_WIDGET(view), self->restored_width,
+                                self->restored_height);
+  }
   GdkRGBA background_color;
   // Background defaults to black, override it here if necessary, e.g. #00000000
   // for transparent.
