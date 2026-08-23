@@ -1,0 +1,30 @@
+---
+okf_version: "0.2"
+type: Function
+title: _task
+resource: main.dart
+tags:
+  - "lang:dart"
+  - "type:Function"
+  - "module:main.dart"
+timestamp: "2026-08-22T18:44:42Z"
+concept_id: main/task
+language: dart
+---
+
+# _task
+
+## Signature
+
+```dart
+Future_task_task
+```
+
+## Source
+Lines 315–315 in `main.dart`
+
+## Relationships
+
+| Type | Target |
+|------|--------|
+| related | [lib](/main.md) |

@@ -1,0 +1,240 @@
+{
+  "okf_version": "0.2",
+  "manifest_version": 2,
+  "source_root": "/Volumes/DEV BACK3/desktop/newchirp/scripts",
+  "files": {
+    "chirp_bridge.py": {
+      "path": "chirp_bridge.py",
+      "mtime_ns": 1787399758000000000,
+      "hash": "efc1bc713f97f278a678e4869e3d170197f7ce1838d9aa68e24c4d1c6af1a295",
+      "concept_ids": [
+        "chirp_bridge",
+        "chirp_bridge/load_chirp",
+        "chirp_bridge/memory_json",
+        "chirp_bridge/extra_fields_json",
+        "chirp_bridge/features_json",
+        "chirp_bridge/apply_json",
+        "chirp_bridge/open_serial",
+        "chirp_bridge/radio_for",
+        "chirp_bridge/main"
+      ]
+    },
+    "generate_gmrs_frs_pdf.py": {
+      "path": "generate_gmrs_frs_pdf.py",
+      "mtime_ns": 1787422693000000000,
+      "hash": "df1a1f0a1b83f1e4347450ea7480e921a0268146a2aa1ad640f71d44348ff7ac",
+      "concept_ids": [
+        "generate_gmrs_frs_pdf",
+        "generate_gmrs_frs_pdf/esc",
+        "generate_gmrs_frs_pdf/rgb",
+        "generate_gmrs_frs_pdf/init",
+        "generate_gmrs_frs_pdf/set_fill",
+        "generate_gmrs_frs_pdf/set_stroke",
+        "generate_gmrs_frs_pdf/rect",
+        "generate_gmrs_frs_pdf/line",
+        "generate_gmrs_frs_pdf/text",
+        "generate_gmrs_frs_pdf/text_in_rect",
+        "generate_gmrs_frs_pdf/table_cell",
+        "generate_gmrs_frs_pdf/as_pdf",
+        "generate_gmrs_frs_pdf/row_color",
+        "generate_gmrs_frs_pdf/main",
+        "generate_gmrs_frs_pdf/PdfWriter"
+      ]
+    }
+  },
+  "concepts": {
+    "chirp_bridge": {
+      "concept_id": "chirp_bridge",
+      "type": "Module",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "5692856f79c02f06184d0772be8d00985cb0a0e7cd9675fb2058f162468c5fd8",
+      "enriched": false
+    },
+    "chirp_bridge/load_chirp": {
+      "concept_id": "chirp_bridge/load_chirp",
+      "type": "Function",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "03f7d47fab4c5e055fc9cbe171f905280fc75adae34dbee13aaeb0a3f0f650a9",
+      "enriched": false
+    },
+    "chirp_bridge/memory_json": {
+      "concept_id": "chirp_bridge/memory_json",
+      "type": "Function",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "e80c6c28dad0dcd043a3e1c849867509c741729ca2a009d9da78bdf6eba108f0",
+      "enriched": false
+    },
+    "chirp_bridge/extra_fields_json": {
+      "concept_id": "chirp_bridge/extra_fields_json",
+      "type": "Function",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "a742bdf7921c9f6afb1e4c0d2d3db7e1f42f849b1e55a511eed9762fcb651b23",
+      "enriched": false
+    },
+    "chirp_bridge/features_json": {
+      "concept_id": "chirp_bridge/features_json",
+      "type": "Function",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "03f7d47fab4c5e055fc9cbe171f905280fc75adae34dbee13aaeb0a3f0f650a9",
+      "enriched": false
+    },
+    "chirp_bridge/apply_json": {
+      "concept_id": "chirp_bridge/apply_json",
+      "type": "Function",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "03f7d47fab4c5e055fc9cbe171f905280fc75adae34dbee13aaeb0a3f0f650a9",
+      "enriched": false
+    },
+    "chirp_bridge/open_serial": {
+      "concept_id": "chirp_bridge/open_serial",
+      "type": "Function",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "f30f60bdc352103a4ded1ea6bdaae9cb50e805685bba8ee63ed923ede55356aa",
+      "enriched": false
+    },
+    "chirp_bridge/radio_for": {
+      "concept_id": "chirp_bridge/radio_for",
+      "type": "Function",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "c625c6edf17c97f0b7c6782195a9b3452f6cf985a58a6e1d8098449c66ba64ad",
+      "enriched": false
+    },
+    "chirp_bridge/main": {
+      "concept_id": "chirp_bridge/main",
+      "type": "Function",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "a85eec199c86f1ef8191d48bfe1b4b91dc6ac81e04b96d9c9553a9cd996456de",
+      "enriched": false
+    },
+    "generate_gmrs_frs_pdf": {
+      "concept_id": "generate_gmrs_frs_pdf",
+      "type": "Module",
+      "resource": "generate_gmrs_frs_pdf.py",
+      "render_hash": "stale",
+      "edge_hash": "f67e93972f6e2b79819889a5805508d4500f30222d146970db7dee2da1bd5d79",
+      "enriched": false
+    },
+    "generate_gmrs_frs_pdf/esc": {
+      "concept_id": "generate_gmrs_frs_pdf/esc",
+      "type": "Function",
+      "resource": "generate_gmrs_frs_pdf.py",
+      "render_hash": "stale",
+      "edge_hash": "74f4e35997304b91e835098d1726509837a14276a228eec9b8b82b30b8c6f49b",
+      "enriched": false
+    },
+    "generate_gmrs_frs_pdf/rgb": {
+      "concept_id": "generate_gmrs_frs_pdf/rgb",
+      "type": "Function",
+      "resource": "generate_gmrs_frs_pdf.py",
+      "render_hash": "stale",
+      "edge_hash": "b2b6fe5c7c5628a699842882a877fa405fff20608150c3f8ceb71042cd03c001",
+      "enriched": false
+    },
+    "generate_gmrs_frs_pdf/init": {
+      "concept_id": "generate_gmrs_frs_pdf/init",
+      "type": "Function",
+      "resource": "generate_gmrs_frs_pdf.py",
+      "render_hash": "stale",
+      "edge_hash": "ad5a96287a56ed6e24a754dd8aadf312d2438657a7f182b0653a2d9d59366b5e",
+      "enriched": false
+    },
+    "generate_gmrs_frs_pdf/set_fill": {
+      "concept_id": "generate_gmrs_frs_pdf/set_fill",
+      "type": "Function",
+      "resource": "generate_gmrs_frs_pdf.py",
+      "render_hash": "stale",
+      "edge_hash": "c9be9b4b01e28a4add432763de1b89979b0fef8109ac9bbe5902010513dd667a",
+      "enriched": false
+    },
+    "generate_gmrs_frs_pdf/set_stroke": {
+      "concept_id": "generate_gmrs_frs_pdf/set_stroke",
+      "type": "Function",
+      "resource": "generate_gmrs_frs_pdf.py",
+      "render_hash": "stale",
+      "edge_hash": "1271d6657c2c216973e3dee09fc0b06ddd8af94ac1a9ebb4b83deb354f794360",
+      "enriched": false
+    },
+    "generate_gmrs_frs_pdf/rect": {
+      "concept_id": "generate_gmrs_frs_pdf/rect",
+      "type": "Function",
+      "resource": "generate_gmrs_frs_pdf.py",
+      "render_hash": "stale",
+      "edge_hash": "1df3e2ec68ef561e8e75f30c5e0d84fc82f3876b74847873e10da8c2400bd715",
+      "enriched": false
+    },
+    "generate_gmrs_frs_pdf/line": {
+      "concept_id": "generate_gmrs_frs_pdf/line",
+      "type": "Function",
+      "resource": "generate_gmrs_frs_pdf.py",
+      "render_hash": "stale",
+      "edge_hash": "0984dc71310523ed0d575aca0fe1a608c39bc7c82fc0b5f7d5cf2f76bd5bd171",
+      "enriched": false
+    },
+    "generate_gmrs_frs_pdf/text": {
+      "concept_id": "generate_gmrs_frs_pdf/text",
+      "type": "Function",
+      "resource": "generate_gmrs_frs_pdf.py",
+      "render_hash": "stale",
+      "edge_hash": "1c35a2a721c44599ac66e218e1103fdc138c9bf85856f8cbb3c27b536c523164",
+      "enriched": false
+    },
+    "generate_gmrs_frs_pdf/text_in_rect": {
+      "concept_id": "generate_gmrs_frs_pdf/text_in_rect",
+      "type": "Function",
+      "resource": "generate_gmrs_frs_pdf.py",
+      "render_hash": "stale",
+      "edge_hash": "7ec76b575122b51f190358b3be09320ab19e45c12f3abd411f78b4d258619bda",
+      "enriched": false
+    },
+    "generate_gmrs_frs_pdf/table_cell": {
+      "concept_id": "generate_gmrs_frs_pdf/table_cell",
+      "type": "Function",
+      "resource": "generate_gmrs_frs_pdf.py",
+      "render_hash": "stale",
+      "edge_hash": "804cee1836bed000e41c6d7589df52c91091a814b6a46109fec01059ae764e58",
+      "enriched": false
+    },
+    "generate_gmrs_frs_pdf/as_pdf": {
+      "concept_id": "generate_gmrs_frs_pdf/as_pdf",
+      "type": "Function",
+      "resource": "generate_gmrs_frs_pdf.py",
+      "render_hash": "stale",
+      "edge_hash": "cf5f5c946ecde3dafbe7a660f3b697885084128fbd844a34354effdce9ae27d7",
+      "enriched": false
+    },
+    "generate_gmrs_frs_pdf/row_color": {
+      "concept_id": "generate_gmrs_frs_pdf/row_color",
+      "type": "Function",
+      "resource": "generate_gmrs_frs_pdf.py",
+      "render_hash": "stale",
+      "edge_hash": "67da7af724bf7e68c3bfa5211729806d62f6dec83f9b4c3c8faef7013e8e0b08",
+      "enriched": false
+    },
+    "generate_gmrs_frs_pdf/main": {
+      "concept_id": "generate_gmrs_frs_pdf/main",
+      "type": "Function",
+      "resource": "generate_gmrs_frs_pdf.py",
+      "render_hash": "stale",
+      "edge_hash": "93615e463f3811159ac608ee17419432dc00b63b0d9282e911435156a83526a1",
+      "enriched": false
+    },
+    "generate_gmrs_frs_pdf/PdfWriter": {
+      "concept_id": "generate_gmrs_frs_pdf/PdfWriter",
+      "type": "Class",
+      "resource": "generate_gmrs_frs_pdf.py",
+      "render_hash": "stale",
+      "edge_hash": "b99bd08529bdcdb4dfd5a13bebfcf0a7de864709aefaa04f647fc65d2c4f4e92",
+      "enriched": false
+    }
+  },
+  "generated_at": "2026-08-22T18:51:43Z"
+}

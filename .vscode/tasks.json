@@ -1,0 +1,43 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Update CHIRP source",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/update_chirp.sh",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "Refresh OKF knowledge graph",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/update_okf.sh",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "Watch OKF knowledge graph",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/update_okf.sh --watch",
+      "problemMatcher": [],
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never",
+        "panel": "dedicated",
+        "clear": false,
+        "group": "okf"
+      },
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
+    }
+  ]
+}

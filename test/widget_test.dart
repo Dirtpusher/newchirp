@@ -1,0 +1,477 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:newchirp/main.dart';
+import 'package:newchirp/services/column_layout_store.dart';
+import 'package:newchirp/services/radio_bridge.dart';
+
+var _layoutTest = 0;
+NewChirpApp testApp() => NewChirpApp(
+  columnLayoutStore: ColumnLayoutStore(
+    path:
+        '${Directory.systemTemp.path}/newchirp-widget-layout-$pid-${_layoutTest++}.json',
+  ),
+);
+
+Future<void> openGmrsStarter(WidgetTester tester) async {
+  await tester.tap(find.text('New'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('GMRS starter template'));
+  await tester.pumpAndSettle();
+}
+
+void main() {
+  testWidgets('starts with configuration choices', (tester) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+
+    expect(find.text('NewChirp'), findsWidgets);
+    expect(find.text('What would you like to do?'), findsOneWidget);
+    expect(find.text('Start new'), findsNothing);
+    expect(find.text('Open CSV'), findsWidgets);
+    expect(find.text('Use GMRS template'), findsNothing);
+    expect(find.text('Connect radio'), findsOneWidget);
+    expect(find.text('GMRS 1'), findsNothing);
+  });
+
+  testWidgets('opens the GMRS starter only when selected', (tester) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    await openGmrsStarter(tester);
+
+    expect(find.text('GMRS Starter Library'), findsOneWidget);
+    expect(find.text('Add channel'), findsOneWidget);
+    expect(find.text('GMRS 1'), findsWidgets);
+    expect(find.text('TX TONE'), findsOneWidget);
+    expect(find.text('RX DTCS'), findsOneWidget);
+    expect(find.text('DTCS POL'), findsOneWidget);
+    expect(find.text('POWER'), findsOneWidget);
+    expect(find.text('COMMENT'), findsOneWidget);
+  });
+
+  testWidgets('double-clicking a channel opens the modal editor', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    await openGmrsStarter(tester);
+    await tester.tap(find.text('GMRS 1').first);
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.tap(find.text('GMRS 1').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Channel details'), findsOneWidget);
+    expect(find.byTooltip('Close editor'), findsOneWidget);
+    expect(find.text('Receive frequency (MHz)'), findsOneWidget);
+  });
+
+  testWidgets('channel editor save commits and close cancels unsaved changes', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    await openGmrsStarter(tester);
+
+    Future<void> openEditor() async {
+      await tester.tap(find.text('GMRS 1').first);
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(find.text('GMRS 1').first);
+      await tester.pumpAndSettle();
+    }
+
+    Finder editorNameField() => find.descendant(
+      of: find.byType(Dialog),
+      matching: find.byWidgetPredicate(
+        (widget) =>
+            widget is TextField && widget.decoration?.labelText == 'Name',
+      ),
+    );
+
+    await openEditor();
+    tester.widget<TextField>(editorNameField()).onChanged!('UNSAVED');
+    await tester.pump();
+    await tester.tap(find.byTooltip('Close editor'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('UNSAVED'), findsNothing);
+    expect(find.text('GMRS 1'), findsWidgets);
+
+    await openEditor();
+    tester.widget<TextField>(editorNameField()).onChanged!('SAVED');
+    await tester.pump();
+    await tester.tap(find.text('Save channel'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('SAVED'), findsOneWidget);
+    expect(find.text('GMRS 1'), findsNothing);
+  });
+
+  testWidgets('channel selection updates on pointer down', (tester) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    await openGmrsStarter(tester);
+
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.text('GMRS 2')),
+    );
+    await tester.pump();
+
+    final selectedContainer = find.ancestor(
+      of: find.text('GMRS 2'),
+      matching: find.byWidgetPredicate(
+        (widget) =>
+            widget is Container && widget.color == const Color(0xFFE8F3ED),
+      ),
+    );
+    expect(selectedContainer, findsOneWidget);
+    await gesture.up();
+    await tester.pump(const Duration(milliseconds: 500));
+  });
+
+  testWidgets('channel columns can be resized and reordered', (tester) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    await openGmrsStarter(tester);
+
+    final frequencyBefore = tester.getTopLeft(find.text('RX FREQUENCY')).dx;
+    await tester.drag(
+      find.byKey(const ValueKey('resize-NAME')),
+      const Offset(40, 0),
+    );
+    await tester.pumpAndSettle();
+    final frequencyAfter = tester.getTopLeft(find.text('RX FREQUENCY')).dx;
+    expect(frequencyAfter, greaterThan(frequencyBefore + 30));
+
+    final tone = find.text('TONE MODE');
+    final name = find.text('NAME');
+    final dragOffset = tester.getCenter(name) - tester.getCenter(tone);
+    await tester.drag(tone, dragOffset);
+    await tester.pumpAndSettle();
+
+    expect(tester.getTopLeft(tone).dx, lessThan(tester.getTopLeft(name).dx));
+  });
+
+  testWidgets('New confirms before discarding the current channel list', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    await openGmrsStarter(tester);
+    await tester.tap(find.text('New'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Blank configuration'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Start a new blank configuration?'), findsOneWidget);
+    expect(find.text('GMRS 1'), findsWidgets);
+
+    await tester.tap(find.text('Discard and continue'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Untitled Library'), findsOneWidget);
+    expect(find.text('GMRS 1'), findsNothing);
+  });
+
+  testWidgets('GMRS starter remains available from the New menu', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    await openGmrsStarter(tester);
+    await tester.tap(find.text('New'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('GMRS starter template'), findsOneWidget);
+    await tester.tap(find.text('GMRS starter template'));
+    await tester.pumpAndSettle();
+    expect(find.text('Apply GMRS starter template'), findsOneWidget);
+
+    await tester.tap(find.text('Apply'));
+    await tester.pumpAndSettle();
+    expect(find.text('GMRS Starter Library'), findsOneWidget);
+    expect(find.text('GMRS 1'), findsWidgets);
+  });
+
+  testWidgets('GMRS template can be inserted starting at a channel number', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    await openGmrsStarter(tester);
+
+    await tester.tap(find.text('New'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('GMRS starter template'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Insert starting at channel number'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, '23');
+    await tester.tap(find.text('Apply'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('44'), findsWidgets);
+  });
+
+  testWidgets('right-click can copy and paste a channel row', (tester) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    await openGmrsStarter(tester);
+
+    var gesture = await tester.startGesture(
+      tester.getCenter(find.text('GMRS 1')),
+      buttons: kSecondaryMouseButton,
+    );
+    await tester.pump();
+    await gesture.up();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Copy'));
+    await tester.pumpAndSettle();
+
+    gesture = await tester.startGesture(
+      tester.getCenter(find.text('GMRS 2')),
+      buttons: kSecondaryMouseButton,
+    );
+    await tester.pump();
+    await gesture.up();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Paste'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Overwrite channel'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('GMRS 1'), findsNWidgets(2));
+  });
+
+  testWidgets('right-click can clear a channel row', (tester) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    await openGmrsStarter(tester);
+
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.text('GMRS 1')),
+      buttons: kSecondaryMouseButton,
+    );
+    await tester.pump();
+    await gesture.up();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Clear channel'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('GMRS 1'), findsNothing);
+  });
+
+  testWidgets('right-click cut clears the row in place and paste can move it', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    await openGmrsStarter(tester);
+
+    var gesture = await tester.startGesture(
+      tester.getCenter(find.text('GMRS 1')),
+      buttons: kSecondaryMouseButton,
+    );
+    await tester.pump();
+    await gesture.up();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cut'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('GMRS 1'), findsNothing);
+    expect(find.text('GMRS 2'), findsOneWidget);
+
+    gesture = await tester.startGesture(
+      tester.getCenter(find.text('GMRS 2')),
+      buttons: kSecondaryMouseButton,
+    );
+    await tester.pump();
+    await gesture.up();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Paste'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Overwrite channel'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('GMRS 1'), findsOneWidget);
+    expect(find.text('GMRS 2'), findsNothing);
+  });
+
+  testWidgets('deleting a channel requires confirmation', (tester) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    await openGmrsStarter(tester);
+    await tester.tap(find.text('GMRS 1').first);
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.tap(find.text('GMRS 1').first);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Delete channel'));
+    await tester.pumpAndSettle();
+    expect(find.text('Delete channel 1?'), findsOneWidget);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text('Cancel'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Channel details'), findsOneWidget);
+    expect(find.text('GMRS 1'), findsWidgets);
+
+    await tester.tap(find.byTooltip('Delete channel'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Delete channel'));
+    await tester.pumpAndSettle();
+    expect(find.text('Channel details'), findsNothing);
+    expect(find.text('GMRS 1'), findsNothing);
+  });
+
+  testWidgets('welcome screen fits the default macOS window', (tester) async {
+    tester.view.physicalSize = const Size(800, 600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('What would you like to do?'), findsOneWidget);
+  });
+
+  testWidgets('About screen preserves CHIRP attribution and license notice', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('About & licenses'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('CHIRP compatibility layer'), findsOneWidget);
+    expect(find.textContaining('GNU General Public License'), findsOneWidget);
+    expect(find.textContaining('WITHOUT ANY WARRANTY'), findsOneWidget);
+    expect(find.text('View complete licenses'), findsOneWidget);
+    expect(find.textContaining('not affiliated with'), findsOneWidget);
+    expect(find.text('New'), findsNothing);
+    expect(find.text('Open CSV'), findsNothing);
+    expect(
+      find.textContaining('Rick Lopez · Lead Programmer'),
+      findsNWidgets(2),
+    );
+    expect(find.textContaining('rick@newchirp.net'), findsNWidgets(2));
+  });
+
+  testWidgets('frequency reference is available from the sidebar', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Frequency reference'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('GMRS & FRS Frequency Reference'), findsNWidgets(2));
+    expect(find.text('462.5625'), findsOneWidget);
+    expect(find.text('Repeater Pairs (GMRS Only)'), findsOneWidget);
+    expect(find.text('467.5500'), findsOneWidget);
+    expect(find.text('New'), findsNothing);
+    expect(find.text('Open CSV'), findsNothing);
+    expect(find.text('Print'), findsOneWidget);
+  });
+
+  testWidgets('bundled serial backend loads the CHIRP radio catalog', (
+    tester,
+  ) async {
+    await tester.pumpWidget(testApp());
+    final models = await tester.runAsync(
+      () => RadioBridge(sourcePath: '../chirp-20260626').models(),
+    );
+    final instructions = await tester.runAsync(
+      () => RadioBridge(
+        sourcePath: '../chirp-20260626',
+      ).instructions('Baofeng_UV-5R_Mini'),
+    );
+
+    expect(models, contains('Baofeng_UV-5R'));
+    expect(models, contains('Yaesu_FT-60'));
+    expect(instructions?.experimental, contains('beta version'));
+    expect(instructions?.preDownload, contains('Turn off your radio'));
+  });
+}

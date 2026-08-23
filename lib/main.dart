@@ -1,0 +1,4239 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:file_selector/file_selector.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import 'models/radio_channel.dart';
+import 'services/chirp_csv.dart';
+import 'services/column_layout_store.dart';
+import 'services/radio_image_store.dart';
+import 'services/radio_selection_store.dart';
+import 'services/radio_bridge.dart';
+
+const _menuChannel = MethodChannel('newchirp/menu');
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  LicenseRegistry.addLicense(() async* {
+    yield LicenseEntryWithLineBreaks(const [
+      'CHIRP',
+    ], await rootBundle.loadString('assets/licenses/CHIRP-GPL-3.0.txt'));
+    yield LicenseEntryWithLineBreaks(
+      const ['pySerial'],
+      await rootBundle.loadString('assets/licenses/PYSERIAL-BSD-3-CLAUSE.txt'),
+    );
+  });
+  runApp(const NewChirpApp());
+}
+
+class NewChirpApp extends StatelessWidget {
+  const NewChirpApp({
+    super.key,
+    this.columnLayoutStore,
+    this.radioSelectionStore,
+  });
+
+  final ColumnLayoutStore? columnLayoutStore;
+  final RadioSelectionStore? radioSelectionStore;
+
+  @override
+  Widget build(BuildContext context) {
+    const ink = Color(0xFF15211D);
+    const green = Color(0xFF1F7455);
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'NewChirp',
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: green,
+          brightness: Brightness.light,
+          surface: const Color(0xFFF8FAF8),
+        ),
+        scaffoldBackgroundColor: const Color(0xFFF1F4F1),
+        textTheme: ThemeData.light().textTheme.apply(
+          bodyColor: ink,
+          displayColor: ink,
+          fontFamily: Platform.isMacOS ? '.AppleSystemUIFont' : null,
+        ),
+        inputDecorationTheme: const InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderSide: BorderSide(color: Color(0xFFD8DEDA)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Color(0xFFD8DEDA)),
+          ),
+          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        ),
+        cardTheme: const CardThemeData(
+          elevation: 0,
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(14)),
+            side: BorderSide(color: Color(0xFFDEE4E0)),
+          ),
+        ),
+      ),
+      home: NewChirpHome(
+        columnLayoutStore: columnLayoutStore,
+        radioSelectionStore: radioSelectionStore,
+      ),
+    );
+  }
+}
+
+class NewChirpHome extends StatefulWidget {
+  const NewChirpHome({
+    super.key,
+    this.columnLayoutStore,
+    this.radioSelectionStore,
+  });
+
+  final ColumnLayoutStore? columnLayoutStore;
+  final RadioSelectionStore? radioSelectionStore;
+
+  @override
+  State<NewChirpHome> createState() => _NewChirpHomeState();
+}
+
+class _NewChirpHomeState extends State<NewChirpHome> {
+  final _bridge = RadioBridge();
+  late final _columnLayoutStore =
+      widget.columnLayoutStore ?? ColumnLayoutStore();
+  late final _radioSelectionStore =
+      widget.radioSelectionStore ?? RadioSelectionStore();
+  final _imageStore = RadioImageStore();
+  Future<void>? _radioSelectionLoad;
+  final _searchController = TextEditingController();
+  List<RadioChannel> _channels = [];
+  int _selected = -1;
+  int _page = 0;
+  String _query = '';
+  String _libraryName = 'NewChirp';
+  String? _libraryPath;
+  bool _libraryOpen = false;
+  bool _dirty = false;
+  bool _busy = false;
+  String _status = 'Ready';
+  List<String> _ports = [];
+  List<String> _models = [];
+  String? _port;
+  String? _model;
+  String? _radioImage;
+  RadioCapabilities? _capabilities;
+  bool _transferActive = false;
+  bool _transferCancelling = false;
+  String _transferLabel = '';
+  List<String> _columnOrder = [];
+  final Map<String, double> _columnWidths = {};
+  bool _columnLayoutTouched = false;
+  List<RadioChannel> _channelClipboard = [];
+  final Set<int> _clearedLocations = {};
+  final List<_LibraryState> _undoStack = [];
+  final List<_LibraryState> _redoStack = [];
+
+  RadioChannel? get _current => _selected >= 0 && _selected < _channels.length
+      ? _channels[_selected]
+      : null;
+
+  List<RadioChannel> get _activeChannels =>
+      _channels.where((channel) => !channel.cleared).toList();
+
+  @override
+  void initState() {
+    super.initState();
+    _menuChannel.setMethodCallHandler((call) async {
+      switch (call.method) {
+        case 'undo':
+          _undo();
+          break;
+        case 'redo':
+          _redo();
+          break;
+      }
+    });
+    _syncMenuState();
+    _loadColumnLayout();
+    _radioSelectionLoad = _loadRadioSelection();
+    _refreshPorts();
+  }
+
+  Future<void> _loadColumnLayout() async {
+    final layout = await _columnLayoutStore.load();
+    if (!mounted || layout == null || _columnLayoutTouched) return;
+    setState(() {
+      _columnOrder = layout.order;
+      _columnWidths
+        ..clear()
+        ..addAll(layout.widths);
+    });
+  }
+
+  Future<void> _saveColumnLayout() async {
+    try {
+      await _columnLayoutStore.save(
+        ColumnLayout(order: _columnOrder, widths: Map.of(_columnWidths)),
+      );
+    } on FileSystemException {
+      // Layout persistence should never interrupt editing the radio.
+    }
+  }
+
+  _LibraryState _snapshotLibrary() => _LibraryState(
+    channels: _channels.map((channel) => channel.copy()).toList(),
+    selected: _selected,
+    libraryName: _libraryName,
+    libraryPath: _libraryPath,
+    libraryOpen: _libraryOpen,
+    dirty: _dirty,
+    capabilities: _capabilities,
+    clearedLocations: Set.of(_clearedLocations),
+  );
+
+  void _restoreLibrary(_LibraryState state) {
+    setState(() {
+      _channels = state.channels.map((channel) => channel.copy()).toList();
+      _selected = state.selected;
+      _libraryName = state.libraryName;
+      _libraryPath = state.libraryPath;
+      _libraryOpen = state.libraryOpen;
+      _dirty = state.dirty;
+      _capabilities = state.capabilities;
+      _clearedLocations
+        ..clear()
+        ..addAll(state.clearedLocations);
+    });
+  }
+
+  void _recordHistory() {
+    _undoStack.add(_snapshotLibrary());
+    if (_undoStack.length > 200) _undoStack.removeAt(0);
+    _redoStack.clear();
+    _syncMenuState();
+  }
+
+  void _undo() {
+    if (_undoStack.isEmpty) return;
+    _redoStack.add(_snapshotLibrary());
+    _restoreLibrary(_undoStack.removeLast());
+    _syncMenuState();
+  }
+
+  void _redo() {
+    if (_redoStack.isEmpty) return;
+    _undoStack.add(_snapshotLibrary());
+    _restoreLibrary(_redoStack.removeLast());
+    _syncMenuState();
+  }
+
+  void _syncMenuState() {
+    unawaited(
+      _menuChannel
+          .invokeMethod<void>('setUndoState', {
+            'undo': _undoStack.isNotEmpty,
+            'redo': _redoStack.isNotEmpty,
+          })
+          .catchError((Object _) {}),
+    );
+  }
+
+  Future<void> _loadRadioSelection() async {
+    final selection = await _radioSelectionStore.load();
+    if (!mounted || selection == null) return;
+    setState(() {
+      _model = selection.model;
+      _port = selection.port;
+      final model = selection.model;
+      if (model != null && _imageStore.hasForModel(model)) {
+        _radioImage = _imageStore.pathForModel(model);
+      }
+    });
+  }
+
+  Future<void> _saveRadioSelection() async {
+    try {
+      await _radioSelectionStore.save(
+        RadioSelection(model: _model, port: _port),
+      );
+    } on FileSystemException {
+      // Selection persistence should never interrupt radio setup.
+    }
+  }
+
+  void _setColumnOrder(List<String> order) {
+    setState(() {
+      _columnLayoutTouched = true;
+      _columnOrder = order;
+    });
+    unawaited(_saveColumnLayout());
+  }
+
+  void _setColumnWidth(String id, double width) {
+    setState(() {
+      _columnLayoutTouched = true;
+      _columnWidths[id] = width;
+    });
+    unawaited(_saveColumnLayout());
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _refreshPorts() async {
+    final ports = await _bridge.serialPorts();
+    if (!mounted) return;
+    setState(() {
+      _ports = ports;
+      if (!_ports.contains(_port)) _port = _ports.firstOrNull;
+    });
+  }
+
+  Future<void> _loadModels() async {
+    final radioSelectionLoad = _radioSelectionLoad;
+    if (radioSelectionLoad != null) await radioSelectionLoad;
+    await _task('Loading radio catalog…', () async {
+      final models = await _bridge.models();
+      setState(() {
+        _models = models;
+        _model ??= models.firstOrNull;
+        final model = _model;
+        if (model != null && _imageStore.hasForModel(model)) {
+          _radioImage = _imageStore.pathForModel(model);
+        }
+      });
+    });
+  }
+
+  Future<void> _task(String label, Future<void> Function() action) async {
+    setState(() {
+      _busy = true;
+      _status = label;
+    });
+    try {
+      await action();
+      if (mounted) setState(() => _status = 'Ready');
+    } catch (error) {
+      if (mounted) {
+        setState(() => _status = 'Action failed');
+        await _showActionError(error);
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  String _friendlyActionError(Object error) {
+    final message = error.toString();
+    if (Platform.isLinux &&
+        (message.contains('Permission denied') ||
+            message.contains('Errno 13')) &&
+        (message.contains('/dev/tty') ||
+            message.contains('could not open port'))) {
+      return '$message\n\n'
+          'On Linux, this usually means your user does not have permission '
+          'to open the radio programming cable.\n\n'
+          'Fix it with:\n'
+          '    sudo usermod -aG dialout \$USER\n\n'
+          'Then log out and back in, reconnect the cable, and try again.\n\n'
+          'For the current terminal session only:\n'
+          '    newgrp dialout';
+    }
+    return message;
+  }
+
+  Future<void> _showActionError(Object error) => showDialog<void>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Couldn’t complete that action'),
+      content: SelectableText(_friendlyActionError(error)),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Close'),
+        ),
+      ],
+    ),
+  );
+
+  Future<void> _importCsv() async {
+    const type = XTypeGroup(label: 'CHIRP CSV', extensions: ['csv']);
+    final file = await openFile(acceptedTypeGroups: const [type]);
+    if (file == null) return;
+    late final List<RadioChannel> channels;
+    try {
+      channels = ChirpCsv.decode(await file.readAsString());
+    } catch (error) {
+      if (mounted) await _showActionError(error);
+      return;
+    }
+    if (channels.isEmpty) {
+      if (mounted) {
+        await _showActionError(
+          const FormatException('No channel rows were found.'),
+        );
+      }
+      return;
+    }
+
+    final mode = _libraryOpen && _channels.isNotEmpty
+        ? await _chooseChannelApplyMode(
+            label: 'CSV channels',
+            count: channels.length,
+          )
+        : const _ChannelApplyMode(replaceAll: true, startAt: 1);
+    if (mode == null || !mounted) return;
+
+    await _task('Importing ${file.name}…', () async {
+      _recordHistory();
+      _applyChannels(
+        channels,
+        mode,
+        libraryName: file.name.replaceFirst(
+          RegExp(r'\.csv$', caseSensitive: false),
+          '',
+        ),
+        libraryPath: file.path,
+      );
+    });
+  }
+
+  Future<_ChannelApplyMode?> _chooseChannelApplyMode({
+    required String label,
+    required int count,
+  }) async {
+    return showDialog<_ChannelApplyMode>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => _ChannelApplyDialog(
+        label: label,
+        count: count,
+        initialStart: _nextChannelLocation(),
+      ),
+    );
+  }
+
+  void _applyChannels(
+    List<RadioChannel> incoming,
+    _ChannelApplyMode mode, {
+    required String libraryName,
+    String? libraryPath,
+  }) {
+    if (mode.replaceAll) {
+      setState(() {
+        _channels = incoming;
+        _selected = incoming.isEmpty ? -1 : 0;
+        _libraryName = libraryName;
+        _libraryPath = libraryPath;
+        _libraryOpen = true;
+        _page = 0;
+        _dirty = false;
+        _capabilities = null;
+        _clearedLocations.clear();
+      });
+      return;
+    }
+
+    final shifted = <RadioChannel>[];
+    for (var i = 0; i < incoming.length; i++) {
+      shifted.add(incoming[i].copy()..location = mode.startAt + i);
+    }
+    final last = mode.startAt + incoming.length - 1;
+    final kept = _channels
+        .where((c) => c.location < mode.startAt || c.location > last)
+        .toList();
+    final merged = [...kept, ...shifted]
+      ..sort((a, b) => a.location.compareTo(b.location));
+    setState(() {
+      _channels = merged;
+      _selected = merged.isEmpty ? -1 : 0;
+      _libraryOpen = true;
+      _dirty = true;
+      for (var location = mode.startAt; location <= last; location++) {
+        _clearedLocations.remove(location);
+      }
+    });
+  }
+
+  int _nextChannelLocation() {
+    if (_channels.isEmpty) return 1;
+    return _channels.map((c) => c.location).fold(0, (a, b) => a > b ? a : b) +
+        1;
+  }
+
+  Future<void> _saveCsv({bool saveAs = false}) async {
+    var path = _libraryPath;
+    if (saveAs || path == null) {
+      const type = XTypeGroup(label: 'CHIRP CSV', extensions: ['csv']);
+      final location = await getSaveLocation(
+        suggestedName: '${_libraryName.replaceAll(' ', '_')}.csv',
+        acceptedTypeGroups: const [type],
+      );
+      path = location?.path;
+    }
+    if (path == null) return;
+    final savePath = path.endsWith('.csv') ? path : '$path.csv';
+    await _task('Saving channel library…', () async {
+      await File(savePath).writeAsString(ChirpCsv.encode(_activeChannels));
+      setState(() {
+        _libraryPath = savePath;
+        _dirty = false;
+      });
+    });
+  }
+
+  Future<bool> _confirmReplaceLibrary({required String destination}) async {
+    if (!_libraryOpen) return true;
+    final discard = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.warning_amber_rounded, color: Color(0xFFC46A15)),
+        title: Text('Start $destination?'),
+        content: Text(
+          _dirty
+              ? 'Discard the current channel list? Any unsaved changes will be lost.'
+              : 'Close the current channel list and start $destination?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Keep current list'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Discard and continue'),
+          ),
+        ],
+      ),
+    );
+    return discard == true && mounted;
+  }
+
+  Future<void> _newLibrary() async {
+    if (!await _confirmReplaceLibrary(
+      destination: 'a new blank configuration',
+    )) {
+      return;
+    }
+    _recordHistory();
+    setState(() {
+      _channels = [];
+      _selected = -1;
+      _clearedLocations.clear();
+      _libraryName = 'Untitled Library';
+      _libraryPath = null;
+      _libraryOpen = true;
+      _page = 0;
+      _dirty = false;
+      _capabilities = null;
+    });
+  }
+
+  Future<void> _useGmrsStarter() async {
+    final template = gmrsStarterChannels();
+    final mode = _libraryOpen && _channels.isNotEmpty
+        ? await _chooseChannelApplyMode(
+            label: 'GMRS starter template',
+            count: template.length,
+          )
+        : const _ChannelApplyMode(replaceAll: true, startAt: 1);
+    if (mode == null || !mounted) return;
+    _recordHistory();
+    _applyChannels(template, mode, libraryName: 'GMRS Starter Library');
+  }
+
+  Future<void> _restoreStockChannels() async {
+    final source = _bridge.chirpSource;
+    final stockFile = File(
+      '$source/chirp/stock_configs/US FRS and GMRS Channels.csv',
+    );
+    if (!await stockFile.exists()) {
+      if (mounted) {
+        await _showActionError(
+          const FileSystemException(
+            'The CHIRP stock channels file was not found.',
+          ),
+        );
+      }
+      return;
+    }
+    late final List<RadioChannel> channels;
+    try {
+      channels = ChirpCsv.decode(await stockFile.readAsString());
+    } catch (error) {
+      if (mounted) await _showActionError(error);
+      return;
+    }
+    if (channels.isEmpty) {
+      if (mounted) {
+        await _showActionError(
+          const FormatException('No stock channels were found.'),
+        );
+      }
+      return;
+    }
+
+    final mode = _libraryOpen && _channels.isNotEmpty
+        ? await _chooseChannelApplyMode(
+            label: 'stock channels',
+            count: channels.length,
+          )
+        : const _ChannelApplyMode(replaceAll: true, startAt: 1);
+    if (mode == null || !mounted) return;
+    _recordHistory();
+    _applyChannels(channels, mode, libraryName: 'Stock Channels');
+  }
+
+  void _openRadioConnection() {
+    setState(() => _page = 1);
+    if (_models.isEmpty) unawaited(_loadModels());
+  }
+
+  void _addChannel() {
+    final location = _channels.isEmpty
+        ? 1
+        : _channels.map((c) => c.location).reduce((a, b) => a > b ? a : b) + 1;
+    _recordHistory();
+    setState(() {
+      _clearedLocations.remove(location);
+      _channels.add(
+        RadioChannel(
+          location: location,
+          name: 'NEW $location',
+          frequency: 146.52,
+        ),
+      );
+      _selected = _channels.length - 1;
+      _dirty = true;
+    });
+  }
+
+  void _duplicateChannel() {
+    if (_selected < 0 || _selected >= _channels.length) return;
+    _duplicateChannelAt(_selected);
+  }
+
+  void _duplicateChannelAt(int index) {
+    if (index < 0 || index >= _channels.length) return;
+    if (_channels[index].cleared) return;
+    _recordHistory();
+    final copy = _channels[index].copy()
+      ..location =
+          (_channels.map((c) => c.location).fold(0, (a, b) => a > b ? a : b)) +
+          1;
+    setState(() {
+      _clearedLocations.remove(copy.location);
+      _channels.add(copy);
+      _selected = _channels.length - 1;
+      _dirty = true;
+    });
+  }
+
+  void _copyChannel(int index) {
+    if (index < 0 || index >= _channels.length) return;
+    if (_channels[index].cleared) return;
+    setState(() {
+      _channelClipboard = [_channels[index].copy()];
+    });
+  }
+
+  void _cutChannel(int index) {
+    if (index < 0 || index >= _channels.length) return;
+    if (_channels[index].cleared) return;
+    _recordHistory();
+    setState(() {
+      _channelClipboard = [_channels[index].copy()];
+      _channels[index].clear();
+      _clearedLocations.add(_channels[index].location);
+      _selected = index;
+      _dirty = true;
+    });
+  }
+
+  Future<void> _pasteChannel(int index) async {
+    if (_channelClipboard.isEmpty || index < 0 || index >= _channels.length) {
+      return;
+    }
+    final target = _channels[index];
+    if (!target.cleared) {
+      final confirmed = await _confirmOverwriteChannel(target);
+      if (!confirmed || !mounted) return;
+    }
+    final pasted = _channelClipboard.first.copy()..location = target.location;
+    _recordHistory();
+    setState(() {
+      _channels[index] = pasted;
+      _selected = index;
+      _dirty = true;
+      _clearedLocations.remove(target.location);
+    });
+  }
+
+  Future<bool> _confirmOverwriteChannel(RadioChannel channel) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.warning_amber_rounded, color: Color(0xFFC46A15)),
+        title: Text('Overwrite channel ${channel.location}?'),
+        content: Text(
+          channel.name.isEmpty
+              ? 'This channel contains data. Pasting will replace it.'
+              : '“${channel.name}” contains data. Pasting will replace it.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Overwrite channel'),
+          ),
+        ],
+      ),
+    );
+    return confirmed == true;
+  }
+
+  void _deleteChannel() {
+    if (_current == null) return;
+    final location = _current!.location;
+    final wasCleared = _current!.cleared;
+    _recordHistory();
+    setState(() {
+      _channels.removeAt(_selected);
+      if (wasCleared) {
+        _clearedLocations.remove(location);
+      } else {
+        _clearedLocations.add(location);
+      }
+      _selected = _channels.isEmpty
+          ? -1
+          : _selected.clamp(0, _channels.length - 1);
+      _dirty = true;
+    });
+  }
+
+  void _clearChannel(int index) {
+    if (index < 0 || index >= _channels.length) return;
+    if (_channels[index].cleared) return;
+    _recordHistory();
+    final location = _channels[index].location;
+    setState(() {
+      _channels[index].clear();
+      _clearedLocations.add(location);
+      _selected = index;
+      _dirty = true;
+    });
+  }
+
+  Future<void> _downloadRadio() async {
+    if (_port == null || _model == null) return;
+    if (_libraryOpen && _channels.isNotEmpty) {
+      final replace = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          icon: const Icon(
+            Icons.warning_amber_rounded,
+            color: Color(0xFFC46A15),
+          ),
+          title: const Text('Replace current channel list?'),
+          content: const Text(
+            'Reading a radio will replace the current channel list. '
+            'Save it as a CSV first if you want to keep it.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Read radio'),
+            ),
+          ],
+        ),
+      );
+      if (replace != true || !mounted) return;
+    }
+    final instructions = await _loadRadioInstructions();
+    if (instructions == null || !mounted) return;
+    final messages = instructions.readMessages.toList();
+    if (messages.isNotEmpty) {
+      final ready = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          icon: Icon(
+            instructions.experimental == null
+                ? Icons.cable
+                : Icons.warning_amber_rounded,
+            color: instructions.experimental == null
+                ? const Color(0xFF1F7455)
+                : const Color(0xFFC46A15),
+          ),
+          title: Text('Before reading ${_model!.replaceAll('_', ' ')}'),
+          content: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: SelectableText(messages.join('\n\n')),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Radio is ready'),
+            ),
+          ],
+        ),
+      );
+      if (ready != true) return;
+    }
+    await _transferTask('Reading radio — do not disconnect…', () async {
+      final result = await _bridge.download(model: _model!, port: _port!);
+      final storedImage = await _imageStore.saveForModel(
+        _model!,
+        result.imagePath,
+      );
+      setState(() {
+        _channels = result.channels;
+        _clearedLocations.clear();
+        _selected = _channels.isEmpty ? -1 : 0;
+        _radioImage = storedImage;
+        _capabilities = result.capabilities;
+        _libraryName = _model!.replaceAll('_', ' ');
+        _libraryOpen = true;
+        _dirty = false;
+        _page = 0;
+      });
+    });
+  }
+
+  Future<RadioInstructions?> _loadRadioInstructions() async {
+    setState(() {
+      _busy = true;
+      _status = 'Loading radio instructions…';
+    });
+    try {
+      return await _bridge.instructions(_model!);
+    } catch (error) {
+      if (mounted) {
+        setState(() => _status = 'Action failed');
+        await _showActionError(error);
+      }
+      return null;
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _uploadRadio() async {
+    if (_port == null || _model == null || _radioImage == null) return;
+    final issues = _activeChannels
+        .expand((c) => c.validate().map((e) => '${c.location}: $e'))
+        .toList();
+    if (issues.isNotEmpty) {
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Fix channel issues first'),
+          content: Text(issues.take(8).join('\n')),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(
+          Icons.warning_amber_rounded,
+          color: Color(0xFFC46A15),
+          size: 32,
+        ),
+        title: const Text('Write these channels to the radio?'),
+        content: Text(
+          'This will program ${_activeChannels.length} channels on $_model through $_port. Keep the radio connected and powered on.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Write to radio'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    var skipped = <Map<String, dynamic>>[];
+    await _transferTask('Writing radio — do not disconnect…', () async {
+      skipped = await _bridge.upload(
+        model: _model!,
+        port: _port!,
+        imagePath: _radioImage!,
+        channels: _activeChannels,
+        cleared: _clearedLocations.toList(),
+      );
+      setState(() => _dirty = false);
+    });
+    if (skipped.isNotEmpty && mounted) {
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Some channels were not fully written'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'The write finished, but the radio locked some channels or '
+                  'fields. Some channels could not be written at all, and '
+                  'others were only partially written.',
+                ),
+                const SizedBox(height: 12),
+                for (final entry in skipped)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(() {
+                      final location = entry['location'];
+                      final name = entry['name'];
+                      final reason = entry['reason'];
+                      if (reason != null) {
+                        return 'Channel $location $name could not be '
+                            'written: $reason';
+                      }
+                      final fields = (entry['fields'] as List? ?? const [])
+                          .join(', ');
+                      return 'Channel $location $name: locked field(s): '
+                          '$fields. Everything else on this channel was '
+                          'written.';
+                    }()),
+                  ),
+                const Text(
+                  'Custom frequencies may require a channel outside the '
+                  'radio\'s locked memory range.',
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  Future<void> _transferTask(
+    String label,
+    Future<void> Function() action,
+  ) async {
+    setState(() {
+      _busy = true;
+      _transferActive = true;
+      _transferCancelling = false;
+      _transferLabel = label;
+      _status = label;
+    });
+    Object? failure;
+    try {
+      await action();
+      if (mounted) setState(() => _status = 'Ready');
+    } catch (error) {
+      if (!_transferCancelling) failure = error;
+      if (mounted) {
+        setState(
+          () => _status = _transferCancelling ? 'Cancelled' : 'Action failed',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _transferActive = false;
+          _transferCancelling = false;
+        });
+      }
+    }
+    if (failure != null && mounted) await _showActionError(failure);
+  }
+
+  void _cancelTransfer() {
+    if (!_transferActive || _transferCancelling) return;
+    setState(() {
+      _transferCancelling = true;
+      _transferLabel = 'Cancelling safely…';
+    });
+    _bridge.cancelActive();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Focus(
+      autofocus: true,
+      child: CallbackShortcuts(
+        bindings: {
+          const SingleActivator(LogicalKeyboardKey.keyZ, meta: true): _undo,
+          const SingleActivator(
+            LogicalKeyboardKey.keyZ,
+            meta: true,
+            shift: true,
+          ): _redo,
+          const SingleActivator(LogicalKeyboardKey.keyY, meta: true): _redo,
+          const SingleActivator(LogicalKeyboardKey.keyZ, control: true): _undo,
+          const SingleActivator(
+            LogicalKeyboardKey.keyZ,
+            control: true,
+            shift: true,
+          ): _redo,
+          const SingleActivator(LogicalKeyboardKey.keyY, control: true): _redo,
+        },
+        child: Scaffold(
+          body: Stack(
+            children: [
+              SafeArea(
+                child: Row(
+                  children: [
+                    _Sidebar(
+                      page: _page,
+                      onPage: (page) => setState(() => _page = page),
+                    ),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          _TopBar(
+                            libraryName: _libraryName,
+                            dirty: _dirty,
+                            busy: _busy,
+                            status: _status,
+                            onNew: _newLibrary,
+                            onGmrsStarter: _useGmrsStarter,
+                            onRestoreStock: _restoreStockChannels,
+                            onOpen: _importCsv,
+                            onSave: () => _saveCsv(),
+                            onSaveAs: () => _saveCsv(saveAs: true),
+                            canSave: _libraryOpen,
+                            minimalMode: _page == 2 || _page == 3,
+                            minimalTitle: _page == 3
+                                ? 'GMRS & FRS Frequency Reference'
+                                : 'About & licenses',
+                            minimalSubtitle: _page == 3
+                                ? 'Part 95 FRS/GMRS channel plan'
+                                : 'Application information and open-source licenses',
+                            showPrint: _page == 3,
+                            onPrint: _printFrequencyReference,
+                          ),
+                          Expanded(
+                            child: switch (_page) {
+                              0 =>
+                                _libraryOpen
+                                    ? _buildLibrary()
+                                    : _buildWelcome(),
+                              1 => _buildRadio(),
+                              2 => _buildAbout(),
+                              _ => _buildFrequencyReference(),
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (_transferActive)
+                _TransferOverlay(
+                  label: _transferLabel,
+                  cancelling: _transferCancelling,
+                  onCancel: _cancelTransfer,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWelcome() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(28),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 900),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'What would you like to do?',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Open an existing CHIRP file or read channels directly from your radio.',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(color: Colors.black54),
+              ),
+              const SizedBox(height: 24),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  const gap = 14.0;
+                  final cardWidth = constraints.maxWidth >= 620
+                      ? (constraints.maxWidth - gap) / 2
+                      : constraints.maxWidth;
+                  return Wrap(
+                    spacing: gap,
+                    runSpacing: gap,
+                    children: [
+                      _WelcomeAction(
+                        width: cardWidth,
+                        icon: Icons.folder_open_outlined,
+                        title: 'Load configuration',
+                        description:
+                            'Open an existing CHIRP-compatible CSV file and continue editing.',
+                        buttonLabel: 'Open CSV',
+                        onPressed: _importCsv,
+                        help:
+                            'Load a CHIRP-compatible CSV channel list for editing and saving. '
+                            'To write to a radio, the app also needs a stored image for the '
+                            'selected model, which is created by reading that model once.',
+                      ),
+                      _WelcomeAction(
+                        width: cardWidth,
+                        icon: Icons.settings_input_antenna,
+                        title: 'Read from a radio',
+                        description:
+                            'Connect a programming cable and import the radio’s current channels.',
+                        buttonLabel: 'Connect radio',
+                        onPressed: _openRadioConnection,
+                        help:
+                            'Open the radio connection screen, choose your cable and exact model, '
+                            'then read from the radio once. That read creates a reusable image for '
+                            'the model and unlocks writing.',
+                      ),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 22),
+              const Card(
+                child: Padding(
+                  padding: EdgeInsets.all(18),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.lightbulb_outline, color: Color(0xFF1F7455)),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Writing to a radio requires reading a matching image from it first. '
+                          'You can plan or edit a CSV anytime, but radio writes stay locked until a read completes.',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAbout() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(28),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 880),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  const _Logo(),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'NewChirp',
+                          style: Theme.of(context).textTheme.headlineMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                        const Text(
+                          'Desktop radio programmer · Version 1.0.0',
+                          style: TextStyle(color: Colors.black54),
+                        ),
+                        const SizedBox(height: 3),
+                        const Text(
+                          'Rick Lopez · Lead Programmer',
+                          style: TextStyle(
+                            color: Color(0xFF1F7455),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SelectableText(
+                          'rick@newchirp.net',
+                          style: TextStyle(color: Colors.black54),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 28),
+              const Card(
+                child: Padding(
+                  padding: EdgeInsets.all(22),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'CHIRP compatibility layer',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(height: 12),
+                      Text(
+                        'NewChirp uses the CHIRP driver tree for radio hardware compatibility. CHIRP copyright is held by its contributors, and CHIRP is free software licensed under the GNU General Public License, version 3 or (at your option) any later version.',
+                      ),
+                      SizedBox(height: 12),
+                      Text(
+                        'CHIRP is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.',
+                      ),
+                      SizedBox(height: 12),
+                      SelectableText(
+                        'CHIRP project and source: https://github.com/kk7ds/chirp',
+                        style: TextStyle(color: Color(0xFF1F7455)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(22),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(
+                        Icons.balance_outlined,
+                        color: Color(0xFF1F7455),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Open-source licenses',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'The complete CHIRP GPL text, the pySerial BSD notice, and licenses for Flutter dependencies are included with this application.',
+                            ),
+                            const SizedBox(height: 16),
+                            OutlinedButton.icon(
+                              onPressed: () => showLicensePage(
+                                context: context,
+                                applicationName: 'NewChirp',
+                                applicationVersion: '1.0.0',
+                                applicationLegalese:
+                                    'CHIRP is licensed under GPL-3.0-or-later. NewChirp is not affiliated with or endorsed by the CHIRP project.',
+                              ),
+                              icon: const Icon(Icons.description_outlined),
+                              label: const Text('View complete licenses'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'NewChirp is an independent interface and is not affiliated with or endorsed by the CHIRP project.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.black54, fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showChannelEditor(int channelIndex) async {
+    if (channelIndex < 0 || channelIndex >= _channels.length) return;
+    if (_channels[channelIndex].cleared) return;
+    final draft = _channels[channelIndex].copy();
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          void changed(VoidCallback update) => setDialogState(() => update());
+
+          void save() {
+            _recordHistory();
+            setState(() {
+              _channels[channelIndex] = draft.copy();
+              _dirty = true;
+            });
+            Navigator.pop(dialogContext);
+          }
+
+          return Dialog(
+            child: SizedBox(
+              width: 760,
+              height: MediaQuery.sizeOf(context).height * 0.82,
+              child: _ChannelEditor(
+                channel: draft,
+                capabilities: _capabilities,
+                onChanged: changed,
+                onSave: save,
+                onClose: () => Navigator.pop(dialogContext),
+                onDelete: () async {
+                  final confirmed = await _confirmDeleteChannel(
+                    _channels[channelIndex],
+                  );
+                  if (confirmed && dialogContext.mounted) {
+                    _deleteChannel();
+                    Navigator.pop(dialogContext);
+                  }
+                },
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<bool> _confirmDeleteChannel(RadioChannel channel) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.delete_outline, color: Color(0xFF9B3D34)),
+        title: Text('Delete channel ${channel.location}?'),
+        content: Text(
+          channel.name.isEmpty
+              ? 'This channel will be removed from the current configuration.'
+              : '“${channel.name}” will be removed from the current configuration.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF9B3D34),
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete channel'),
+          ),
+        ],
+      ),
+    );
+    return confirmed == true;
+  }
+
+  Widget _buildLibrary() {
+    final visible = _channels.asMap().entries.where((entry) {
+      final q = _query.toLowerCase();
+      return q.isEmpty ||
+          !entry.value.cleared &&
+              (entry.value.name.toLowerCase().contains(q) ||
+                  entry.value.frequency.toString().contains(q) ||
+                  entry.value.comment.toLowerCase().contains(q));
+    }).toList();
+    final invalid = _activeChannels
+        .where((c) => c.validate().isNotEmpty)
+        .length;
+    final storedImageReady =
+        _model != null &&
+        _radioImage != null &&
+        _radioImage == _imageStore.pathForModel(_model!);
+    return Padding(
+      padding: const EdgeInsets.all(22),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              _Metric(
+                label: 'Channels',
+                value: '${_activeChannels.length}',
+                icon: Icons.radio,
+              ),
+              const SizedBox(width: 12),
+              _Metric(
+                label: 'Scan enabled',
+                value: '${_activeChannels.where((c) => c.skip.isEmpty).length}',
+                icon: Icons.radar,
+              ),
+              const SizedBox(width: 12),
+              _Metric(
+                label: 'Needs attention',
+                value: '$invalid',
+                icon: invalid == 0
+                    ? Icons.check_circle_outline
+                    : Icons.error_outline,
+              ),
+            ],
+          ),
+          if (_radioImage == null) ...[
+            const SizedBox(height: 12),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF7EC),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFE7C9A5)),
+              ),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                child: Row(
+                  children: [
+                    Icon(Icons.shield_outlined, color: Color(0xFF9B5B18)),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'No radio image loaded. Editing and CSV export work, but '
+                        'writing stays locked until you read from this radio.',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ] else ...[
+            const SizedBox(height: 12),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: const Color(0xFFEAF4EF),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFB9D8C8)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.verified_user_outlined,
+                      color: Color(0xFF1F7455),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        storedImageReady
+                            ? 'Stored image ready for ${_model!.replaceAll('_', ' ')}. '
+                                  'You can write without reading again.'
+                            : 'A radio image is loaded from this session. '
+                                  'Review all changes before writing.',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          Expanded(
+            child: Card(
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final compact = constraints.maxWidth < 480;
+                        return Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _searchController,
+                                onChanged: (value) =>
+                                    setState(() => _query = value),
+                                decoration: InputDecoration(
+                                  prefixIcon: const Icon(Icons.search),
+                                  hintText: compact
+                                      ? 'Search'
+                                      : 'Search name, frequency, or note',
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            if (compact) ...[
+                              IconButton(
+                                onPressed: _duplicateChannel,
+                                tooltip: 'Duplicate channel',
+                                icon: const Icon(Icons.copy_outlined),
+                              ),
+                              IconButton.filled(
+                                onPressed: _addChannel,
+                                tooltip: 'Add channel',
+                                icon: const Icon(Icons.add),
+                              ),
+                            ] else ...[
+                              OutlinedButton.icon(
+                                onPressed: _duplicateChannel,
+                                icon: const Icon(Icons.copy_outlined),
+                                label: const Text('Duplicate'),
+                              ),
+                              const SizedBox(width: 8),
+                              FilledButton.icon(
+                                onPressed: _addChannel,
+                                icon: const Icon(Icons.add),
+                                label: const Text('Add channel'),
+                              ),
+                            ],
+                            const SizedBox(width: 2),
+                            const _HelpButton(
+                              title: 'Channel editing',
+                              details:
+                                  'Add appends a new channel, Duplicate copies the selected row, '
+                                  'and Delete removes it after confirmation. Double-click any row '
+                                  'to edit all of its fields. Right-click a row to copy, cut, paste, '
+                                  'duplicate, or clear it. Clear removes it from the radio on '
+                                  'the next write. Use Cmd/Ctrl+Z to undo and Cmd/Ctrl+Shift+Z '
+                                  'to redo.',
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: visible.isEmpty
+                        ? const _EmptyLibrary()
+                        : _ChannelTable(
+                            entries: visible,
+                            selected: _selected,
+                            capabilities: _capabilities,
+                            columnOrder: _columnOrder,
+                            columnWidths: _columnWidths,
+                            onColumnOrderChanged: _setColumnOrder,
+                            onColumnWidthChanged: _setColumnWidth,
+                            onSelect: (index) =>
+                                setState(() => _selected = index),
+                            clipboardNotEmpty: _channelClipboard.isNotEmpty,
+                            onCopy: _copyChannel,
+                            onCut: _cutChannel,
+                            onPaste: _pasteChannel,
+                            onDuplicate: _duplicateChannelAt,
+                            onClear: _clearChannel,
+                            onOpen: (index) {
+                              setState(() => _selected = index);
+                              _showChannelEditor(index);
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _printFrequencyReference() async {
+    final temp = File(
+      '${Directory.systemTemp.path}/newchirp-gmrs-frs-reference.pdf',
+    );
+    var prepared = false;
+    await _task('Preparing frequency reference…', () async {
+      final data = await rootBundle.load('assets/GMRS_FRS_Frequency_Chart.pdf');
+      await temp.writeAsBytes(
+        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+      );
+      prepared = true;
+    });
+
+    if (!mounted || !prepared) return;
+
+    final printers = await _systemPrinters();
+    if (printers.isEmpty) {
+      try {
+        final openResult = await Process.run('/usr/bin/open', [temp.path]);
+        if (openResult.exitCode != 0) {
+          throw Exception(
+            'Opening the reference PDF failed:\n'
+            '${openResult.stderr.toString().trim()}',
+          );
+        }
+      } catch (error) {
+        if (mounted) await _showActionError(error);
+        return;
+      }
+
+      if (mounted) {
+        await showDialog<void>(
+          context: context,
+          builder: (context) => AlertDialog(
+            icon: const Icon(Icons.print_outlined, color: Color(0xFFC46A15)),
+            title: const Text('No printers found'),
+            content: const Text(
+              'NewChirp could not find any system printers, so the reference '
+              'PDF was opened in your default PDF viewer. Use the viewer’s '
+              'Print command to print it.',
+            ),
+            actions: [
+              FilledButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        );
+      }
+      return;
+    }
+
+    final defaultPrinter = await _defaultPrinterName();
+    if (!mounted) return;
+    String? selectedPrinter = printers.contains(defaultPrinter)
+        ? defaultPrinter
+        : printers.first;
+    final chosenPrinter = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          icon: const Icon(Icons.print_outlined, color: Color(0xFF1F7455)),
+          title: const Text('Choose a printer'),
+          content: SizedBox(
+            width: 460,
+            height: 320,
+            child: RadioGroup<String>(
+              groupValue: selectedPrinter,
+              onChanged: (value) {
+                setDialogState(() => selectedPrinter = value);
+              },
+              child: ListView(
+                children: [
+                  for (final printer in printers)
+                    RadioListTile<String>(
+                      value: printer,
+                      title: Text(
+                        printer == defaultPrinter
+                            ? '$printer (default)'
+                            : printer,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: selectedPrinter == null
+                  ? null
+                  : () => Navigator.pop(dialogContext, selectedPrinter),
+              child: const Text('Print'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (chosenPrinter == null || !mounted) return;
+
+    var printSent = false;
+    await _task('Printing frequency reference…', () async {
+      final result = await Process.run('/usr/bin/lp', [
+        '-d',
+        chosenPrinter,
+        temp.path,
+      ]);
+      if (result.exitCode != 0) {
+        throw Exception(
+          'Could not send the reference to $chosenPrinter:\n'
+          '${result.stderr.toString().trim()}',
+        );
+      }
+      printSent = true;
+    });
+
+    if (mounted && printSent) {
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          icon: const Icon(
+            Icons.check_circle_outline,
+            color: Color(0xFF1F7455),
+          ),
+          title: const Text('Print job sent'),
+          content: Text('The GMRS/FRS reference was sent to $chosenPrinter.'),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  Future<List<String>> _systemPrinters() async {
+    try {
+      final result = await Process.run('/usr/bin/lpstat', ['-p']);
+      final lines = result.stdout.toString().split('\n');
+      return [
+        for (final line in lines)
+          if (line.trim().startsWith('printer '))
+            RegExp(r'^printer\s+(\S+)').firstMatch(line.trim())!.group(1)!,
+      ];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<String?> _defaultPrinterName() async {
+    try {
+      final result = await Process.run('/usr/bin/lpstat', ['-d']);
+      final text = result.stdout.toString();
+      const prefix = 'system default destination:';
+      if (!text.contains(prefix)) return null;
+      final name = text.substring(text.indexOf(prefix) + prefix.length).trim();
+      return name == 'no system default destination' ? null : name;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Widget _buildFrequencyReference() {
+    const green = Color(0xFF1F7455);
+    const ink = Color(0xFF15211D);
+    const muted = Color(0xFF56615B);
+    const grid = Color(0xFFD8DEDA);
+    const band1 = Color(0xFFEAF3FA);
+    const band2 = Color(0xFFFFF4E0);
+    const band3 = Color(0xFFEAF4EF);
+    const repeater = Color(0xFFF2ECF8);
+
+    final mainRows = <List<String>>[
+      [
+        '1',
+        '462.5625',
+        '2 W',
+        '12.5 kHz',
+        '5 W',
+        '20 kHz',
+        'Shared 462 MHz interstitial',
+      ],
+      [
+        '2',
+        '462.5875',
+        '2 W',
+        '12.5 kHz',
+        '5 W',
+        '20 kHz',
+        'Shared 462 MHz interstitial',
+      ],
+      [
+        '3',
+        '462.6125',
+        '2 W',
+        '12.5 kHz',
+        '5 W',
+        '20 kHz',
+        'Shared 462 MHz interstitial',
+      ],
+      [
+        '4',
+        '462.6375',
+        '2 W',
+        '12.5 kHz',
+        '5 W',
+        '20 kHz',
+        'Shared 462 MHz interstitial',
+      ],
+      [
+        '5',
+        '462.6625',
+        '2 W',
+        '12.5 kHz',
+        '5 W',
+        '20 kHz',
+        'Shared 462 MHz interstitial',
+      ],
+      [
+        '6',
+        '462.6875',
+        '2 W',
+        '12.5 kHz',
+        '5 W',
+        '20 kHz',
+        'Shared 462 MHz interstitial',
+      ],
+      [
+        '7',
+        '462.7125',
+        '2 W',
+        '12.5 kHz',
+        '5 W',
+        '20 kHz',
+        'Shared 462 MHz interstitial',
+      ],
+      [
+        '8',
+        '467.5625',
+        '0.5 W',
+        '12.5 kHz',
+        '0.5 W',
+        '12.5 kHz',
+        'Handheld only',
+      ],
+      [
+        '9',
+        '467.5875',
+        '0.5 W',
+        '12.5 kHz',
+        '0.5 W',
+        '12.5 kHz',
+        'Handheld only',
+      ],
+      [
+        '10',
+        '467.6125',
+        '0.5 W',
+        '12.5 kHz',
+        '0.5 W',
+        '12.5 kHz',
+        'Handheld only',
+      ],
+      [
+        '11',
+        '467.6375',
+        '0.5 W',
+        '12.5 kHz',
+        '0.5 W',
+        '12.5 kHz',
+        'Handheld only',
+      ],
+      [
+        '12',
+        '467.6625',
+        '0.5 W',
+        '12.5 kHz',
+        '0.5 W',
+        '12.5 kHz',
+        'Handheld only',
+      ],
+      [
+        '13',
+        '467.6875',
+        '0.5 W',
+        '12.5 kHz',
+        '0.5 W',
+        '12.5 kHz',
+        'Handheld only',
+      ],
+      [
+        '14',
+        '467.7125',
+        '0.5 W',
+        '12.5 kHz',
+        '0.5 W',
+        '12.5 kHz',
+        'Handheld only',
+      ],
+      [
+        '15',
+        '462.5500',
+        '2 W',
+        '12.5 kHz',
+        '50 W',
+        '20 kHz',
+        'Main / repeater output',
+      ],
+      [
+        '16',
+        '462.5750',
+        '2 W',
+        '12.5 kHz',
+        '50 W',
+        '20 kHz',
+        'Main / repeater output',
+      ],
+      [
+        '17',
+        '462.6000',
+        '2 W',
+        '12.5 kHz',
+        '50 W',
+        '20 kHz',
+        'Main / repeater output',
+      ],
+      [
+        '18',
+        '462.6250',
+        '2 W',
+        '12.5 kHz',
+        '50 W',
+        '20 kHz',
+        'Main / repeater output',
+      ],
+      [
+        '19',
+        '462.6500',
+        '2 W',
+        '12.5 kHz',
+        '50 W',
+        '20 kHz',
+        'Main / repeater output',
+      ],
+      [
+        '20',
+        '462.6750',
+        '2 W',
+        '12.5 kHz',
+        '50 W',
+        '20 kHz',
+        'Main / repeater output',
+      ],
+      [
+        '21',
+        '462.7000',
+        '2 W',
+        '12.5 kHz',
+        '50 W',
+        '20 kHz',
+        'Main / repeater output',
+      ],
+      [
+        '22',
+        '462.7250',
+        '2 W',
+        '12.5 kHz',
+        '50 W',
+        '20 kHz',
+        'Main / repeater output',
+      ],
+    ];
+
+    final repeaterRows = <List<String>>[
+      ['RPT15', '467.5500', '462.5500'],
+      ['RPT16', '467.5750', '462.5750'],
+      ['RPT17', '467.6000', '462.6000'],
+      ['RPT18', '467.6250', '462.6250'],
+      ['RPT19', '467.6500', '462.6500'],
+      ['RPT20', '467.6750', '462.6750'],
+      ['RPT21', '467.7000', '462.7000'],
+      ['RPT22', '467.7250', '462.7250'],
+    ];
+
+    Color rowColor(int channel) {
+      if (channel <= 7) return band1;
+      if (channel <= 14) return band2;
+      return band3;
+    }
+
+    Widget cell(
+      String text, {
+      Color color = ink,
+      FontWeight weight = FontWeight.w400,
+      TextAlign align = TextAlign.left,
+    }) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+        child: Text(
+          text,
+          textAlign: align,
+          style: TextStyle(color: color, fontWeight: weight, fontSize: 11),
+        ),
+      );
+    }
+
+    Widget headerCell(String text, {TextAlign align = TextAlign.left}) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        child: Text(
+          text,
+          textAlign: align,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            fontSize: 11,
+          ),
+        ),
+      );
+    }
+
+    Widget legendItem(Color color, String label) {
+      return Padding(
+        padding: const EdgeInsets.only(right: 18, bottom: 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 13,
+              height: 13,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(3),
+                border: Border.all(color: grid),
+              ),
+            ),
+            const SizedBox(width: 7),
+            Text(label, style: const TextStyle(color: ink, fontSize: 11)),
+          ],
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 980),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'GMRS & FRS Frequency Reference',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: green,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                'United States Part 95 channel plan - color-coded by frequency band and power class.',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: muted),
+              ),
+              const SizedBox(height: 14),
+              Wrap(
+                children: [
+                  legendItem(band1, 'Ch 1-7: 462 MHz interstitial'),
+                  legendItem(band2, 'Ch 8-14: 467 MHz interstitial'),
+                  legendItem(band3, 'Ch 15-22: 462 MHz main'),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Card(
+                clipBehavior: Clip.antiAlias,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Table(
+                    border: TableBorder.all(color: grid, width: 0.6),
+                    columnWidths: const {
+                      0: FixedColumnWidth(36),
+                      1: FixedColumnWidth(118),
+                      2: FixedColumnWidth(72),
+                      3: FixedColumnWidth(72),
+                      4: FixedColumnWidth(108),
+                      5: FixedColumnWidth(82),
+                      6: FixedColumnWidth(196),
+                    },
+                    children: [
+                      TableRow(
+                        decoration: const BoxDecoration(color: green),
+                        children: [
+                          headerCell('Ch', align: TextAlign.center),
+                          headerCell(
+                            'Frequency (MHz)',
+                            align: TextAlign.center,
+                          ),
+                          headerCell('FRS Power', align: TextAlign.center),
+                          headerCell('FRS BW', align: TextAlign.center),
+                          headerCell('GMRS Power', align: TextAlign.center),
+                          headerCell('GMRS BW', align: TextAlign.center),
+                          headerCell('Notes'),
+                        ],
+                      ),
+                      for (final row in mainRows)
+                        TableRow(
+                          decoration: BoxDecoration(
+                            color: rowColor(int.parse(row.first)),
+                          ),
+                          children: [
+                            cell(row[0], align: TextAlign.center),
+                            cell(row[1], align: TextAlign.center),
+                            cell(row[2], align: TextAlign.center),
+                            cell(row[3], align: TextAlign.center),
+                            cell(row[4], align: TextAlign.center),
+                            cell(row[5], align: TextAlign.center),
+                            cell(row[6]),
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Repeater Pairs (GMRS Only)',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: green,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Card(
+                clipBehavior: Clip.antiAlias,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Table(
+                    border: TableBorder.all(color: grid, width: 0.6),
+                    columnWidths: const {
+                      0: FixedColumnWidth(92),
+                      1: FixedColumnWidth(150),
+                      2: FixedColumnWidth(150),
+                      3: FixedColumnWidth(220),
+                    },
+                    children: [
+                      TableRow(
+                        decoration: const BoxDecoration(color: green),
+                        children: [
+                          headerCell('Repeater'),
+                          headerCell(
+                            'Input - You Transmit',
+                            align: TextAlign.center,
+                          ),
+                          headerCell(
+                            'Output - You Listen',
+                            align: TextAlign.center,
+                          ),
+                          headerCell('Notes'),
+                        ],
+                      ),
+                      for (final row in repeaterRows)
+                        TableRow(
+                          decoration: const BoxDecoration(color: repeater),
+                          children: [
+                            cell(row[0]),
+                            cell(row[1], align: TextAlign.center),
+                            cell(row[2], align: TextAlign.center),
+                            cell('Input = output + 5 MHz'),
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Color(0xFFF5F8F5),
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Key notes',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'All frequencies are in MHz. GMRS requires an FCC license; FRS is license-by-rule.\n'
+                        'GMRS mobile/base radios may not transmit on channels 8-14. Repeater inputs are GMRS-only.\n'
+                        'Community convention: Channel 20 (462.675 MHz) with CTCSS 141.3 Hz is often used as a travel/assistance channel.\n'
+                        'Reference only - verify against current FCC Part 95 rules and your radio manual.',
+                        style: TextStyle(
+                          color: Color(0xFF56615B),
+                          height: 1.45,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRadio() {
+    final storedImageReady =
+        _model != null &&
+        _radioImage != null &&
+        _radioImage == _imageStore.pathForModel(_model!);
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(22),
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: SizedBox(
+          width: 820,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Radio connection',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Read the radio first, edit its channels in the library, then write the verified image back.',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(color: Colors.black54),
+              ),
+              const SizedBox(height: 20),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(22),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const _StepTitle(
+                        number: '1',
+                        title: 'Choose a programming cable',
+                        help:
+                            'NewChirp finds USB serial ports automatically. Choose the port that '
+                            'matches your programming cable. If nothing appears, connect the cable '
+                            'and press refresh.',
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              initialValue: _ports.contains(_port)
+                                  ? _port
+                                  : null,
+                              decoration: const InputDecoration(
+                                labelText: 'Serial port',
+                                prefixIcon: Icon(Icons.cable),
+                              ),
+                              items: _ports
+                                  .map(
+                                    (p) => DropdownMenuItem(
+                                      value: p,
+                                      child: Text(p),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (value) {
+                                setState(() => _port = value);
+                                unawaited(_saveRadioSelection());
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          IconButton.filledTonal(
+                            onPressed: _refreshPorts,
+                            tooltip: 'Refresh ports',
+                            icon: const Icon(Icons.refresh),
+                          ),
+                          const SizedBox(width: 2),
+                          const _HelpButton(
+                            title: 'Refresh ports',
+                            details:
+                                'Rescan the system for USB serial ports. If your programming '
+                                'cable is not listed, connect it and press refresh.',
+                          ),
+                        ],
+                      ),
+                      if (_ports.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 10),
+                          child: Text(
+                            'No USB serial cable detected. Connect the cable and choose refresh.',
+                            style: TextStyle(color: Color(0xFF9B5B18)),
+                          ),
+                        ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 22),
+                        child: Divider(),
+                      ),
+                      const _StepTitle(
+                        number: '2',
+                        title: 'Choose the exact radio model',
+                        help:
+                            'Load the supported radio catalog and select the exact model. Using the '
+                            'wrong model can corrupt a radio. If a stored image already exists for '
+                            'this model, writing is unlocked without reading again.',
+                      ),
+                      const SizedBox(height: 12),
+                      if (_models.isEmpty)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: _busy ? null : _loadModels,
+                                icon: const Icon(
+                                  Icons.download_for_offline_outlined,
+                                ),
+                                label: const Text(
+                                  'Load supported radio catalog',
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 2),
+                            const _HelpButton(
+                              title: 'Load supported radio catalog',
+                              details:
+                                  'Fetch the list of radio models supported by the bundled CHIRP '
+                                  'driver tree. Select the exact model before reading or writing.',
+                            ),
+                          ],
+                        )
+                      else
+                        DropdownButtonFormField<String>(
+                          initialValue: _models.contains(_model)
+                              ? _model
+                              : null,
+                          decoration: InputDecoration(
+                            labelText:
+                                'Radio model (${_models.length} available)',
+                            prefixIcon: const Icon(
+                              Icons.settings_input_antenna,
+                            ),
+                          ),
+                          items: _models
+                              .map(
+                                (m) => DropdownMenuItem(
+                                  value: m,
+                                  child: Text(m.replaceAll('_', ' ')),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) {
+                            final model = value;
+                            setState(() {
+                              _model = model;
+                              _radioImage =
+                                  model != null &&
+                                      _imageStore.hasForModel(model)
+                                  ? _imageStore.pathForModel(model)
+                                  : null;
+                            });
+                            unawaited(_saveRadioSelection());
+                          },
+                        ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 22),
+                        child: Divider(),
+                      ),
+                      const _StepTitle(
+                        number: '3',
+                        title: 'Transfer safely',
+                        help:
+                            'Read pulls the full memory image from the radio and stores it for this '
+                            'model. Write sends the current channel list back using that image. Keep '
+                            'the radio connected and powered on during either transfer.',
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: FilledButton.icon(
+                              onPressed:
+                                  _busy || _port == null || _model == null
+                                  ? null
+                                  : _downloadRadio,
+                              icon: const Icon(Icons.south),
+                              label: const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 12),
+                                child: Text('Read from radio'),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: _busy || _radioImage == null
+                                  ? null
+                                  : _uploadRadio,
+                              icon: const Icon(Icons.north),
+                              label: const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 12),
+                                child: Text('Write to radio'),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          const _HelpButton(
+                            title: 'Transfer safely',
+                            details:
+                                'Read pulls the full memory image from the radio and stores it for '
+                                'this model. Write sends the current channel list back using that '
+                                'image. Keep the radio connected and powered on during either.',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF5F8F5),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                            children: [
+                              Icon(
+                                _radioImage == null
+                                    ? Icons.shield_outlined
+                                    : Icons.verified_user_outlined,
+                                color: const Color(0xFF39725C),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  _radioImage == null
+                                      ? 'No image for this model yet. Read once to enable writing.'
+                                      : storedImageReady
+                                      ? 'Stored image for ${_model!.replaceAll('_', ' ')} is ready. '
+                                            'You can write without reading again.'
+                                      : 'A radio image was read this session. '
+                                            'Review all changes before writing.',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              const Card(
+                child: Padding(
+                  padding: EdgeInsets.all(18),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.info_outline, color: Color(0xFF1F7455)),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'NewChirp uses the provided CHIRP driver tree as its hardware compatibility layer. Its serial package is bundled, so CHIRP GUI dependencies such as wxPython are not needed.',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Sidebar extends StatelessWidget {
+  const _Sidebar({required this.page, required this.onPage});
+  final int page;
+  final ValueChanged<int> onPage;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 216,
+      color: const Color(0xFF172C24),
+      padding: const EdgeInsets.fromLTRB(14, 22, 14, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            child: Row(
+              children: [
+                _Logo(),
+                SizedBox(width: 11),
+                Expanded(
+                  child: Text(
+                    'NewChirp',
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+          _NavItem(
+            label: 'Channel library',
+            icon: Icons.table_rows_outlined,
+            selected: page == 0,
+            onTap: () => onPage(0),
+          ),
+          const SizedBox(height: 6),
+          _NavItem(
+            label: 'Radio connection',
+            icon: Icons.settings_input_antenna,
+            selected: page == 1,
+            onTap: () => onPage(1),
+          ),
+          const SizedBox(height: 6),
+          _NavItem(
+            label: 'Frequency reference',
+            icon: Icons.table_chart_outlined,
+            selected: page == 3,
+            onTap: () => onPage(3),
+          ),
+          const SizedBox(height: 6),
+          _NavItem(
+            label: 'About & licenses',
+            icon: Icons.info_outline,
+            selected: page == 2,
+            onTap: () => onPage(2),
+          ),
+          const Spacer(),
+          const Padding(
+            padding: EdgeInsets.all(10),
+            child: Text(
+              'DESKTOP RADIO PROGRAMMER\nRick Lopez · Lead Programmer\nrick@newchirp.net\nVersion 1.0.0',
+              style: TextStyle(
+                color: Color(0xFF8FA59B),
+                fontSize: 10,
+                height: 1.6,
+                letterSpacing: 0.8,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Logo extends StatelessWidget {
+  const _Logo();
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 36,
+    height: 36,
+    decoration: BoxDecoration(
+      color: const Color(0xFFDAF2E5),
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: const Icon(Icons.graphic_eq, color: Color(0xFF1D6B4E)),
+  );
+}
+
+class _NavItem extends StatelessWidget {
+  const _NavItem({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) => Material(
+    color: selected ? const Color(0xFF29493D) : Colors.transparent,
+    borderRadius: BorderRadius.circular(9),
+    child: InkWell(
+      onTapDown: (_) => onTap(),
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(9),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: selected ? Colors.white : const Color(0xFF9CB0A8),
+              size: 20,
+            ),
+            const SizedBox(width: 11),
+            Expanded(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: selected ? Colors.white : const Color(0xFFB7C6C0),
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _TransferOverlay extends StatelessWidget {
+  const _TransferOverlay({
+    required this.label,
+    required this.cancelling,
+    required this.onCancel,
+  });
+
+  final String label;
+  final bool cancelling;
+  final VoidCallback onCancel;
+
+  @override
+  Widget build(BuildContext context) => Positioned.fill(
+    child: ColoredBox(
+      color: Colors.black54,
+      child: Center(
+        child: Card(
+          child: SizedBox(
+            width: 390,
+            child: Padding(
+              padding: const EdgeInsets.all(28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(
+                    width: 42,
+                    height: 42,
+                    child: CircularProgressIndicator(strokeWidth: 3),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Keep the radio powered on and the cable connected.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.black54),
+                  ),
+                  const SizedBox(height: 22),
+                  OutlinedButton.icon(
+                    onPressed: cancelling ? null : onCancel,
+                    icon: const Icon(Icons.stop_circle_outlined),
+                    label: Text(cancelling ? 'Cancelling…' : 'Cancel'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+class _TopBar extends StatelessWidget {
+  const _TopBar({
+    required this.libraryName,
+    required this.dirty,
+    required this.busy,
+    required this.status,
+    required this.onNew,
+    required this.onGmrsStarter,
+    required this.onRestoreStock,
+    required this.onOpen,
+    required this.onSave,
+    required this.onSaveAs,
+    required this.canSave,
+    required this.minimalMode,
+    required this.minimalTitle,
+    required this.minimalSubtitle,
+    required this.showPrint,
+    required this.onPrint,
+  });
+  final String libraryName;
+  final bool dirty;
+  final bool busy;
+  final String status;
+  final VoidCallback onNew;
+  final VoidCallback onGmrsStarter;
+  final VoidCallback onRestoreStock;
+  final VoidCallback onOpen;
+  final VoidCallback onSave;
+  final VoidCallback onSaveAs;
+  final bool canSave;
+  final bool minimalMode;
+  final String minimalTitle;
+  final String minimalSubtitle;
+  final bool showPrint;
+  final VoidCallback onPrint;
+  @override
+  Widget build(BuildContext context) {
+    if (minimalMode) {
+      return Container(
+        height: 72,
+        color: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 22),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    minimalTitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    minimalSubtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.black45, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            if (showPrint)
+              TextButton.icon(
+                onPressed: onPrint,
+                icon: const Icon(Icons.print_outlined),
+                label: const Text('Print'),
+              ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      height: 72,
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 22),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        libraryName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    if (dirty)
+                      const Padding(
+                        padding: EdgeInsets.only(left: 7),
+                        child: Text(
+                          '• Edited',
+                          style: TextStyle(
+                            color: Color(0xFFC46A15),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                Text(
+                  busy ? status : 'CHIRP-compatible channel library',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: busy ? const Color(0xFF1F7455) : Colors.black45,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          MenuAnchor(
+            builder: (context, controller, child) => TextButton.icon(
+              onPressed: busy
+                  ? null
+                  : () => controller.isOpen
+                        ? controller.close()
+                        : controller.open(),
+              icon: const Icon(Icons.note_add_outlined),
+              label: const Text('New'),
+            ),
+            menuChildren: [
+              MenuItemButton(
+                onPressed: onNew,
+                leadingIcon: const Icon(Icons.note_add_outlined),
+                child: const Text('Blank configuration'),
+              ),
+              MenuItemButton(
+                onPressed: onGmrsStarter,
+                leadingIcon: const Icon(Icons.view_list_outlined),
+                child: const Text('GMRS starter template'),
+              ),
+              MenuItemButton(
+                onPressed: onRestoreStock,
+                leadingIcon: const Icon(Icons.restore),
+                child: const Text('Restore stock channels'),
+              ),
+            ],
+          ),
+          TextButton.icon(
+            onPressed: busy ? null : onOpen,
+            icon: const Icon(Icons.folder_open_outlined),
+            label: const Text('Open CSV'),
+          ),
+          MenuAnchor(
+            builder: (context, controller, child) => FilledButton.icon(
+              onPressed: busy || !canSave
+                  ? null
+                  : () => controller.isOpen
+                        ? controller.close()
+                        : controller.open(),
+              icon: const Icon(Icons.save_outlined),
+              label: const Text('Save'),
+            ),
+            menuChildren: [
+              MenuItemButton(onPressed: onSave, child: const Text('Save')),
+              MenuItemButton(
+                onPressed: onSaveAs,
+                child: const Text('Save as…'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChannelApplyMode {
+  const _ChannelApplyMode({required this.replaceAll, required this.startAt});
+
+  final bool replaceAll;
+  final int startAt;
+}
+
+class _LibraryState {
+  const _LibraryState({
+    required this.channels,
+    required this.selected,
+    required this.libraryName,
+    required this.libraryPath,
+    required this.libraryOpen,
+    required this.dirty,
+    required this.capabilities,
+    required this.clearedLocations,
+  });
+
+  final List<RadioChannel> channels;
+  final int selected;
+  final String libraryName;
+  final String? libraryPath;
+  final bool libraryOpen;
+  final bool dirty;
+  final RadioCapabilities? capabilities;
+  final Set<int> clearedLocations;
+}
+
+class _ChannelApplyDialog extends StatefulWidget {
+  const _ChannelApplyDialog({
+    required this.label,
+    required this.count,
+    required this.initialStart,
+  });
+
+  final String label;
+  final int count;
+  final int initialStart;
+
+  @override
+  State<_ChannelApplyDialog> createState() => _ChannelApplyDialogState();
+}
+
+class _ChannelApplyDialogState extends State<_ChannelApplyDialog> {
+  late final TextEditingController _startController;
+  bool _replaceAll = true;
+  String? _startError;
+
+  @override
+  void initState() {
+    super.initState();
+    _startController = TextEditingController(text: '${widget.initialStart}');
+  }
+
+  @override
+  void dispose() {
+    _startController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      icon: const Icon(Icons.merge_type),
+      title: Text('Apply ${widget.label}'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Choose how to add these channels to the current list.'),
+          const SizedBox(height: 12),
+          RadioGroup<bool>(
+            groupValue: _replaceAll,
+            onChanged: (value) => setState(() {
+              _replaceAll = value ?? true;
+              _startError = null;
+            }),
+            child: Column(
+              children: [
+                RadioListTile<bool>(
+                  value: true,
+                  title: const Text('Replace the current channel list'),
+                  subtitle: const Text(
+                    'Unsaved edits to the current list will be lost.',
+                  ),
+                ),
+                RadioListTile<bool>(
+                  value: false,
+                  title: const Text('Insert starting at channel number'),
+                  subtitle: Text(
+                    'Channels in the ${widget.count}-channel range will be '
+                    'overwritten.',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (!_replaceAll) ...[
+            const SizedBox(height: 8),
+            TextField(
+              controller: _startController,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: false,
+              ),
+              decoration: InputDecoration(
+                labelText: 'Starting channel number',
+                errorText: _startError,
+              ),
+            ),
+          ],
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(onPressed: _apply, child: const Text('Apply')),
+      ],
+    );
+  }
+
+  void _apply() {
+    if (_replaceAll) {
+      Navigator.pop(
+        context,
+        const _ChannelApplyMode(replaceAll: true, startAt: 1),
+      );
+      return;
+    }
+    final start = int.tryParse(_startController.text);
+    if (start == null || start < 1) {
+      setState(() => _startError = 'Enter a channel number of 1 or higher.');
+      return;
+    }
+    Navigator.pop(
+      context,
+      _ChannelApplyMode(replaceAll: false, startAt: start),
+    );
+  }
+}
+
+class _HelpButton extends StatelessWidget {
+  const _HelpButton({required this.title, required this.details});
+
+  final String title;
+  final String details;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: details,
+      waitDuration: const Duration(milliseconds: 400),
+      child: IconButton(
+        visualDensity: VisualDensity.compact,
+        iconSize: 18,
+        color: const Color(0xFF39725C),
+        icon: const Icon(Icons.help_outline),
+        onPressed: () => showDialog<void>(
+          context: context,
+          builder: (context) => AlertDialog(
+            icon: const Icon(Icons.help_outline),
+            title: Text(title),
+            content: SelectableText(details),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _WelcomeAction extends StatelessWidget {
+  const _WelcomeAction({
+    required this.width,
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.buttonLabel,
+    required this.onPressed,
+    this.help,
+  });
+
+  final double width;
+  final IconData icon;
+  final String title;
+  final String description;
+  final String buttonLabel;
+  final VoidCallback onPressed;
+  final String? help;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: width,
+    child: Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEAF4EF),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: const Color(0xFF1F7455)),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                if (help != null) _HelpButton(title: title, details: help!),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              description,
+              style: const TextStyle(color: Colors.black54, height: 1.4),
+            ),
+            const SizedBox(height: 18),
+            FilledButton.tonal(onPressed: onPressed, child: Text(buttonLabel)),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _Metric extends StatelessWidget {
+  const _Metric({required this.label, required this.value, required this.icon});
+  final String label;
+  final String value;
+  final IconData icon;
+  @override
+  Widget build(BuildContext context) => Expanded(
+    child: Card(
+      child: Padding(
+        padding: const EdgeInsets.all(15),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEAF4EF),
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: Icon(icon, color: const Color(0xFF1F7455), size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.black54, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _ChannelColumn {
+  _ChannelColumn(this.label, this.width, this.value, {String? id})
+    : id = id ?? label;
+  final String id;
+  final String label;
+  double width;
+  final String Function(RadioChannel) value;
+}
+
+class _ChannelTable extends StatefulWidget {
+  const _ChannelTable({
+    required this.entries,
+    required this.selected,
+    required this.capabilities,
+    required this.columnOrder,
+    required this.columnWidths,
+    required this.onColumnOrderChanged,
+    required this.onColumnWidthChanged,
+    required this.onSelect,
+    required this.clipboardNotEmpty,
+    required this.onCopy,
+    required this.onCut,
+    required this.onPaste,
+    required this.onDuplicate,
+    required this.onClear,
+    required this.onOpen,
+  });
+
+  final List<MapEntry<int, RadioChannel>> entries;
+  final int selected;
+  final RadioCapabilities? capabilities;
+  final List<String> columnOrder;
+  final Map<String, double> columnWidths;
+  final ValueChanged<List<String>> onColumnOrderChanged;
+  final void Function(String id, double width) onColumnWidthChanged;
+  final ValueChanged<int> onSelect;
+  final bool clipboardNotEmpty;
+  final ValueChanged<int> onCopy;
+  final ValueChanged<int> onCut;
+  final Future<void> Function(int) onPaste;
+  final ValueChanged<int> onDuplicate;
+  final ValueChanged<int> onClear;
+  final ValueChanged<int> onOpen;
+
+  @override
+  State<_ChannelTable> createState() => _ChannelTableState();
+}
+
+class _ChannelTableState extends State<_ChannelTable> {
+  final _horizontalController = ScrollController();
+  final _verticalController = ScrollController();
+  final Map<String, double> _workingWidths = {};
+  final Map<String, double> _resizeStartX = {};
+  final Map<String, double> _resizeStartWidth = {};
+
+  @override
+  void dispose() {
+    _horizontalController.dispose();
+    _verticalController.dispose();
+    super.dispose();
+  }
+
+  void _showRowMenu(BuildContext context, int index, Offset position) {
+    final isCleared = widget.entries.any(
+      (entry) => entry.key == index && entry.value.cleared,
+    );
+    showMenu<int>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        position.dx,
+        position.dy,
+        position.dx,
+        position.dy,
+      ),
+      items: [
+        PopupMenuItem(value: 0, enabled: !isCleared, child: const Text('Copy')),
+        PopupMenuItem(value: 1, enabled: !isCleared, child: const Text('Cut')),
+        PopupMenuItem(
+          value: 2,
+          enabled: widget.clipboardNotEmpty,
+          child: const Text('Paste'),
+        ),
+        PopupMenuItem(
+          value: 3,
+          enabled: !isCleared,
+          child: const Text('Duplicate'),
+        ),
+        PopupMenuItem(
+          value: 4,
+          enabled: !isCleared,
+          child: const Text('Clear channel'),
+        ),
+      ],
+    ).then((value) {
+      switch (value) {
+        case 0:
+          widget.onCopy(index);
+          break;
+        case 1:
+          widget.onCut(index);
+          break;
+        case 2:
+          unawaited(widget.onPaste(index));
+          break;
+        case 3:
+          widget.onDuplicate(index);
+          break;
+        case 4:
+          widget.onClear(index);
+          break;
+      }
+    });
+  }
+
+  List<_ChannelColumn> _columns() {
+    String inactive(bool active, Object value) => active ? '$value' : '—';
+    final showStep = widget.capabilities?.hasTuningStep ?? true;
+    final columns = <_ChannelColumn>[
+      _ChannelColumn('#', 52, (channel) => '${channel.location}'),
+      _ChannelColumn(
+        'NAME',
+        160,
+        (channel) => channel.name.isEmpty ? '—' : channel.name,
+      ),
+      _ChannelColumn(
+        'RX FREQUENCY',
+        126,
+        (channel) => channel.frequency.toStringAsFixed(6),
+      ),
+      _ChannelColumn(
+        'TONE MODE',
+        96,
+        (channel) => channel.tone.isEmpty ? 'None' : channel.tone,
+      ),
+      _ChannelColumn(
+        'TX TONE',
+        82,
+        (channel) => inactive(
+          channel.tone == 'Tone' ||
+              (channel.tone == 'Cross' && channel.crossMode.startsWith('Tone')),
+          channel.txTone.toStringAsFixed(1),
+        ),
+      ),
+      _ChannelColumn(
+        'RX TONE',
+        82,
+        (channel) => inactive(
+          channel.tone == 'TSQL' ||
+              (channel.tone == 'Cross' && channel.crossMode.endsWith('Tone')),
+          channel.rxTone.toStringAsFixed(1),
+        ),
+      ),
+      _ChannelColumn(
+        'DTCS',
+        66,
+        (channel) => inactive(
+          channel.tone == 'DTCS' ||
+              (channel.tone == 'Cross' && channel.crossMode.startsWith('DTCS')),
+          channel.dtcs.toString().padLeft(3, '0'),
+        ),
+      ),
+      _ChannelColumn(
+        'RX DTCS',
+        76,
+        (channel) => inactive(
+          channel.tone == 'Cross' && channel.crossMode.endsWith('DTCS'),
+          channel.rxDtcs.toString().padLeft(3, '0'),
+        ),
+      ),
+      _ChannelColumn(
+        'DTCS POL',
+        76,
+        (channel) => inactive(
+          channel.tone == 'DTCS' ||
+              (channel.tone == 'Cross' && channel.crossMode.contains('DTCS')),
+          channel.dtcsPolarity,
+        ),
+      ),
+      _ChannelColumn(
+        'DUPLEX',
+        82,
+        (channel) => channel.duplex.isEmpty ? 'Simplex' : channel.duplex,
+      ),
+      _ChannelColumn(
+        'OFFSET / TX FREQ',
+        132,
+        (channel) => inactive(
+          channel.duplex.isNotEmpty && channel.duplex != 'off',
+          channel.offset.toStringAsFixed(6),
+        ),
+      ),
+      _ChannelColumn(
+        'CROSS MODE',
+        112,
+        (channel) => inactive(channel.tone == 'Cross', channel.crossMode),
+      ),
+      _ChannelColumn('MODE', 68, (channel) => channel.mode),
+      if (showStep)
+        _ChannelColumn(
+          'STEP',
+          68,
+          (channel) => channel.step.toStringAsFixed(2),
+        ),
+      _ChannelColumn(
+        'POWER',
+        82,
+        (channel) => channel.power.isEmpty ? '—' : channel.power,
+      ),
+      _ChannelColumn(
+        'SCAN',
+        72,
+        (channel) => channel.skip.isEmpty ? 'Include' : channel.skip,
+      ),
+      _ChannelColumn(
+        'COMMENT',
+        210,
+        (channel) => channel.comment.isEmpty ? '—' : channel.comment,
+      ),
+    ];
+
+    final extras = <String, String>{};
+    for (final entry in widget.entries) {
+      for (final field in entry.value.extras) {
+        extras.putIfAbsent(field.name, () => field.label);
+      }
+    }
+    for (final extra in extras.entries) {
+      columns.add(
+        _ChannelColumn(extra.value.toUpperCase(), 96, (channel) {
+          final matches = channel.extras.where(
+            (field) => field.name == extra.key,
+          );
+          if (matches.isEmpty) return '—';
+          final value = matches.first.value;
+          if (value is bool) return value ? 'On' : 'Off';
+          return value?.toString() ?? '—';
+        }, id: 'extra:${extra.key}'),
+      );
+    }
+    final baseOrder = {
+      for (var index = 0; index < columns.length; index++)
+        columns[index].id: index,
+    };
+    final configuredOrder = {
+      for (var index = 0; index < widget.columnOrder.length; index++)
+        widget.columnOrder[index]: index,
+    };
+    for (final column in columns) {
+      column.width =
+          _workingWidths[column.id] ??
+          widget.columnWidths[column.id] ??
+          column.width;
+    }
+    columns.sort((left, right) {
+      final leftRank = configuredOrder[left.id];
+      final rightRank = configuredOrder[right.id];
+      if (leftRank != null && rightRank != null) {
+        return leftRank.compareTo(rightRank);
+      }
+      if (leftRank != null) return -1;
+      if (rightRank != null) return 1;
+      return baseOrder[left.id]!.compareTo(baseOrder[right.id]!);
+    });
+    return columns;
+  }
+
+  void _moveColumn(
+    String draggedId,
+    String targetId,
+    List<_ChannelColumn> columns,
+  ) {
+    if (draggedId == targetId) return;
+    final order = columns.map((column) => column.id).toList();
+    order.remove(draggedId);
+    final targetIndex = order.indexOf(targetId);
+    order.insert(targetIndex < 0 ? order.length : targetIndex, draggedId);
+    widget.onColumnOrderChanged(order);
+  }
+
+  Widget _headerCell(_ChannelColumn column, List<_ChannelColumn> columns) {
+    Widget label({Color? color}) => Container(
+      color: color,
+      alignment: Alignment.centerLeft,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Text(
+        column.label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(fontSize: 12),
+      ),
+    );
+
+    return DragTarget<String>(
+      onWillAcceptWithDetails: (details) => details.data != column.id,
+      onAcceptWithDetails: (details) =>
+          _moveColumn(details.data, column.id, columns),
+      builder: (context, candidates, rejected) => SizedBox(
+        width: column.width,
+        height: 42,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              right: 8,
+              child: Tooltip(
+                message: 'Drag to reorder',
+                child: Draggable<String>(
+                  data: column.id,
+                  axis: Axis.horizontal,
+                  feedback: Material(
+                    elevation: 4,
+                    color: const Color(0xFFE8F3ED),
+                    child: SizedBox(
+                      width: column.width,
+                      height: 42,
+                      child: label(),
+                    ),
+                  ),
+                  childWhenDragging: Opacity(opacity: 0.35, child: label()),
+                  child: label(
+                    color: candidates.isEmpty ? null : const Color(0xFFD7EAE1),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              right: 0,
+              top: 0,
+              bottom: 0,
+              width: 8,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.resizeColumn,
+                child: GestureDetector(
+                  key: ValueKey('resize-${column.id}'),
+                  behavior: HitTestBehavior.opaque,
+                  onHorizontalDragDown: (details) {
+                    _resizeStartX[column.id] = details.globalPosition.dx;
+                    _resizeStartWidth[column.id] = column.width;
+                  },
+                  onHorizontalDragUpdate: (details) {
+                    final startX =
+                        _resizeStartX[column.id] ?? details.globalPosition.dx;
+                    final startWidth =
+                        _resizeStartWidth[column.id] ?? column.width;
+                    final width =
+                        (startWidth + details.globalPosition.dx - startX)
+                            .clamp(48.0, 480.0)
+                            .toDouble();
+                    setState(() => _workingWidths[column.id] = width);
+                  },
+                  onHorizontalDragEnd: (_) {
+                    final width = _workingWidths[column.id] ?? column.width;
+                    widget.onColumnWidthChanged(column.id, width);
+                    _resizeStartX.remove(column.id);
+                    _resizeStartWidth.remove(column.id);
+                  },
+                  child: const Align(
+                    alignment: Alignment.centerRight,
+                    child: VerticalDivider(
+                      width: 1,
+                      thickness: 1,
+                      color: Color(0xFFD8DEDA),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final columns = _columns();
+    final tableWidth = columns.fold<double>(
+      0,
+      (sum, column) => sum + column.width,
+    );
+    return LayoutBuilder(
+      builder: (context, constraints) => Scrollbar(
+        controller: _horizontalController,
+        thumbVisibility: true,
+        scrollbarOrientation: ScrollbarOrientation.bottom,
+        notificationPredicate: (notification) =>
+            notification.metrics.axis == Axis.horizontal,
+        child: SingleChildScrollView(
+          controller: _horizontalController,
+          scrollDirection: Axis.horizontal,
+          child: SizedBox(
+            width: tableWidth,
+            height: constraints.maxHeight,
+            child: Column(
+              children: [
+                ColoredBox(
+                  color: const Color(0xFFF3F6F4),
+                  child: Row(
+                    children: [
+                      for (final column in columns)
+                        _headerCell(column, columns),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Scrollbar(
+                    controller: _verticalController,
+                    child: ListView.builder(
+                      controller: _verticalController,
+                      itemCount: widget.entries.length,
+                      itemBuilder: (context, index) {
+                        final entry = widget.entries[index];
+                        final isCleared = entry.value.cleared;
+                        return Listener(
+                          behavior: HitTestBehavior.opaque,
+                          onPointerDown: (_) => widget.onSelect(entry.key),
+                          child: GestureDetector(
+                            onSecondaryTapDown: (details) => _showRowMenu(
+                              context,
+                              entry.key,
+                              details.globalPosition,
+                            ),
+                            child: Tooltip(
+                              message: isCleared
+                                  ? 'Empty channel'
+                                  : 'Double-click to edit channel',
+                              child: InkWell(
+                                onDoubleTap: () => widget.onOpen(entry.key),
+                                child: Container(
+                                  height: 45,
+                                  color: entry.key == widget.selected
+                                      ? const Color(0xFFE8F3ED)
+                                      : isCleared
+                                      ? const Color(0xFFFAFAFA)
+                                      : Colors.white,
+                                  child: Row(
+                                    children: [
+                                      for (final column in columns)
+                                        SizedBox(
+                                          width: column.width,
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                            ),
+                                            child: Align(
+                                              alignment: Alignment.centerLeft,
+                                              child: Text(
+                                                isCleared && column.label != '#'
+                                                    ? '—'
+                                                    : column.value(entry.value),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontWeight:
+                                                      column.label == 'NAME'
+                                                      ? FontWeight.w600
+                                                      : FontWeight.w400,
+                                                  color: isCleared
+                                                      ? Colors.black38
+                                                      : column.label == '#'
+                                                      ? Colors.black54
+                                                      : null,
+                                                  fontFeatures:
+                                                      column.label ==
+                                                          'RX FREQUENCY'
+                                                      ? const [
+                                                          FontFeature.tabularFigures(),
+                                                        ]
+                                                      : null,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ChannelEditor extends StatelessWidget {
+  const _ChannelEditor({
+    required this.channel,
+    required this.capabilities,
+    required this.onChanged,
+    required this.onSave,
+    required this.onDelete,
+    required this.onClose,
+  });
+  final RadioChannel channel;
+  final RadioCapabilities? capabilities;
+  final void Function(VoidCallback) onChanged;
+  final VoidCallback onSave;
+  final VoidCallback onDelete;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final issues = channel.validate();
+    Map<String, String> choices(
+      List<String>? values,
+      Map<String, String> fallback,
+    ) {
+      if (values == null || values.isEmpty) return fallback;
+      return {
+        for (final value in values) value: value.isEmpty ? 'None' : value,
+      };
+    }
+
+    final toneModes = choices(capabilities?.toneModes, const {
+      '': 'None',
+      'Tone': 'Tone',
+      'TSQL': 'Tone squelch',
+      'DTCS': 'DTCS',
+      'Cross': 'Cross',
+    });
+    final toneChoices = {
+      for (final tone in capabilities?.tones ?? const <double>[])
+        tone.toStringAsFixed(1): tone.toStringAsFixed(1),
+    };
+    final dtcsChoices = {
+      for (final code in capabilities?.dtcsCodes ?? const <int>[])
+        '$code': code.toString().padLeft(3, '0'),
+    };
+    final usesTxTone =
+        channel.tone == 'Tone' ||
+        (channel.tone == 'Cross' && channel.crossMode.startsWith('Tone'));
+    final usesRxTone =
+        channel.tone == 'TSQL' ||
+        (channel.tone == 'Cross' && channel.crossMode.endsWith('Tone'));
+    final usesTxDtcs =
+        channel.tone == 'DTCS' ||
+        (channel.tone == 'Cross' && channel.crossMode.startsWith('DTCS'));
+    final usesRxDtcs =
+        channel.tone == 'DTCS' ||
+        (channel.tone == 'Cross' && channel.crossMode.endsWith('DTCS'));
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 16, 10, 12),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Channel details',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                ),
+                IconButton(
+                  onPressed: onDelete,
+                  tooltip: 'Delete channel',
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: Color(0xFF9B3D34),
+                  ),
+                ),
+                IconButton(
+                  onPressed: onClose,
+                  tooltip: 'Close editor',
+                  icon: const Icon(Icons.close),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _NumberField(
+                        label: 'Location',
+                        value: channel.location.toDouble(),
+                        decimals: 0,
+                        onValue: (v) =>
+                            onChanged(() => channel.location = v.toInt()),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 2,
+                      child: _TextField(
+                        label: 'Name',
+                        value: channel.name,
+                        maxLength: capabilities?.nameLength,
+                        onValue: (v) => onChanged(() => channel.name = v),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _NumberField(
+                  label: 'Receive frequency (MHz)',
+                  value: channel.frequency,
+                  decimals: 6,
+                  onValue: (v) => onChanged(() => channel.frequency = v),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _ChoiceField(
+                        label: 'Duplex',
+                        value: channel.duplex,
+                        choices: choices(capabilities?.duplexes, const {
+                          '': 'Simplex',
+                          '+': '+ shift',
+                          '-': '− shift',
+                          'split': 'Split',
+                          'off': 'TX off',
+                        }),
+                        onValue: (v) => onChanged(() => channel.duplex = v),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _NumberField(
+                        label: channel.duplex == 'split'
+                            ? 'TX frequency'
+                            : 'Offset (MHz)',
+                        value: channel.offset,
+                        decimals: 6,
+                        onValue: (v) => onChanged(() => channel.offset = v),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _ChoiceField(
+                  label: 'Tone mode',
+                  value: channel.tone,
+                  choices: toneModes,
+                  onValue: (v) => onChanged(() => channel.tone = v),
+                ),
+                if (channel.tone == 'Cross') ...[
+                  const SizedBox(height: 12),
+                  _ChoiceField(
+                    label: 'Cross mode',
+                    value: channel.crossMode,
+                    choices: choices(capabilities?.crossModes, const {
+                      'Tone->Tone': 'Tone → Tone',
+                      'DTCS->': 'DTCS → None',
+                      '->DTCS': 'None → DTCS',
+                      'Tone->DTCS': 'Tone → DTCS',
+                      'DTCS->Tone': 'DTCS → Tone',
+                      '->Tone': 'None → Tone',
+                      'DTCS->DTCS': 'DTCS → DTCS',
+                    }),
+                    onValue: (v) => onChanged(() => channel.crossMode = v),
+                  ),
+                ],
+                if (usesTxTone || usesRxTone) ...[
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      if (usesTxTone)
+                        Expanded(
+                          child: _ChoiceField(
+                            label: 'Transmit tone (Hz)',
+                            value: channel.txTone.toStringAsFixed(1),
+                            choices: toneChoices.isEmpty
+                                ? {
+                                    channel.txTone.toStringAsFixed(1): channel
+                                        .txTone
+                                        .toStringAsFixed(1),
+                                  }
+                                : toneChoices,
+                            onValue: (v) => onChanged(
+                              () => channel.txTone = double.parse(v),
+                            ),
+                          ),
+                        ),
+                      if (usesTxTone && usesRxTone) const SizedBox(width: 10),
+                      if (usesRxTone)
+                        Expanded(
+                          child: _ChoiceField(
+                            label: 'Receive tone (Hz)',
+                            value: channel.rxTone.toStringAsFixed(1),
+                            choices: toneChoices.isEmpty
+                                ? {
+                                    channel.rxTone.toStringAsFixed(1): channel
+                                        .rxTone
+                                        .toStringAsFixed(1),
+                                  }
+                                : toneChoices,
+                            onValue: (v) => onChanged(
+                              () => channel.rxTone = double.parse(v),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+                if (usesTxDtcs || usesRxDtcs) ...[
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      if (usesTxDtcs)
+                        Expanded(
+                          child: _ChoiceField(
+                            label: 'Transmit DTCS',
+                            value: '${channel.dtcs}',
+                            choices: dtcsChoices.isEmpty
+                                ? {
+                                    '${channel.dtcs}': '${channel.dtcs}'
+                                        .padLeft(3, '0'),
+                                  }
+                                : dtcsChoices,
+                            onValue: (v) =>
+                                onChanged(() => channel.dtcs = int.parse(v)),
+                          ),
+                        ),
+                      if (usesTxDtcs && usesRxDtcs) const SizedBox(width: 10),
+                      if (usesRxDtcs)
+                        Expanded(
+                          child: _ChoiceField(
+                            label: 'Receive DTCS',
+                            value: '${channel.rxDtcs}',
+                            choices: dtcsChoices.isEmpty
+                                ? {
+                                    '${channel.rxDtcs}': '${channel.rxDtcs}'
+                                        .padLeft(3, '0'),
+                                  }
+                                : dtcsChoices,
+                            onValue: (v) =>
+                                onChanged(() => channel.rxDtcs = int.parse(v)),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _ChoiceField(
+                    label: 'DTCS polarity (TX / RX)',
+                    value: channel.dtcsPolarity,
+                    choices: const {
+                      'NN': 'Normal / Normal',
+                      'NR': 'Normal / Reverse',
+                      'RN': 'Reverse / Normal',
+                      'RR': 'Reverse / Reverse',
+                    },
+                    onValue: (v) => onChanged(() => channel.dtcsPolarity = v),
+                  ),
+                ],
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _ChoiceField(
+                        label: 'Mode',
+                        value: channel.mode,
+                        choices: choices(capabilities?.modes, const {
+                          'FM': 'FM',
+                          'NFM': 'NFM',
+                          'AM': 'AM',
+                          'DV': 'Digital voice',
+                        }),
+                        onValue: (v) => onChanged(() => channel.mode = v),
+                      ),
+                    ),
+                    if (capabilities?.hasTuningStep ?? true) ...[
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _ChoiceField(
+                          label: 'Step (kHz)',
+                          value: '${channel.step}',
+                          choices: {
+                            for (final step
+                                in capabilities?.steps ?? [channel.step])
+                              '$step': '$step',
+                          },
+                          onValue: (v) =>
+                              onChanged(() => channel.step = double.parse(v)),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _ChoiceField(
+                  label: 'Scan',
+                  value: channel.skip,
+                  choices: choices(capabilities?.skips, const {
+                    '': 'Include',
+                    'S': 'Skip',
+                    'P': 'Priority',
+                  }),
+                  onValue: (v) => onChanged(() => channel.skip = v),
+                ),
+                if ((capabilities?.powers ?? const []).isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  _ChoiceField(
+                    label: 'Transmit power',
+                    value: channel.power,
+                    choices: choices(capabilities!.powers, const {}),
+                    onValue: (v) => onChanged(() => channel.power = v),
+                  ),
+                ],
+                const SizedBox(height: 12),
+                _TextField(
+                  label: 'Comment',
+                  value: channel.comment,
+                  maxLines: 3,
+                  onValue: (v) => onChanged(() => channel.comment = v),
+                ),
+                if (channel.extras.isNotEmpty) ...[
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 18),
+                    child: Divider(),
+                  ),
+                  const Text(
+                    'Radio-specific channel settings',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 12),
+                  for (final field in channel.extras) ...[
+                    _ExtraFieldEditor(
+                      field: field,
+                      onChanged: (value) =>
+                          onChanged(() => field.value = value),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ],
+                if (issues.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(11),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF3E7),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      issues.join('\n'),
+                      style: const TextStyle(
+                        color: Color(0xFF8A4C0E),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+            child: Row(
+              children: [
+                TextButton(onPressed: onClose, child: const Text('Cancel')),
+                const Spacer(),
+                FilledButton.icon(
+                  onPressed: onSave,
+                  icon: const Icon(Icons.check, size: 18),
+                  label: const Text('Save channel'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TextField extends StatefulWidget {
+  const _TextField({
+    required this.label,
+    required this.value,
+    required this.onValue,
+    this.maxLines = 1,
+    this.maxLength,
+  });
+  final String label;
+  final String value;
+  final ValueChanged<String> onValue;
+  final int maxLines;
+  final int? maxLength;
+  @override
+  State<_TextField> createState() => _TextFieldState();
+}
+
+class _TextFieldState extends State<_TextField> {
+  late final TextEditingController controller;
+  @override
+  void initState() {
+    super.initState();
+    controller = TextEditingController(text: widget.value);
+  }
+
+  @override
+  void didUpdateWidget(covariant _TextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value && controller.text != widget.value) {
+      controller.text = widget.value;
+    }
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => TextField(
+    controller: controller,
+    maxLines: widget.maxLines,
+    maxLength: widget.maxLength,
+    onChanged: widget.onValue,
+    decoration: InputDecoration(labelText: widget.label),
+  );
+}
+
+class _ExtraFieldEditor extends StatelessWidget {
+  const _ExtraFieldEditor({required this.field, required this.onChanged});
+
+  final ChannelExtraField field;
+  final ValueChanged<dynamic> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    if (field.kind == 'boolean') {
+      return SwitchListTile.adaptive(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+        title: Text(field.label),
+        value: field.value == true,
+        onChanged: field.mutable ? onChanged : null,
+      );
+    }
+    if (field.kind == 'choice' && field.choices.isNotEmpty) {
+      return _ChoiceField(
+        label: field.label,
+        value: field.value?.toString() ?? '',
+        choices: {for (final choice in field.choices) choice: choice},
+        onValue: field.mutable ? onChanged : (_) {},
+      );
+    }
+    if (field.kind == 'integer' || field.kind == 'number') {
+      return _NumberField(
+        label: field.label,
+        value: (field.value as num?)?.toDouble() ?? 0,
+        decimals: field.kind == 'integer' ? 0 : 2,
+        onValue: field.mutable
+            ? (value) =>
+                  onChanged(field.kind == 'integer' ? value.toInt() : value)
+            : (_) {},
+      );
+    }
+    return _TextField(
+      label: field.label,
+      value: field.value?.toString() ?? '',
+      onValue: field.mutable ? onChanged : (_) {},
+    );
+  }
+}
+
+class _NumberField extends StatelessWidget {
+  const _NumberField({
+    required this.label,
+    required this.value,
+    required this.onValue,
+    required this.decimals,
+  });
+  final String label;
+  final double value;
+  final ValueChanged<double> onValue;
+  final int decimals;
+  @override
+  Widget build(BuildContext context) => TextFormField(
+    key: ValueKey('$label-$value'),
+    initialValue: value.toStringAsFixed(decimals),
+    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+    onChanged: (text) {
+      final parsed = double.tryParse(text);
+      if (parsed != null) onValue(parsed);
+    },
+    decoration: InputDecoration(labelText: label),
+  );
+}
+
+class _ChoiceField extends StatelessWidget {
+  const _ChoiceField({
+    required this.label,
+    required this.value,
+    required this.choices,
+    required this.onValue,
+  });
+  final String label;
+  final String value;
+  final Map<String, String> choices;
+  final ValueChanged<String> onValue;
+  @override
+  Widget build(BuildContext context) {
+    final safeValue = choices.containsKey(value) ? value : choices.keys.first;
+    return DropdownButtonFormField<String>(
+      isExpanded: true,
+      initialValue: safeValue,
+      decoration: InputDecoration(labelText: label),
+      items: choices.entries
+          .map(
+            (e) => DropdownMenuItem(
+              value: e.key,
+              child: Text(e.value, overflow: TextOverflow.ellipsis),
+            ),
+          )
+          .toList(),
+      onChanged: (v) {
+        if (v != null) onValue(v);
+      },
+    );
+  }
+}
+
+class _EmptyLibrary extends StatelessWidget {
+  const _EmptyLibrary();
+  @override
+  Widget build(BuildContext context) => const Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.inbox_outlined, size: 42, color: Colors.black26),
+        SizedBox(height: 10),
+        Text('No matching channels', style: TextStyle(color: Colors.black45)),
+      ],
+    ),
+  );
+}
+
+class _StepTitle extends StatelessWidget {
+  const _StepTitle({required this.number, required this.title, this.help});
+  final String number;
+  final String title;
+  final String? help;
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Container(
+        width: 28,
+        height: 28,
+        alignment: Alignment.center,
+        decoration: const BoxDecoration(
+          color: Color(0xFF1F7455),
+          shape: BoxShape.circle,
+        ),
+        child: Text(
+          number,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      const SizedBox(width: 10),
+      Text(
+        title,
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+      ),
+      if (help != null) ...[
+        const SizedBox(width: 4),
+        _HelpButton(title: title, details: help!),
+      ],
+    ],
+  );
+}
+
+extension<T> on List<T> {
+  T? get firstOrNull => isEmpty ? null : first;
+}

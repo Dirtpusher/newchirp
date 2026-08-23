@@ -1,0 +1,27 @@
+---
+okf_version: "0.2"
+type: Module
+title: radio_image_store
+resource: services/radio_image_store.dart
+tags:
+  - "lang:dart"
+  - "type:Module"
+  - "module:services"
+  - "domain:radio_image_store.dart"
+timestamp: "2026-08-22T11:03:16Z"
+concept_id: services/radio_image_store
+language: dart
+---
+
+# radio_image_store
+
+## Relationships
+
+| Type | Target |
+|------|--------|
+| related | [RadioImageStore](/services/radio_image_store/RadioImageStore.md) |
+| related | [saveForModel](/services/radio_image_store/saveForModel.md) |
+| related | [hasForModel](/services/radio_image_store/hasForModel.md) |
+| related | [pathForModel](/services/radio_image_store/pathForModel.md) |
+| related | [_imageDirectory](/services/radio_image_store/imageDirectory.md) |
+| related | [RadioImageStore](/services/radio_image_store/RadioImageStore.md) |

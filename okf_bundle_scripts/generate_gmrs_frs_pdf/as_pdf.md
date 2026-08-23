@@ -1,0 +1,40 @@
+---
+okf_version: "0.2"
+type: Function
+title: as_pdf
+resource: generate_gmrs_frs_pdf.py
+tags:
+  - "lang:python"
+  - "type:Function"
+  - "module:generate_gmrs_frs_pdf.py"
+timestamp: "2026-08-22T18:18:13Z"
+concept_id: generate_gmrs_frs_pdf/as_pdf
+language: python
+---
+
+# as_pdf
+
+## Signature
+
+```python
+def as_pdf(self) -> bytes
+```
+
+## Parameters
+
+| Name | Type | Default |
+|------|------|---------|
+| `self` | `—` | `—` |
+
+## Returns
+`bytes`
+
+## Source
+Lines 160–210 in `generate_gmrs_frs_pdf.py`
+
+## Relationships
+
+| Type | Target |
+|------|--------|
+| related | [PdfWriter](/generate_gmrs_frs_pdf/PdfWriter.md) |
+| called_by | [main](/generate_gmrs_frs_pdf/main.md) |
