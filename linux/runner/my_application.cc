@@ -96,8 +96,8 @@ static void load_window_state(GtkWindow* window) {
     return;
   }
 
+  gtk_window_set_default_size(window, width, height);
   gtk_window_move(window, x, y);
-  gtk_window_resize(window, width, height);
 }
 
 static void save_window_state(GtkWindow* window) {
@@ -157,7 +157,6 @@ static gboolean on_configure_event(GtkWidget* widget, GdkEventConfigure* event,
 static void first_frame_cb(MyApplication* self, FlView* view) {
   GtkWidget* toplevel = gtk_widget_get_toplevel(GTK_WIDGET(view));
   gtk_widget_show(toplevel);
-  load_window_state(GTK_WINDOW(toplevel));
   self->window_state_ready = TRUE;
 }
 
@@ -199,6 +198,7 @@ static void my_application_activate(GApplication* application) {
   g_signal_connect(window, "delete-event", G_CALLBACK(on_delete_event), nullptr);
   g_signal_connect(window, "configure-event", G_CALLBACK(on_configure_event),
                    self);
+  load_window_state(window);
 
   g_autoptr(FlDartProject) project = fl_dart_project_new();
   fl_dart_project_set_dart_entrypoint_arguments(
