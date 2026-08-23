@@ -145,7 +145,9 @@ static gboolean on_delete_event(GtkWidget* widget, GdkEvent* event,
 
 // Called when first Flutter frame received.
 static void first_frame_cb(MyApplication* self, FlView* view) {
-  gtk_widget_show(gtk_widget_get_toplevel(GTK_WIDGET(view)));
+  GtkWidget* toplevel = gtk_widget_get_toplevel(GTK_WIDGET(view));
+  gtk_widget_show(toplevel);
+  load_window_state(GTK_WINDOW(toplevel));
 }
 
 // Implements GApplication::activate.
@@ -183,7 +185,6 @@ static void my_application_activate(GApplication* application) {
 
   gtk_window_set_default_size(window, 1280, 720);
   g_signal_connect(window, "delete-event", G_CALLBACK(on_delete_event), nullptr);
-  load_window_state(window);
 
   g_autoptr(FlDartProject) project = fl_dart_project_new();
   fl_dart_project_set_dart_entrypoint_arguments(
