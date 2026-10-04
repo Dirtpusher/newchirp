@@ -19,10 +19,11 @@ path = sys.argv[1] + "/chirp/drivers/baofeng_uv17Pro.py"
 try:
     text = open(path, encoding="utf-8").read()
 except FileNotFoundError:
-    return
+    print('warning: CHIRP UV5G driver not found at %s; skipping GMRS preset patch' % path, file=sys.stderr)
+    sys.exit(0)
 
 if "UV5G_GMRS_PRESETS" in text:
-    return
+    sys.exit(0)
 
 anchor = 'MSTRING_BFK6 = b"PROGRAMBF-K6PROU"\n'
 insert = (
@@ -35,7 +36,8 @@ insert = (
     + ")\n"
 )
 if anchor not in text:
-    return
+    print('warning: CHIRP UV5G patch anchor missing in %s; GMRS presets were not injected (upstream may have renamed MSTRING_BFK6)' % path, file=sys.stderr)
+    sys.exit(0)
 text = text.replace(anchor, insert, 1)
 
 old = (
@@ -54,7 +56,8 @@ new = (
     "            mem.immutable = ['freq', 'duplex', 'offset']\n"
 )
 if old not in text:
-    return
+    print('warning: CHIRP UV5G patch target block missing in %s; GMRS preset frequencies were not applied' % path, file=sys.stderr)
+    sys.exit(0)
 text = text.replace(old, new, 1)
 
 open(path, "w", encoding="utf-8").write(text)
@@ -81,8 +84,11 @@ fi
 if [[ -s "$CURRENT_VERSION_FILE" ]]; then
   CURRENT_VERSION="$(cat "$CURRENT_VERSION_FILE")"
 else
-  CURRENT_VERSION="$(sed -n 's/.*next-\([0-9]\{8\}\).*/\1/p' \
-    "$DEFAULT_SOURCE/chirp/__init__.py" 2>/dev/null | head -1)"
+  CURRENT_VERSION=""
+  if [[ -f "$DEFAULT_SOURCE/chirp/__init__.py" ]]; then
+    CURRENT_VERSION="$(sed -n 's/.*next-\([0-9]\{8\}\).*/\1/p' \
+      "$DEFAULT_SOURCE/chirp/__init__.py" 2>/dev/null | head -1)"
+  fi
   CURRENT_VERSION="${CURRENT_VERSION:-20260626}"
 fi
 
