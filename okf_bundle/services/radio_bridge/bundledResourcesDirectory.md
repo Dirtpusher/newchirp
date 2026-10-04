@@ -2,7 +2,7 @@
 okf_version: "0.2"
 type: Function
 title: _bundledResourcesDirectory
-resource: services\radio_bridge.dart
+resource: services/radio_bridge.dart
 tags:
   - "lang:dart"
   - "type:Function"
@@ -10,7 +10,7 @@ tags:
   - "domain:radio_bridge.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-22T17:02:43Z"
+timestamp: "2026-10-22T19:19:22Z"
 concept_id: services/radio_bridge/bundledResourcesDirectory
 language: dart
 ---
@@ -24,7 +24,7 @@ Directory_bundledResourcesDirectory_bundledResourcesDirectory
 ```
 
 ## Source
-Lines 520–520 in `services\radio_bridge.dart`
+Lines 520–520 in `services/radio_bridge.dart`
 
 ## Relationships
 

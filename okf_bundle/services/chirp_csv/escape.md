@@ -2,7 +2,7 @@
 okf_version: "0.2"
 type: Function
 title: _escape
-resource: services\chirp_csv.dart
+resource: services/chirp_csv.dart
 tags:
   - "lang:dart"
   - "type:Function"
@@ -10,7 +10,7 @@ tags:
   - "domain:chirp_csv.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T13:43:31Z"
+timestamp: "2026-10-04T10:27:21Z"
 concept_id: services/chirp_csv/escape
 language: dart
 ---
@@ -24,7 +24,7 @@ String_escape(Object? value)
 ```
 
 ## Source
-Lines 100–100 in `services\chirp_csv.dart`
+Lines 100–100 in `services/chirp_csv.dart`
 
 ## Relationships
 

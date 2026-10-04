@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-22T17:21:47Z"
+timestamp: "2026-10-22T19:19:22Z"
 concept_id: main/cell
 language: dart
 ---
@@ -19,11 +19,11 @@ language: dart
 ## Signature
 
 ```dart
-Widgetcell(
-      String text, {
-      Color color = ink,
-      FontWeight weight = FontWeight.w400,
-      TextAlign align = TextAlign.left,
+Widgetcell(
+      String text, {
+      Color color = ink,
+      FontWeight weight = FontWeight.w400,
+      TextAlign align = TextAlign.left,
     })
 ```
 

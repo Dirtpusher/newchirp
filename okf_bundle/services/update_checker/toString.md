@@ -3,7 +3,7 @@ okf_version: "0.2"
 type: Function
 title: toString
 description: "Opens [url] in the operating system's default browser."
-resource: services\update_checker.dart
+resource: services/update_checker.dart
 tags:
   - "lang:dart"
   - "type:Function"
@@ -11,7 +11,7 @@ tags:
   - "domain:update_checker.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-04T09:56:05Z"
+timestamp: "2026-10-04T10:27:21Z"
 concept_id: services/update_checker/toString
 language: dart
 ---
@@ -33,7 +33,7 @@ Opens [url] in the operating system's default browser.
 Returns false when no usable launcher is available.
 
 ## Source
-Lines 31–31 in `services\update_checker.dart`
+Lines 31–31 in `services/update_checker.dart`
 
 ## Relationships
 

@@ -2,7 +2,7 @@
 okf_version: "0.2"
 type: Class
 title: RadioSelection
-resource: services\radio_selection_store.dart
+resource: services/radio_selection_store.dart
 tags:
   - "lang:dart"
   - "type:Class"
@@ -10,7 +10,7 @@ tags:
   - "domain:radio_selection_store.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T13:43:31Z"
+timestamp: "2026-10-04T10:27:21Z"
 concept_id: services/radio_selection_store/RadioSelection
 language: dart
 ---
@@ -24,7 +24,7 @@ class RadioSelection
 ```
 
 ## Source
-Lines 4–9 in `services\radio_selection_store.dart`
+Lines 4–9 in `services/radio_selection_store.dart`
 
 ## Relationships
 

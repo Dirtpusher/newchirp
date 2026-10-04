@@ -2,7 +2,7 @@
 okf_version: "0.2"
 type: Function
 title: _materializeBridge
-resource: services\radio_bridge.dart
+resource: services/radio_bridge.dart
 tags:
   - "lang:dart"
   - "type:Function"
@@ -10,7 +10,7 @@ tags:
   - "domain:radio_bridge.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-22T17:02:43Z"
+timestamp: "2026-10-22T19:19:22Z"
 concept_id: services/radio_bridge/materializeBridge
 language: dart
 ---
@@ -24,7 +24,7 @@ Future_materializeBridge_materializeBridge
 ```
 
 ## Source
-Lines 531–531 in `services\radio_bridge.dart`
+Lines 531–531 in `services/radio_bridge.dart`
 
 ## Relationships
 

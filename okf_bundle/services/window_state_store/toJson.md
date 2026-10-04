@@ -2,7 +2,7 @@
 okf_version: "0.2"
 type: Function
 title: toJson
-resource: services\window_state_store.dart
+resource: services/window_state_store.dart
 tags:
   - "lang:dart"
   - "type:Function"
@@ -10,7 +10,7 @@ tags:
   - "domain:window_state_store.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T21:46:34Z"
+timestamp: "2026-10-04T10:27:21Z"
 concept_id: services/window_state_store/toJson
 language: dart
 ---
@@ -24,7 +24,7 @@ MaptoJsontoJson
 ```
 
 ## Source
-Lines 19–19 in `services\window_state_store.dart`
+Lines 19–19 in `services/window_state_store.dart`
 
 ## Relationships
 
