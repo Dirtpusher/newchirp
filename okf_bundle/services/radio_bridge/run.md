@@ -10,7 +10,7 @@ tags:
   - "domain:radio_bridge.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T13:43:31Z"
+timestamp: "2026-08-23T21:36:05Z"
 concept_id: services/radio_bridge/run
 language: dart
 ---
@@ -24,7 +24,7 @@ Future_run_run
 ```
 
 ## Source
-Lines 181–181 in `services\radio_bridge.dart`
+Lines 226–226 in `services\radio_bridge.dart`
 
 ## Relationships
 

@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T13:43:31Z"
+timestamp: "2026-10-04T09:56:05Z"
 concept_id: main/importCsv
 language: dart
 ---
@@ -23,7 +23,7 @@ Future_importCsv_importCsv
 ```
 
 ## Source
-Lines 366–366 in `main.dart`
+Lines 510–510 in `main.dart`
 
 ## Relationships
 

@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T13:43:31Z"
+timestamp: "2026-10-04T09:56:05Z"
 concept_id: main
 language: dart
 ---
@@ -20,6 +20,7 @@ language: dart
 
 | Type | Target |
 |------|--------|
+| related | [_WindowStateManager](/main/WindowStateManager.md) |
 | related | [NewChirpApp](/main/NewChirpApp.md) |
 | related | [NewChirpHome](/main/NewChirpHome.md) |
 | related | [_NewChirpHomeState](/main/NewChirpHomeState.md) |
@@ -47,6 +48,7 @@ language: dart
 | related | [_EmptyLibrary](/main/EmptyLibrary.md) |
 | related | [_StepTitle](/main/StepTitle.md) |
 | related | [main](/main/main.md) |
+| related | [_clampWindowState](/main/clampWindowState.md) |
 | related | [changed](/main/changed.md) |
 | related | [save](/main/save.md) |
 | related | [rowColor](/main/rowColor.md) |
@@ -56,6 +58,15 @@ language: dart
 | related | [inactive](/main/inactive.md) |
 | related | [label](/main/label.md) |
 | related | [choices](/main/choices.md) |
+| related | [start](/main/start.md) |
+| related | [onWindowResized](/main/onWindowResized.md) |
+| related | [onWindowMoved](/main/onWindowMoved.md) |
+| related | [onWindowMaximize](/main/onWindowMaximize.md) |
+| related | [onWindowUnmaximize](/main/onWindowUnmaximize.md) |
+| related | [onWindowClose](/main/onWindowClose.md) |
+| related | [_scheduleSave](/main/scheduleSave.md) |
+| related | [save](/main/save.md) |
+| related | [_WindowStateManager](/main/WindowStateManager.md) |
 | related | [build](/main/build.md) |
 | related | [createState](/main/createState.md) |
 | related | [initState](/main/initState.md) |
@@ -103,6 +114,9 @@ language: dart
 | related | [_cancelTransfer](/main/cancelTransfer.md) |
 | related | [build](/main/build.md) |
 | related | [_buildWelcome](/main/buildWelcome.md) |
+| related | [_checkForUpdates](/main/checkForUpdates.md) |
+| related | [_showUpdateAvailable](/main/showUpdateAvailable.md) |
+| related | [_showUpToDate](/main/showUpToDate.md) |
 | related | [_buildAbout](/main/buildAbout.md) |
 | related | [_showChannelEditor](/main/showChannelEditor.md) |
 | related | [changed](/main/changed.md) |
