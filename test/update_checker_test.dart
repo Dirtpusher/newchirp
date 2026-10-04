@@ -1,0 +1,87 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:newchirp/services/update_checker.dart';
+
+void main() {
+  group('compareVersions', () {
+    test('orders dotted versions numerically', () {
+      expect(compareVersions('1.0.2', '1.0.1'), greaterThan(0));
+      expect(compareVersions('1.0.1', '1.0.2'), lessThan(0));
+      expect(compareVersions('1.0.1', '1.0.1'), 0);
+      expect(compareVersions('1.10.0', '1.9.9'), greaterThan(0));
+      expect(compareVersions('2.0', '1.9.9'), greaterThan(0));
+      expect(compareVersions('1.2', '1.2.0'), 0);
+    });
+
+    test('ignores build metadata and pre-release suffixes', () {
+      expect(compareVersions('1.0.1+7', '1.0.1'), 0);
+      expect(compareVersions('1.0.2-beta', '1.0.1'), greaterThan(0));
+    });
+  });
+
+  group('UpdateChecker', () {
+    HttpServer? server;
+
+    Future<Uri> serve(String body, {int status = 200}) async {
+      final bound = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      server = bound;
+      bound.listen((request) async {
+        request.response.statusCode = status;
+        request.response.headers.contentType = ContentType.json;
+        request.response.write(body);
+        await request.response.close();
+      });
+      return Uri.parse('http://127.0.0.1:${bound.port}/api/releases/latest');
+    }
+
+    tearDown(() async {
+      await server?.close(force: true);
+      server = null;
+    });
+
+    test('reports an update when the manifest is newer', () async {
+      final uri = await serve(
+        jsonEncode({
+          'version': '1.0.2',
+          'release_url': 'https://newchirp.net/#download',
+        }),
+      );
+      final result = await UpdateChecker(manifestUri: uri).check('1.0.1');
+      expect(result.updateAvailable, isTrue);
+      expect(result.latestVersion, '1.0.2');
+      expect(result.releaseUrl, 'https://newchirp.net/#download');
+    });
+
+    test('reports up to date when versions match', () async {
+      final uri = await serve(jsonEncode({'version': '1.0.1'}));
+      final result = await UpdateChecker(manifestUri: uri).check('1.0.1');
+      expect(result.updateAvailable, isFalse);
+      expect(result.releaseUrl, isNull);
+    });
+
+    test('accepts the latest alias for the version field', () async {
+      final uri = await serve(jsonEncode({'latest': '2.0.0'}));
+      final result = await UpdateChecker(manifestUri: uri).check('1.0.1');
+      expect(result.latestVersion, '2.0.0');
+      expect(result.updateAvailable, isTrue);
+    });
+
+    test('throws UpdateCheckException when the response is not JSON', () async {
+      final uri = await serve('<html></html>');
+      await expectLater(
+        UpdateChecker(manifestUri: uri).check('1.0.1'),
+        throwsA(isA<UpdateCheckException>()),
+      );
+    });
+
+    test('throws UpdateCheckException on a server error', () async {
+      final uri = await serve('{}', status: 500);
+      await expectLater(
+        UpdateChecker(manifestUri: uri).check('1.0.1'),
+        throwsA(isA<UpdateCheckException>()),
+      );
+    });
+  });
+}

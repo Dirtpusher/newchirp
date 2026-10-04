@@ -14,9 +14,12 @@ import 'services/column_layout_store.dart';
 import 'services/radio_image_store.dart';
 import 'services/radio_selection_store.dart';
 import 'services/radio_bridge.dart';
+import 'services/update_checker.dart';
 import 'services/window_state_store.dart';
 
 const _menuChannel = MethodChannel('newchirp/menu');
+
+const String _newChirpVersion = '1.0.1';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -259,6 +262,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
   bool _libraryOpen = false;
   bool _dirty = false;
   bool _busy = false;
+  bool _checkingForUpdates = false;
   String _status = 'Ready';
   List<String> _ports = [];
   List<String> _models = [];
@@ -1306,6 +1310,84 @@ class _NewChirpHomeState extends State<NewChirpHome> {
     );
   }
 
+  Future<void> _checkForUpdates() async {
+    if (_checkingForUpdates) return;
+    setState(() => _checkingForUpdates = true);
+    try {
+      final result = await UpdateChecker().check(_newChirpVersion);
+      if (!mounted) return;
+      if (result.updateAvailable) {
+        await _showUpdateAvailable(result);
+      } else {
+        await _showUpToDate(result);
+      }
+    } on UpdateCheckException catch (error) {
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Couldn\u2019t check for updates'),
+          content: Text(
+            '${error.message}\n\n'
+            'You can also download the latest version from newchirp.net.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _checkingForUpdates = false);
+    }
+  }
+
+  Future<void> _showUpdateAvailable(UpdateCheckResult result) {
+    final rawUrl = (result.releaseUrl ?? '').trim();
+    final downloadUrl =
+        rawUrl.isEmpty ? 'https://newchirp.net/#download' : rawUrl;
+    return showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Update available'),
+        content: Text(
+          'NewChirp ${result.latestVersion} is available. '
+          'You are running ${result.currentVersion}.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Later'),
+          ),
+          FilledButton.icon(
+            onPressed: () {
+              unawaited(openExternalUrl(downloadUrl));
+              Navigator.pop(context);
+            },
+            icon: const Icon(Icons.download_outlined),
+            label: const Text('Open download page'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showUpToDate(UpdateCheckResult result) => showDialog<void>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('You\u2019re up to date'),
+      content: Text('NewChirp ${result.currentVersion} is the latest version.'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Close'),
+        ),
+      ],
+    ),
+  );
+
   Widget _buildAbout() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(28),
@@ -1328,9 +1410,9 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                           style: Theme.of(context).textTheme.headlineMedium
                               ?.copyWith(fontWeight: FontWeight.w700),
                         ),
-                        const Text(
-                          'Desktop radio programmer · Version 1.0.1',
-                          style: TextStyle(color: Colors.black54),
+                        Text(
+                          'Desktop radio programmer · Version $_newChirpVersion',
+                          style: const TextStyle(color: Colors.black54),
                         ),
                         const SizedBox(height: 3),
                         const Text(
@@ -1343,6 +1425,29 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                         const SelectableText(
                           'rick@newchirp.net',
                           style: TextStyle(color: Colors.black54),
+                        ),
+                        const SizedBox(height: 12),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: OutlinedButton.icon(
+                            onPressed: _checkingForUpdates
+                                ? null
+                                : _checkForUpdates,
+                            icon: _checkingForUpdates
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(Icons.system_update_alt_outlined),
+                            label: Text(
+                              _checkingForUpdates
+                                  ? 'Checking for updates...'
+                                  : 'Check for updates',
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -1412,7 +1517,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                               onPressed: () => showLicensePage(
                                 context: context,
                                 applicationName: 'NewChirp',
-                                applicationVersion: '1.0.1',
+                                applicationVersion: _newChirpVersion,
                                 applicationLegalese:
                                     'CHIRP is licensed under GPL-3.0-or-later. NewChirp is not affiliated with or endorsed by the CHIRP project.',
                               ),
@@ -2676,11 +2781,11 @@ class _Sidebar extends StatelessWidget {
             onTap: () => onPage(2),
           ),
           const Spacer(),
-          const Padding(
-            padding: EdgeInsets.all(10),
+          Padding(
+            padding: const EdgeInsets.all(10),
             child: Text(
-              'DESKTOP RADIO PROGRAMMER\nRick Lopez · Lead Programmer\nrick@newchirp.net\nVersion 1.0.1',
-              style: TextStyle(
+              'DESKTOP RADIO PROGRAMMER\nRick Lopez · Lead Programmer\nrick@newchirp.net\nVersion $_newChirpVersion',
+              style: const TextStyle(
                 color: Color(0xFF8FA59B),
                 fontSize: 10,
                 height: 1.6,

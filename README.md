@@ -22,6 +22,32 @@ implementation history, architecture, known risks, and prioritized next work.
 - Help-context icons with detailed instructions
 - Restore stock channels from the bundled CHIRP GMRS config
 - macOS, Windows, and Linux Flutter projects
+- In-app "Check for updates" against the newchirp.net download manifest
+
+## Updates
+
+The About screen checks newchirp.net for a newer release. The app reads a JSON
+manifest (default `https://newchirp.net/api/releases/latest`) shaped like:
+
+```json
+{
+  "version": "1.0.2",
+  "release_url": "https://newchirp.net/#download",
+  "downloads": { "windows": "...", "macos": "...", "linux": "..." }
+}
+```
+
+Only `version` is required; `release_url` (or `url`) is optional and is opened
+when the user accepts the update. The installed version is `_newChirpVersion`
+in `lib/main.dart` and should be kept in sync with `version` in `pubspec.yaml`.
+The check logic lives in `lib/services/update_checker.dart`.
+
+When cutting a release, bump the version in all three places so they agree:
+
+- `_newChirpVersion` in `lib/main.dart`
+- `version` in `pubspec.yaml`
+- `RELEASE.version` in the web server (`/opt/newchirp/server.mjs`), which
+  serves `GET /api/releases/latest`
 
 ## Run
 
