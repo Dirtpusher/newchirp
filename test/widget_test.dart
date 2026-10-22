@@ -128,6 +128,59 @@ void main() {
     expect(find.text('GMRS 1'), findsNothing);
   });
 
+  testWidgets('frequency field keeps focus while typing', (tester) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    await openGmrsStarter(tester);
+    await tester.tap(find.text('GMRS 1').first);
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.tap(find.text('GMRS 1').first);
+    await tester.pumpAndSettle();
+
+    Finder field(String label) => find.descendant(
+      of: find.byType(Dialog),
+      matching: find.byWidgetPredicate(
+        (widget) =>
+            widget is TextField && widget.decoration?.labelText == label,
+      ),
+    );
+
+    final frequency = field('Receive frequency (MHz)');
+    final frequencyInput = find.descendant(
+      of: frequency,
+      matching: find.byType(EditableText),
+    );
+
+    await tester.tap(frequency);
+    await tester.pump();
+    tester.testTextInput.enterText('');
+    await tester.pump();
+    tester.testTextInput.enterText('1');
+    await tester.pump();
+
+    expect(
+      tester.widget<EditableText>(frequencyInput).focusNode.hasFocus,
+      isTrue,
+    );
+
+    for (final value in ['14', '146', '146.', '146.5', '146.52', '146.520']) {
+      tester.testTextInput.enterText(value);
+      await tester.pump();
+    }
+
+    expect(tester.widget<TextField>(frequency).controller?.text, '146.520');
+    expect(tester.widget<TextField>(field('Name')).controller?.text, 'GMRS 1');
+    expect(
+      tester.widget<EditableText>(frequencyInput).focusNode.hasFocus,
+      isTrue,
+    );
+  });
+
   testWidgets('channel selection updates on pointer down', (tester) async {
     tester.view.physicalSize = const Size(1440, 900);
     tester.view.devicePixelRatio = 1;

@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 
 import '../models/radio_channel.dart';
 
+const _progressPrefix = '__NEWCHIRP_PROGRESS__ ';
+
 class RadioBridgeException implements Exception {
   RadioBridgeException(this.message);
   final String message;
@@ -38,6 +40,7 @@ class RadioCapabilities {
     required this.tones,
     required this.dtcsCodes,
     required this.nameLength,
+    required this.validCharacters,
     required this.hasTuningStep,
   });
 
@@ -51,7 +54,12 @@ class RadioCapabilities {
   final List<double> tones;
   final List<int> dtcsCodes;
   final int nameLength;
+  final String validCharacters;
   final bool hasTuningStep;
+
+  bool get uppercaseNames =>
+      validCharacters.isNotEmpty &&
+      validCharacters == validCharacters.toUpperCase();
 
   factory RadioCapabilities.fromJson(Map<String, dynamic> json) {
     List<String> strings(String key) => (json[key] as List? ?? const [])
@@ -74,7 +82,110 @@ class RadioCapabilities {
           .map((item) => (item as num).toInt())
           .toList(),
       nameLength: (json['nameLength'] as num?)?.toInt() ?? 16,
+      validCharacters: '${json['validCharacters'] ?? ''}',
       hasTuningStep: json['hasTuningStep'] as bool? ?? true,
+    );
+  }
+}
+
+class RadioProgress {
+  const RadioProgress({required this.label, this.fraction});
+
+  final String label;
+  final double? fraction;
+}
+
+class RadioSettingNode {
+  RadioSettingNode({
+    required this.id,
+    required this.name,
+    required this.shortName,
+    required this.kind,
+    required this.documentation,
+    required this.value,
+    required this.options,
+    required this.mutable,
+    required this.min,
+    required this.max,
+    required this.step,
+    required this.minLength,
+    required this.maxLength,
+    required this.children,
+  });
+
+  final List<int> id;
+  final String name;
+  final String shortName;
+  final String? documentation;
+  final String kind;
+  final List<String> options;
+  final bool mutable;
+  final num? min;
+  final num? max;
+  final num? step;
+  final int? minLength;
+  final int? maxLength;
+  final List<RadioSettingNode> children;
+  Object? value;
+  bool invalid = false;
+
+  String get label => shortName.isEmpty ? name : shortName;
+  bool get isGroup => kind == 'group';
+
+  factory RadioSettingNode.fromJson(Map<String, dynamic> json) {
+    return RadioSettingNode(
+      id: (json['id'] as List? ?? const [])
+          .map((item) => (item as num).toInt())
+          .toList(),
+      name: '${json['name'] ?? ''}',
+      shortName: '${json['shortName'] ?? ''}',
+      kind: '${json['kind'] ?? 'string'}',
+      documentation: json['documentation'] as String?,
+      value: json['value'],
+      options: (json['options'] as List? ?? const [])
+          .map((item) => '$item')
+          .toList(),
+      mutable: json['mutable'] as bool? ?? false,
+      min: json['min'] as num?,
+      max: json['max'] as num?,
+      step: json['step'] as num?,
+      minLength: (json['minLength'] as num?)?.toInt(),
+      maxLength: (json['maxLength'] as num?)?.toInt(),
+      children: (json['children'] as List? ?? const [])
+          .map(
+            (item) => RadioSettingNode.fromJson(
+              (item as Map).cast<String, dynamic>(),
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  Map<String, Object?> toChangeJson() => {'id': id, 'value': value};
+}
+
+class RadioSettings {
+  const RadioSettings({
+    required this.hasSettings,
+    required this.items,
+    this.imagePath,
+  });
+
+  final bool hasSettings;
+  final List<RadioSettingNode> items;
+  final String? imagePath;
+
+  factory RadioSettings.fromJson(Map<String, dynamic> json) {
+    return RadioSettings(
+      hasSettings: json['hasSettings'] as bool? ?? false,
+      imagePath: json['imagePath'] as String?,
+      items: (json['settings'] as List? ?? const [])
+          .map(
+            (item) => RadioSettingNode.fromJson(
+              (item as Map).cast<String, dynamic>(),
+            ),
+          )
+          .toList(),
     );
   }
 }
@@ -177,8 +288,18 @@ class RadioBridge {
       RadioCapabilities capabilities,
     })
   >
-  download({required String model, required String port}) async {
-    final data = await _run(['download', '--model', model, '--port', port]);
+  download({
+    required String model,
+    required String port,
+    void Function(RadioProgress)? onProgress,
+  }) async {
+    final data = await _run([
+      'download',
+      '--model',
+      model,
+      '--port',
+      port,
+    ], onProgress: onProgress);
     return (
       channels: (data['channels'] as List)
           .map((e) => RadioChannel.fromJson((e as Map).cast<String, dynamic>()))
@@ -196,6 +317,7 @@ class RadioBridge {
     required String imagePath,
     required List<RadioChannel> channels,
     required List<int> cleared,
+    void Function(RadioProgress)? onProgress,
   }) async {
     final temp = File('${Directory.systemTemp.path}/newchirp-upload.json');
     await temp.writeAsString(
@@ -213,7 +335,7 @@ class RadioBridge {
       temp.path,
       '--cleared',
       cleared.join(','),
-    ]);
+    ], onProgress: onProgress);
     final skipped = (data['skipped'] as List? ?? const [])
         .map((entry) => (entry as Map).cast<String, dynamic>())
         .toList();
@@ -223,7 +345,59 @@ class RadioBridge {
     return [...skipped, ...adjusted];
   }
 
-  Future<Map<String, dynamic>> _run(List<String> args) async {
+  Future<RadioSettings> readSettings({
+    required String model,
+    String? imagePath,
+    String? port,
+    void Function(RadioProgress)? onProgress,
+  }) async {
+    if ((imagePath == null) == (port == null)) {
+      throw ArgumentError(
+        'Specify exactly one of imagePath or port for readSettings.',
+      );
+    }
+    final data = await _run([
+      'read-settings',
+      '--model',
+      model,
+      if (port != null) ...['--port', port] else ...['--image', imagePath!],
+    ], onProgress: onProgress);
+    return RadioSettings.fromJson(data);
+  }
+
+  Future<void> writeSettings({
+    required String model,
+    required String port,
+    required String imagePath,
+    required List<Map<String, Object?>> changes,
+    void Function(RadioProgress)? onProgress,
+  }) async {
+    final temp = File(
+      '${Directory.systemTemp.path}/newchirp-settings-$pid-'
+      '${DateTime.now().microsecondsSinceEpoch}.json',
+    );
+    try {
+      await temp.writeAsString(jsonEncode({'changes': changes}));
+      await _run([
+        'write-settings',
+        '--model',
+        model,
+        '--port',
+        port,
+        '--image',
+        imagePath,
+        '--settings',
+        temp.path,
+      ], onProgress: onProgress);
+    } finally {
+      if (await temp.exists()) await temp.delete();
+    }
+  }
+
+  Future<Map<String, dynamic>> _run(
+    List<String> args, {
+    void Function(RadioProgress)? onProgress,
+  }) async {
     _cancelRequested = false;
     final script = await _materializeBridge();
     final vendor = await _materializePythonDependencies();
@@ -248,14 +422,40 @@ class RadioBridge {
     _activeProcess = process;
     if (_cancelRequested) process.kill(ProcessSignal.sigterm);
     final stdoutFuture = process.stdout.transform(utf8.decoder).join();
-    final stderrFuture = process.stderr.transform(utf8.decoder).join();
+    final stderrLines = <String>[];
+    final stderrFuture = process.stderr
+        .transform(utf8.decoder)
+        .transform(const LineSplitter())
+        .forEach((line) {
+          if (!line.startsWith(_progressPrefix)) {
+            stderrLines.add(line);
+            return;
+          }
+          try {
+            final data = jsonDecode(line.substring(_progressPrefix.length));
+            if (data is! Map) return;
+            final rawFraction = data['fraction'];
+            final fraction = rawFraction is num
+                ? rawFraction.toDouble().clamp(0.0, 1.0).toDouble()
+                : null;
+            onProgress?.call(
+              RadioProgress(
+                label: '${data['label'] ?? 'Working...'}',
+                fraction: fraction,
+              ),
+            );
+          } on FormatException {
+            stderrLines.add(line);
+          }
+        });
     late final int exitCode;
     late final String stdout;
     late final String stderr;
     try {
       exitCode = await process.exitCode;
       stdout = (await stdoutFuture).trim();
-      stderr = (await stderrFuture).trim();
+      await stderrFuture;
+      stderr = stderrLines.join('\n').trim();
     } finally {
       if (identical(_activeProcess, process)) _activeProcess = null;
     }
@@ -297,10 +497,10 @@ class RadioBridge {
     ];
     for (final candidate in candidates) {
       try {
-        final result = await Process.run(
-          candidate,
-          ['-c', 'import sys; print("%d.%d" % sys.version_info[:2])'],
-        );
+        final result = await Process.run(candidate, [
+          '-c',
+          'import sys; print("%d.%d" % sys.version_info[:2])',
+        ]);
         if (result.exitCode != 0) continue;
         final parts = '${result.stdout}'.trim().split('.');
         final major = int.tryParse(parts.first);
@@ -357,7 +557,8 @@ class RadioBridge {
     }
 
     final resources = _bundledResourcesDirectory();
-    if (resources != null && Directory('${resources.path}/chirp').existsSync()) {
+    if (resources != null &&
+        Directory('${resources.path}/chirp').existsSync()) {
       return resources.absolute.path;
     }
 

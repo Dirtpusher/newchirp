@@ -315,9 +315,6 @@ flutter run -d macos
 
 - CSV files preserve the standard CHIRP columns listed in `ChirpCsv.headers`,
   but radio-specific `extras` are not exported to or restored from CSV.
-- Global radio settings are not exposed; only channel memories and
-  per-channel extras are currently handled.
-- The UI does not yet show transfer percentage or CHIRP progress detail.
 - The downloaded image is temporary and session-only; there is no native CHIRP
   image open/save workflow.
 - Temporary bridge, upload JSON, wheel, and radio image files are not fully
@@ -394,7 +391,7 @@ flutter run -d macos
 
 - [ ] Compare NewChirp field-by-field with current CHIRP for several radio
   families and record unsupported fields.
-- [ ] Add global radio settings where drivers expose them.
+- [x] Add global radio settings where drivers expose them.
 - [ ] Preserve supported radio-specific extras through an image/native project
   format; define what CSV can and cannot retain.
 - [ ] Add multi-select, bulk edit, copy/paste, row movement, and import merge.
@@ -404,8 +401,8 @@ flutter run -d macos
 
 ### P1 — Improve transfer experience
 
-- [ ] Forward CHIRP status callbacks as structured progress events.
-- [ ] Show phase, percentage, elapsed time, and model-specific instructions in
+- [x] Forward CHIRP status callbacks as structured progress events.
+- [x] Show phase, percentage, elapsed time, and model-specific instructions in
   the blocking overlay.
 - [ ] Add a diagnostic log users can copy when a transfer fails, while
   redacting sensitive paths where appropriate.

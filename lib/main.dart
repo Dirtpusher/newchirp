@@ -80,12 +80,16 @@ Future<WindowState?> _clampWindowState(WindowState? state) async {
     );
     final x =
         visible.left +
-        (((visible.width - state.width) / 2).clamp(0.0, double.infinity))
-            .toDouble();
+        (((visible.width - state.width) / 2).clamp(
+          0.0,
+          double.infinity,
+        )).toDouble();
     final y =
         visible.top +
-        (((visible.height - state.height) / 2).clamp(0.0, double.infinity))
-            .toDouble();
+        (((visible.height - state.height) / 2).clamp(
+          0.0,
+          double.infinity,
+        )).toDouble();
     return WindowState(
       width: state.width,
       height: state.height,
@@ -253,6 +257,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
   final _imageStore = RadioImageStore();
   Future<void>? _radioSelectionLoad;
   final _searchController = TextEditingController();
+  final _settingsScrollController = ScrollController();
   List<RadioChannel> _channels = [];
   int _selected = -1;
   int _page = 0;
@@ -273,6 +278,16 @@ class _NewChirpHomeState extends State<NewChirpHome> {
   bool _transferActive = false;
   bool _transferCancelling = false;
   String _transferLabel = '';
+  double? _transferFraction;
+  String _transferDetail = '';
+  RadioSettings? _radioSettings;
+  bool _settingsLoading = false;
+  String? _settingsError;
+  bool _settingsDirty = false;
+  bool _settingsLoadedFromRadio = false;
+  String? _settingsLoadedModel;
+  String? _settingsLoadedImage;
+  int _settingsGeneration = 0;
   List<String> _columnOrder = [];
   final Map<String, double> _columnWidths = {};
   bool _columnLayoutTouched = false;
@@ -287,6 +302,15 @@ class _NewChirpHomeState extends State<NewChirpHome> {
 
   List<RadioChannel> get _activeChannels =>
       _channels.where((channel) => !channel.cleared).toList();
+
+  bool get _settingsHaveInvalidValues {
+    bool invalid(RadioSettingNode node) {
+      if (node.isGroup) return node.children.any(invalid);
+      return node.invalid;
+    }
+
+    return _radioSettings?.items.any(invalid) ?? false;
+  }
 
   @override
   void initState() {
@@ -428,6 +452,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
   @override
   void dispose() {
     _searchController.dispose();
+    _settingsScrollController.dispose();
     super.dispose();
   }
 
@@ -493,19 +518,115 @@ class _NewChirpHomeState extends State<NewChirpHome> {
     return message;
   }
 
-  Future<void> _showActionError(Object error) => showDialog<void>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Couldn’t complete that action'),
-      content: SelectableText(_friendlyActionError(error)),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Close'),
+  ({String summary, String? technical}) _actionErrorPresentation(Object error) {
+    final message = _friendlyActionError(error).trim();
+    final lines = message
+        .split('\n')
+        .map((line) => line.trim())
+        .where((line) => line.isNotEmpty)
+        .toList();
+    final hasTechnicalNoise = lines.any((line) {
+      return line.contains('Warning:') ||
+          line.startsWith('Traceback (most recent call last)') ||
+          line.startsWith('File "') ||
+          RegExp(r'^.+\.py:\d+:').hasMatch(line);
+    });
+    if (!hasTechnicalNoise) {
+      return (summary: message, technical: null);
+    }
+    final readable = lines
+        .where(
+          (line) =>
+              !line.contains('Warning:') &&
+              !line.startsWith('Traceback (most recent call last)') &&
+              !line.startsWith('File "') &&
+              !RegExp(r'^.+\.py:\d+:').hasMatch(line),
+        )
+        .toList();
+    var summary = readable.isNotEmpty ? readable.last : lines.last;
+    final nameError = RegExp(
+      r"Channel (\d+): Name character `(.+)' not supported",
+    ).firstMatch(summary);
+    if (nameError != null) {
+      summary =
+          'Channel ${nameError.group(1)} contains the character '
+          '“${nameError.group(2)}”, which this radio does not support.';
+    }
+    return (summary: summary, technical: message == summary ? null : message);
+  }
+
+  Future<void> _showActionError(Object error) {
+    final presentation = _actionErrorPresentation(error);
+    return showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Couldn’t complete that action'),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 620),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SelectableText(
+                  presentation.summary,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    height: 1.35,
+                  ),
+                ),
+                if (presentation.technical != null) ...[
+                  const SizedBox(height: 12),
+                  Theme(
+                    data: Theme.of(
+                      context,
+                    ).copyWith(dividerColor: Colors.transparent),
+                    child: ExpansionTile(
+                      tilePadding: EdgeInsets.zero,
+                      childrenPadding: const EdgeInsets.only(top: 4, bottom: 8),
+                      title: const Text(
+                        'More Info:',
+                        style: TextStyle(
+                          color: Colors.black54,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF3F5F4),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: SelectableText(
+                            presentation.technical!,
+                            style: const TextStyle(
+                              color: Colors.black54,
+                              fontFamily: 'monospace',
+                              fontSize: 11.5,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
         ),
-      ],
-    ),
-  );
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> _importCsv() async {
     const type = XTypeGroup(label: 'CHIRP CSV', extensions: ['csv']);
@@ -741,6 +862,194 @@ class _NewChirpHomeState extends State<NewChirpHome> {
     if (_models.isEmpty) unawaited(_loadModels());
   }
 
+  void _selectPage(int page) {
+    if (page == 4) {
+      unawaited(_openRadioSettings());
+      return;
+    }
+    setState(() => _page = page);
+  }
+
+  Future<void> _openRadioSettings() async {
+    setState(() => _page = 4);
+    final selectionLoad = _radioSelectionLoad;
+    if (selectionLoad != null) await selectionLoad;
+    if (_models.isEmpty) await _loadModels();
+  }
+
+  Future<void> _loadRadioSettings({bool force = false}) async {
+    final model = _model;
+    final image = _radioImage;
+    if (_settingsLoading || model == null || image == null) return;
+    if (!force &&
+        _radioSettings != null &&
+        _settingsLoadedModel == model &&
+        _settingsLoadedImage == image) {
+      return;
+    }
+    setState(() {
+      _settingsLoading = true;
+      _settingsError = null;
+    });
+    try {
+      final settings = await _bridge.readSettings(
+        model: model,
+        imagePath: image,
+      );
+      if (!mounted || _model != model || _radioImage != image) return;
+      setState(() {
+        _radioSettings = settings;
+        _settingsLoadedModel = model;
+        _settingsLoadedImage = image;
+        _settingsLoadedFromRadio = false;
+        _settingsDirty = false;
+        _settingsGeneration++;
+      });
+    } catch (error) {
+      if (mounted) {
+        setState(() => _settingsError = _friendlyActionError(error));
+      }
+    } finally {
+      if (mounted) setState(() => _settingsLoading = false);
+    }
+  }
+
+  Future<void> _readRadioSettings() async {
+    final model = _model;
+    final port = _port;
+    if (_settingsLoading || _busy || model == null || port == null) return;
+    if (_settingsDirty) {
+      final discard = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Text('Replace unsaved settings changes?'),
+          content: const Text(
+            'Reading the radio will replace the settings changes currently '
+            'shown on this page.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Read from radio'),
+            ),
+          ],
+        ),
+      );
+      if (discard != true || !mounted) return;
+    }
+    setState(() {
+      _settingsLoading = true;
+      _settingsError = null;
+    });
+    try {
+      await _transferTask(
+        'Reading radio settings - do not disconnect...',
+        () async {
+          final settings = await _bridge.readSettings(
+            model: model,
+            port: port,
+            onProgress: _reportTransferProgress,
+          );
+          final sourceImage = settings.imagePath;
+          final storedImage = sourceImage == null
+              ? null
+              : await _imageStore.saveForModel(model, sourceImage);
+          if (!mounted || _model != model || _port != port) return;
+          setState(() {
+            _radioSettings = settings;
+            _settingsLoadedModel = model;
+            if (storedImage != null) _radioImage = storedImage;
+            _settingsLoadedImage = _radioImage;
+            _settingsLoadedFromRadio = true;
+            _settingsDirty = false;
+            _settingsGeneration++;
+          });
+        },
+      );
+    } finally {
+      if (mounted) setState(() => _settingsLoading = false);
+    }
+  }
+
+  void _markRadioSettingsChanged(RadioSettingNode node) {
+    setState(() => _settingsDirty = true);
+  }
+
+  List<Map<String, Object?>> _radioSettingChanges() {
+    final changes = <Map<String, Object?>>[];
+    void walk(RadioSettingNode node) {
+      if (node.isGroup) {
+        for (final child in node.children) {
+          walk(child);
+        }
+      } else if (node.mutable && node.kind != 'unsupported') {
+        changes.add(node.toChangeJson());
+      }
+    }
+
+    for (final item in _radioSettings?.items ?? const <RadioSettingNode>[]) {
+      walk(item);
+    }
+    return changes;
+  }
+
+  Future<void> _writeRadioSettings() async {
+    final model = _model;
+    final port = _port;
+    final image = _radioImage;
+    if (model == null || port == null || image == null) return;
+    if (_settingsHaveInvalidValues) return;
+    final changes = _radioSettingChanges();
+    if (changes.isEmpty) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        icon: const Icon(
+          Icons.warning_amber_rounded,
+          color: Color(0xFFC46A15),
+          size: 32,
+        ),
+        title: const Text('Write these radio settings?'),
+        content: Text(
+          'This will write ${changes.length} radio setting values to '
+          '$model through $port. Keep the radio connected and powered on.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Write settings'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final succeeded = await _transferTask(
+      'Writing radio settings - do not disconnect...',
+      () async {
+        await _bridge.writeSettings(
+          model: model,
+          port: port,
+          imagePath: image,
+          changes: changes,
+          onProgress: _reportTransferProgress,
+        );
+      },
+    );
+    if (!mounted || !succeeded) return;
+    setState(() => _settingsDirty = false);
+    await _loadRadioSettings(force: true);
+  }
+
   void _addChannel() {
     final location = _channels.isEmpty
         ? 1
@@ -946,7 +1255,11 @@ class _NewChirpHomeState extends State<NewChirpHome> {
       if (ready != true) return;
     }
     await _transferTask('Reading radio — do not disconnect…', () async {
-      final result = await _bridge.download(model: _model!, port: _port!);
+      final result = await _bridge.download(
+        model: _model!,
+        port: _port!,
+        onProgress: _reportTransferProgress,
+      );
       final storedImage = await _imageStore.saveForModel(
         _model!,
         result.imagePath,
@@ -961,6 +1274,11 @@ class _NewChirpHomeState extends State<NewChirpHome> {
         _libraryOpen = true;
         _dirty = false;
         _page = 0;
+        _radioSettings = null;
+        _settingsDirty = false;
+        _settingsLoadedFromRadio = false;
+        _settingsLoadedModel = null;
+        _settingsLoadedImage = null;
       });
     });
   }
@@ -1004,6 +1322,11 @@ class _NewChirpHomeState extends State<NewChirpHome> {
       );
       return;
     }
+    final uppercasesNames =
+        _capabilities?.uppercaseNames == true &&
+        _activeChannels.any(
+          (channel) => channel.name != channel.name.toUpperCase(),
+        );
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -1014,7 +1337,9 @@ class _NewChirpHomeState extends State<NewChirpHome> {
         ),
         title: const Text('Write these channels to the radio?'),
         content: Text(
-          'This will program ${_activeChannels.length} channels on $_model through $_port. Keep the radio connected and powered on.',
+          'This will program ${_activeChannels.length} channels on $_model '
+          'through $_port. Keep the radio connected and powered on.'
+          '${uppercasesNames ? '\n\nLowercase channel names will be converted to uppercase because this radio only supports uppercase names.' : ''}',
         ),
         actions: [
           TextButton(
@@ -1029,34 +1354,51 @@ class _NewChirpHomeState extends State<NewChirpHome> {
       ),
     );
     if (confirmed != true) return;
-    var skipped = <Map<String, dynamic>>[];
+    var changes = <Map<String, dynamic>>[];
     await _transferTask('Writing radio — do not disconnect…', () async {
-      skipped = await _bridge.upload(
+      changes = await _bridge.upload(
         model: _model!,
         port: _port!,
         imagePath: _radioImage!,
         channels: _activeChannels,
         cleared: _clearedLocations.toList(),
+        onProgress: _reportTransferProgress,
       );
-      setState(() => _dirty = false);
+      final nameChanges = changes.where((entry) {
+        final from = entry['nameFrom'];
+        final to = entry['nameTo'];
+        return from != null && to != null && '$from' != '$to';
+      }).toList();
+      if (nameChanges.isNotEmpty) _recordHistory();
+      setState(() {
+        for (final entry in nameChanges) {
+          final location = (entry['location'] as num?)?.toInt();
+          final name = entry['nameTo']?.toString();
+          if (location == null || name == null) continue;
+          final index = _channels.indexWhere(
+            (channel) => channel.location == location,
+          );
+          if (index >= 0) _channels[index].name = name;
+        }
+        _dirty = false;
+      });
     });
-    if (skipped.isNotEmpty && mounted) {
+    if (changes.isNotEmpty && mounted) {
       await showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Some channels were not fully written'),
+          title: const Text('Some channel values were adjusted'),
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  'The write finished, but the radio locked some channels or '
-                  'fields. Some channels could not be written at all, and '
-                  'others were only partially written.',
+                  'The write finished, but NewChirp adjusted values the radio '
+                  'does not support or could not write some channels.',
                 ),
                 const SizedBox(height: 12),
-                for (final entry in skipped)
+                for (final entry in changes)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Text(() {
@@ -1067,15 +1409,28 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                         return 'Channel $location $name could not be '
                             'written: $reason';
                       }
+                      final notes = <String>[];
+                      final nameFrom = entry['nameFrom'];
+                      final nameTo = entry['nameTo'];
+                      if (nameFrom != null &&
+                          nameTo != null &&
+                          '$nameFrom' != '$nameTo') {
+                        notes.add('name changed from "$nameFrom" to "$nameTo"');
+                      }
                       final fields = (entry['fields'] as List? ?? const [])
                           .join(', ');
-                      return 'Channel $location $name: locked field(s): '
-                          '$fields. Everything else on this channel was '
-                          'written.';
+                      if (fields.isNotEmpty) {
+                        notes.add(
+                          'locked field(s): $fields; everything else was '
+                          'written',
+                        );
+                      }
+                      return 'Channel $location $name: ${notes.join('; ')}.';
                     }()),
                   ),
                 const Text(
-                  'Custom frequencies may require a channel outside the '
+                  'Names are converted only when the selected radio requires '
+                  'it. Custom frequencies may require a channel outside the '
                   'radio\'s locked memory range.',
                 ),
               ],
@@ -1092,7 +1447,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
     }
   }
 
-  Future<void> _transferTask(
+  Future<bool> _transferTask(
     String label,
     Future<void> Function() action,
   ) async {
@@ -1101,11 +1456,15 @@ class _NewChirpHomeState extends State<NewChirpHome> {
       _transferActive = true;
       _transferCancelling = false;
       _transferLabel = label;
+      _transferFraction = null;
+      _transferDetail = '';
       _status = label;
     });
     Object? failure;
+    var succeeded = false;
     try {
       await action();
+      succeeded = true;
       if (mounted) setState(() => _status = 'Ready');
     } catch (error) {
       if (!_transferCancelling) failure = error;
@@ -1124,6 +1483,17 @@ class _NewChirpHomeState extends State<NewChirpHome> {
       }
     }
     if (failure != null && mounted) await _showActionError(failure);
+    return succeeded;
+  }
+
+  void _reportTransferProgress(RadioProgress progress) {
+    if (!mounted) return;
+    setState(() {
+      _transferDetail = progress.label;
+      if (progress.fraction != null) {
+        _transferFraction = progress.fraction;
+      }
+    });
   }
 
   void _cancelTransfer() {
@@ -1162,10 +1532,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
               SafeArea(
                 child: Row(
                   children: [
-                    _Sidebar(
-                      page: _page,
-                      onPage: (page) => setState(() => _page = page),
-                    ),
+                    _Sidebar(page: _page, onPage: _selectPage),
                     Expanded(
                       child: Column(
                         children: [
@@ -1181,13 +1548,19 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                             onSave: () => _saveCsv(),
                             onSaveAs: () => _saveCsv(saveAs: true),
                             canSave: _libraryOpen,
-                            minimalMode: _page == 2 || _page == 3,
-                            minimalTitle: _page == 3
-                                ? 'GMRS & FRS Frequency Reference'
-                                : 'About & licenses',
-                            minimalSubtitle: _page == 3
-                                ? 'Part 95 FRS/GMRS channel plan'
-                                : 'Application information and open-source licenses',
+                            minimalMode: _page == 2 || _page == 3 || _page == 4,
+                            minimalTitle: switch (_page) {
+                              2 => 'About & licenses',
+                              3 => 'GMRS & FRS Frequency Reference',
+                              _ => 'Radio settings',
+                            },
+                            minimalSubtitle: switch (_page) {
+                              2 =>
+                                'Application information and open-source licenses',
+                              3 => 'Part 95 FRS/GMRS channel plan',
+                              _ =>
+                                'Radio-wide options exposed by the selected driver',
+                            },
                             showPrint: _page == 3,
                             onPrint: _printFrequencyReference,
                           ),
@@ -1199,6 +1572,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                                     : _buildWelcome(),
                               1 => _buildRadio(),
                               2 => _buildAbout(),
+                              4 => _buildRadioSettings(),
                               _ => _buildFrequencyReference(),
                             },
                           ),
@@ -1211,6 +1585,8 @@ class _NewChirpHomeState extends State<NewChirpHome> {
               if (_transferActive)
                 _TransferOverlay(
                   label: _transferLabel,
+                  detail: _transferDetail,
+                  fraction: _transferFraction,
                   cancelling: _transferCancelling,
                   onCancel: _cancelTransfer,
                 ),
@@ -1346,8 +1722,9 @@ class _NewChirpHomeState extends State<NewChirpHome> {
 
   Future<void> _showUpdateAvailable(UpdateCheckResult result) {
     final rawUrl = (result.releaseUrl ?? '').trim();
-    final downloadUrl =
-        rawUrl.isEmpty ? 'https://newchirp.net/#download' : rawUrl;
+    final downloadUrl = rawUrl.isEmpty
+        ? 'https://newchirp.net/#download'
+        : rawUrl;
     return showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
@@ -2445,6 +2822,396 @@ class _NewChirpHomeState extends State<NewChirpHome> {
     );
   }
 
+  Widget _settingsMessage({
+    required IconData icon,
+    required String title,
+    required String body,
+    Widget? action,
+  }) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: const Color(0xFF39725C)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(body, style: const TextStyle(color: Colors.black54)),
+                  if (action != null) ...[const SizedBox(height: 12), action],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRadioSettings() {
+    final model = _model;
+    final hasImage = model != null && _radioImage != null;
+    final canReadRadio = model != null && _port != null;
+    final settings = _radioSettings;
+    final hasSettings =
+        settings != null && settings.hasSettings && settings.items.isNotEmpty;
+    return Scrollbar(
+      controller: _settingsScrollController,
+      thumbVisibility: true,
+      child: SingleChildScrollView(
+        controller: _settingsScrollController,
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        padding: const EdgeInsets.fromLTRB(22, 22, 22, 40),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: SizedBox(
+            width: 900,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Radio settings',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Adjust radio-wide options such as squelch, backlight, VOX, '
+                  'and other controls exposed by the selected CHIRP driver.',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(color: Colors.black54),
+                ),
+                const SizedBox(height: 20),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.settings_input_antenna,
+                              color: Color(0xFF39725C),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                model == null
+                                    ? 'No radio model selected. Open Radio connection first.'
+                                    : '${model.replaceAll('_', ' ')}  |  '
+                                          '${_port ?? 'No programming cable selected'}'
+                                          '${_settingsLoadedFromRadio
+                                              ? '  |  read from radio'
+                                              : hasImage
+                                              ? '  |  stored image available'
+                                              : ''}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          alignment: WrapAlignment.end,
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            if (canReadRadio)
+                              FilledButton.tonalIcon(
+                                onPressed: _settingsLoading || _busy
+                                    ? null
+                                    : _readRadioSettings,
+                                icon: const Icon(Icons.cable),
+                                label: const Text('Read from radio'),
+                              ),
+                            if (hasImage)
+                              OutlinedButton.icon(
+                                onPressed: _settingsLoading || _busy
+                                    ? null
+                                    : () => _loadRadioSettings(force: true),
+                                icon: const Icon(Icons.refresh),
+                                label: const Text('Reload stored image'),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                if (_settingsLoading)
+                  const Card(
+                    child: Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          SizedBox(width: 14),
+                          Text('Loading radio settings...'),
+                        ],
+                      ),
+                    ),
+                  )
+                else if (!hasImage)
+                  _settingsMessage(
+                    icon: Icons.info_outline,
+                    title: 'Read radio settings',
+                    body: canReadRadio
+                        ? 'Read the current settings directly from the connected '
+                              'radio. This also refreshes the stored image used '
+                              'when writing settings back.'
+                        : 'Select the programming cable and exact model on Radio '
+                              'connection, then read the radio to load its '
+                              'settings.',
+                    action: canReadRadio
+                        ? FilledButton.icon(
+                            onPressed: _settingsLoading || _busy
+                                ? null
+                                : _readRadioSettings,
+                            icon: const Icon(Icons.cable),
+                            label: const Text('Read from radio'),
+                          )
+                        : FilledButton.icon(
+                            onPressed: _openRadioConnection,
+                            icon: const Icon(Icons.settings_input_antenna),
+                            label: const Text('Open radio connection'),
+                          ),
+                  )
+                else if (_settingsError != null)
+                  _settingsMessage(
+                    icon: Icons.error_outline,
+                    title: 'Could not load radio settings',
+                    body: _settingsError!,
+                    action: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        if (canReadRadio)
+                          FilledButton.icon(
+                            onPressed: _settingsLoading || _busy
+                                ? null
+                                : _readRadioSettings,
+                            icon: const Icon(Icons.cable),
+                            label: const Text('Read from radio'),
+                          ),
+                        TextButton.icon(
+                          onPressed: _settingsLoading || _busy
+                              ? null
+                              : () => _loadRadioSettings(force: true),
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Reload stored image'),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (settings == null)
+                  _settingsMessage(
+                    icon: Icons.tune,
+                    title: 'Settings have not loaded yet',
+                    body: canReadRadio
+                        ? 'Choose Read from radio for the current values, or '
+                              'reload the stored image for cached values.'
+                        : 'Load the settings from the stored radio image.',
+                    action: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        if (canReadRadio)
+                          FilledButton.icon(
+                            onPressed: _settingsLoading || _busy
+                                ? null
+                                : _readRadioSettings,
+                            icon: const Icon(Icons.cable),
+                            label: const Text('Read from radio'),
+                          ),
+                        TextButton.icon(
+                          onPressed: _settingsLoading || _busy
+                              ? null
+                              : () => _loadRadioSettings(force: true),
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Reload stored image'),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (!hasSettings)
+                  _settingsMessage(
+                    icon: Icons.tune,
+                    title: 'This radio does not expose global settings',
+                    body:
+                        'The selected CHIRP driver does not provide radio-wide '
+                        'settings. Per-channel settings are still available in '
+                        'the channel editor.',
+                  )
+                else ...[
+                  for (final item in settings.items)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 14),
+                      child: item.isGroup
+                          ? _buildRadioSettingsGroup(item)
+                          : Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(18),
+                                child: _RadioSettingField(
+                                  key: ValueKey(
+                                    'setting-$_settingsGeneration-'
+                                    '${item.id.join('-')}',
+                                  ),
+                                  node: item,
+                                  onChanged: _markRadioSettingsChanged,
+                                ),
+                              ),
+                            ),
+                    ),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              _settingsDirty
+                                  ? 'Unsaved settings changes'
+                                  : _settingsLoadedFromRadio
+                                  ? 'Settings match the values last read from the radio.'
+                                  : 'Settings match the stored radio image.',
+                              style: TextStyle(
+                                color: _settingsDirty
+                                    ? const Color(0xFFC46A15)
+                                    : Colors.black54,
+                                fontWeight: _settingsDirty
+                                    ? FontWeight.w700
+                                    : FontWeight.w400,
+                              ),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: _settingsDirty
+                                ? () => _loadRadioSettings(force: true)
+                                : null,
+                            child: const Text('Discard changes'),
+                          ),
+                          const SizedBox(width: 10),
+                          if (_port == null)
+                            OutlinedButton.icon(
+                              onPressed: _openRadioConnection,
+                              icon: const Icon(Icons.cable),
+                              label: const Text('Connect radio to write'),
+                            )
+                          else
+                            FilledButton.icon(
+                              onPressed:
+                                  _settingsDirty && !_settingsHaveInvalidValues
+                                  ? _writeRadioSettings
+                                  : null,
+                              icon: const Icon(Icons.save_outlined),
+                              label: const Text('Write settings to radio'),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRadioSettingsGroup(
+    RadioSettingNode group, {
+    bool nested = false,
+  }) {
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Icon(
+              nested ? Icons.subdirectory_arrow_right : Icons.tune,
+              size: nested ? 18 : 21,
+              color: const Color(0xFF39725C),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                group.label,
+                style: TextStyle(
+                  fontSize: nested ? 14 : 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (group.documentation != null) ...[
+          const SizedBox(height: 5),
+          Text(
+            group.documentation!,
+            style: const TextStyle(color: Colors.black54, fontSize: 12),
+          ),
+        ],
+        if (group.children.isEmpty)
+          const Padding(
+            padding: EdgeInsets.only(top: 10),
+            child: Text(
+              'No editable options in this group.',
+              style: TextStyle(color: Colors.black45),
+            ),
+          )
+        else
+          for (final child in group.children)
+            if (child.isGroup)
+              Padding(
+                padding: const EdgeInsets.only(top: 14, left: 10),
+                child: _buildRadioSettingsGroup(child, nested: true),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: _RadioSettingField(
+                  key: ValueKey(
+                    'setting-$_settingsGeneration-${child.id.join('-')}',
+                  ),
+                  node: child,
+                  onChanged: _markRadioSettingsChanged,
+                ),
+              ),
+      ],
+    );
+    if (nested) {
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          color: const Color(0xFFF5F8F5),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Padding(padding: const EdgeInsets.all(14), child: content),
+      );
+    }
+    return Card(
+      child: Padding(padding: const EdgeInsets.all(18), child: content),
+    );
+  }
+
   Widget _buildRadio() {
     final storedImageReady =
         _model != null &&
@@ -2601,6 +3368,12 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                                       _imageStore.hasForModel(model)
                                   ? _imageStore.pathForModel(model)
                                   : null;
+                              _radioSettings = null;
+                              _settingsDirty = false;
+                              _settingsLoadedFromRadio = false;
+                              _settingsLoadedModel = null;
+                              _settingsLoadedImage = null;
+                              _settingsError = null;
                             });
                             unawaited(_saveRadioSelection());
                           },
@@ -2768,6 +3541,13 @@ class _Sidebar extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           _NavItem(
+            label: 'Radio settings',
+            icon: Icons.tune,
+            selected: page == 4,
+            onTap: () => onPage(4),
+          ),
+          const SizedBox(height: 6),
+          _NavItem(
             label: 'Frequency reference',
             icon: Icons.table_chart_outlined,
             selected: page == 3,
@@ -2859,64 +3639,307 @@ class _NavItem extends StatelessWidget {
   );
 }
 
-class _TransferOverlay extends StatelessWidget {
+class _TransferOverlay extends StatefulWidget {
   const _TransferOverlay({
     required this.label,
+    required this.detail,
+    required this.fraction,
     required this.cancelling,
     required this.onCancel,
   });
 
   final String label;
+  final String detail;
+  final double? fraction;
   final bool cancelling;
   final VoidCallback onCancel;
 
   @override
-  Widget build(BuildContext context) => Positioned.fill(
-    child: ColoredBox(
-      color: Colors.black54,
-      child: Center(
-        child: Card(
-          child: SizedBox(
-            width: 390,
-            child: Padding(
-              padding: const EdgeInsets.all(28),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(
-                    width: 42,
-                    height: 42,
-                    child: CircularProgressIndicator(strokeWidth: 3),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    label,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
+  State<_TransferOverlay> createState() => _TransferOverlayState();
+}
+
+class _TransferOverlayState extends State<_TransferOverlay> {
+  final Stopwatch _elapsed = Stopwatch();
+  Timer? _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    _elapsed.start();
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
+
+  String get _elapsedText {
+    final seconds = _elapsed.elapsed.inSeconds;
+    final minutes = seconds ~/ 60;
+    final remainder = seconds % 60;
+    return minutes > 0
+        ? '${minutes}m ${remainder.toString().padLeft(2, '0')}s'
+        : '${remainder}s';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final fraction = widget.fraction;
+    final percent = fraction == null ? null : (fraction * 100).round();
+    return Positioned.fill(
+      child: ColoredBox(
+        color: Colors.black54,
+        child: Center(
+          child: Card(
+            child: SizedBox(
+              width: 390,
+              child: Padding(
+                padding: const EdgeInsets.all(28),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 58,
+                      height: 58,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            value: fraction,
+                            strokeWidth: 4,
+                          ),
+                          if (percent != null)
+                            Text(
+                              '$percent%',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Keep the radio powered on and the cable connected.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.black54),
-                  ),
-                  const SizedBox(height: 22),
-                  OutlinedButton.icon(
-                    onPressed: cancelling ? null : onCancel,
-                    icon: const Icon(Icons.stop_circle_outlined),
-                    label: Text(cancelling ? 'Cancelling…' : 'Cancel'),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    Text(
+                      widget.label,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      widget.detail.isEmpty
+                          ? 'Preparing transfer...'
+                          : widget.detail,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Color(0xFF39725C),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    LinearProgressIndicator(value: fraction),
+                    const SizedBox(height: 10),
+                    Text(
+                      percent == null
+                          ? 'Waiting for the radio to report progress'
+                          : '$percent% complete  |  $_elapsedText elapsed',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.black54),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Keep the radio powered on and the cable connected.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.black54),
+                    ),
+                    const SizedBox(height: 22),
+                    OutlinedButton.icon(
+                      onPressed: widget.cancelling ? null : widget.onCancel,
+                      icon: const Icon(Icons.stop_circle_outlined),
+                      label: Text(
+                        widget.cancelling ? 'Cancelling...' : 'Cancel',
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
+}
+
+class _RadioSettingField extends StatefulWidget {
+  const _RadioSettingField({
+    super.key,
+    required this.node,
+    required this.onChanged,
+  });
+
+  final RadioSettingNode node;
+  final ValueChanged<RadioSettingNode> onChanged;
+
+  @override
+  State<_RadioSettingField> createState() => _RadioSettingFieldState();
+}
+
+class _RadioSettingFieldState extends State<_RadioSettingField> {
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
+  String? _error;
+
+  String get _textValue => '${widget.node.value ?? ''}';
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: _textValue);
+    _focusNode = FocusNode();
+  }
+
+  @override
+  void didUpdateWidget(covariant _RadioSettingField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.node != widget.node) {
+      _controller.text = _textValue;
+      _error = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  String? get _rangeHint {
+    final node = widget.node;
+    if (node.min == null || node.max == null) return null;
+    return '${node.min} - ${node.max}';
+  }
+
+  void _changed(String text) {
+    final node = widget.node;
+    String? error;
+    if (node.kind == 'integer') {
+      final parsed = int.tryParse(text.trim());
+      if (parsed == null) {
+        error = 'Enter a whole number';
+      } else if (node.min != null && parsed < node.min!) {
+        error = 'Value must be at least ${node.min}';
+      } else if (node.max != null && parsed > node.max!) {
+        error = 'Value must be at most ${node.max}';
+      } else {
+        node.value = parsed;
+      }
+    } else if (node.kind == 'number') {
+      final parsed = double.tryParse(text.trim());
+      if (parsed == null) {
+        error = 'Enter a number';
+      } else if (node.min != null && parsed < node.min!) {
+        error = 'Value must be at least ${node.min}';
+      } else if (node.max != null && parsed > node.max!) {
+        error = 'Value must be at most ${node.max}';
+      } else {
+        node.value = parsed;
+      }
+    } else {
+      final length = text.length;
+      if (node.minLength != null && length < node.minLength!) {
+        error = 'Use at least ${node.minLength} characters';
+      } else if (node.maxLength != null && length > node.maxLength!) {
+        error = 'Use at most ${node.maxLength} characters';
+      } else {
+        node.value = text;
+      }
+    }
+    node.invalid = error != null;
+    setState(() => _error = error);
+    widget.onChanged(node);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final node = widget.node;
+    final documentation = node.documentation;
+    if (node.kind == 'boolean') {
+      return SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        title: Text(node.label),
+        subtitle: documentation == null ? null : Text(documentation),
+        value: node.value == true,
+        onChanged: node.mutable
+            ? (value) {
+                node.value = value;
+                node.invalid = false;
+                widget.onChanged(node);
+              }
+            : null,
+      );
+    }
+    if (node.kind == 'choice') {
+      final choices = [...node.options];
+      final current = _textValue;
+      if (current.isNotEmpty && !choices.contains(current)) {
+        choices.insert(0, current);
+      }
+      return DropdownButtonFormField<String>(
+        initialValue: current.isEmpty ? null : current,
+        decoration: InputDecoration(
+          labelText: node.label,
+          helperText: documentation,
+        ),
+        items: choices
+            .map(
+              (choice) => DropdownMenuItem(value: choice, child: Text(choice)),
+            )
+            .toList(),
+        onChanged: node.mutable
+            ? (value) {
+                if (value == null) return;
+                node.value = value;
+                node.invalid = false;
+                widget.onChanged(node);
+              }
+            : null,
+      );
+    }
+    if (node.kind == 'unsupported') {
+      return Text(
+        '${node.label}: this setting type is not supported yet.',
+        style: const TextStyle(color: Color(0xFF9B5B18)),
+      );
+    }
+    return TextField(
+      controller: _controller,
+      focusNode: _focusNode,
+      enabled: node.mutable,
+      keyboardType: node.kind == 'string'
+          ? TextInputType.text
+          : TextInputType.number,
+      inputFormatters:
+          node.kind == 'string' && node.maxLength != null && node.maxLength! > 0
+          ? [LengthLimitingTextInputFormatter(node.maxLength)]
+          : null,
+      decoration: InputDecoration(
+        labelText: node.label,
+        helperText: documentation,
+        errorText: _error,
+        suffixText: _rangeHint,
+      ),
+      onChanged: _changed,
+    );
+  }
 }
 
 class _TopBar extends StatelessWidget {
@@ -3999,6 +5022,10 @@ class _ChannelEditor extends StatelessWidget {
                         label: 'Name',
                         value: channel.name,
                         maxLength: capabilities?.nameLength,
+                        helperText: capabilities?.uppercaseNames == true
+                            ? 'This radio stores channel names in uppercase. '
+                                  'NewChirp converts them when writing.'
+                            : null,
                         onValue: (v) => onChanged(() => channel.name = v),
                       ),
                     ),
@@ -4285,12 +5312,14 @@ class _TextField extends StatefulWidget {
     required this.onValue,
     this.maxLines = 1,
     this.maxLength,
+    this.helperText,
   });
   final String label;
   final String value;
   final ValueChanged<String> onValue;
   final int maxLines;
   final int? maxLength;
+  final String? helperText;
   @override
   State<_TextField> createState() => _TextFieldState();
 }
@@ -4323,7 +5352,10 @@ class _TextFieldState extends State<_TextField> {
     maxLines: widget.maxLines,
     maxLength: widget.maxLength,
     onChanged: widget.onValue,
-    decoration: InputDecoration(labelText: widget.label),
+    decoration: InputDecoration(
+      labelText: widget.label,
+      helperText: widget.helperText,
+    ),
   );
 }
 
@@ -4370,7 +5402,7 @@ class _ExtraFieldEditor extends StatelessWidget {
   }
 }
 
-class _NumberField extends StatelessWidget {
+class _NumberField extends StatefulWidget {
   const _NumberField({
     required this.label,
     required this.value,
@@ -4381,16 +5413,63 @@ class _NumberField extends StatelessWidget {
   final double value;
   final ValueChanged<double> onValue;
   final int decimals;
+
+  @override
+  State<_NumberField> createState() => _NumberFieldState();
+}
+
+class _NumberFieldState extends State<_NumberField> {
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
+
+  String get _formattedValue => widget.value.toStringAsFixed(widget.decimals);
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: _formattedValue);
+    _focusNode = FocusNode()..addListener(_handleFocusChange);
+  }
+
+  @override
+  void didUpdateWidget(covariant _NumberField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value == widget.value) return;
+    if (double.tryParse(_controller.text) == widget.value) return;
+    _replaceText(_formattedValue);
+  }
+
+  void _handleFocusChange() {
+    if (!_focusNode.hasFocus &&
+        double.tryParse(_controller.text) != widget.value) {
+      _replaceText(_formattedValue);
+    }
+  }
+
+  void _replaceText(String text) {
+    _controller.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) => TextFormField(
-    key: ValueKey('$label-$value'),
-    initialValue: value.toStringAsFixed(decimals),
+    controller: _controller,
+    focusNode: _focusNode,
     keyboardType: const TextInputType.numberWithOptions(decimal: true),
     onChanged: (text) {
       final parsed = double.tryParse(text);
-      if (parsed != null) onValue(parsed);
+      if (parsed != null) widget.onValue(parsed);
     },
-    decoration: InputDecoration(labelText: label),
+    decoration: InputDecoration(labelText: widget.label),
   );
 }
 

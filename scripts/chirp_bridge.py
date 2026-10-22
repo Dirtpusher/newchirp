@@ -4,13 +4,50 @@ import argparse
 import builtins
 import json
 import os
+import re
 import sys
 import tempfile
+PROGRESS_PREFIX = "__NEWCHIRP_PROGRESS__ "
 
 # CHIRP normally redirects stdout and stderr to ~/.chirp/debug.log when it is
 # launched without a terminal. The bridge owns those streams as its JSON/error
 # protocol, so keep them attached to the parent process.
 os.environ.setdefault("CHIRP_TESTENV", "1")
+
+
+def emit_progress(label, fraction=None):
+    """Send structured transfer progress without touching the JSON stdout."""
+    message = str(label).replace("\r", " ").replace("\n", " ").strip()
+    payload = {"label": message or "Working..."}
+    if fraction is not None:
+        try:
+            payload["fraction"] = max(0.0, min(1.0, float(fraction)))
+        except (TypeError, ValueError):
+            pass
+    sys.stderr.write(
+        PROGRESS_PREFIX + json.dumps(payload, separators=(",", ":")) + "\n"
+    )
+    sys.stderr.flush()
+
+
+def status_progress(status, start=0.0, end=1.0):
+    """Translate a CHIRP Status message into a structured progress event."""
+    label = getattr(status, "msg", None) or str(status)
+    raw = None
+    current = getattr(status, "cur", None)
+    maximum = getattr(status, "max", None)
+    if isinstance(current, (int, float)) and isinstance(maximum, (int, float)):
+        if maximum > 0:
+            raw = float(current) / float(maximum)
+    if raw is None:
+        match = re.search(r"(\d+(?:\.\d+)?)\s*%", str(status))
+        if match:
+            raw = float(match.group(1)) / 100.0
+    if raw is None:
+        emit_progress(label)
+    else:
+        raw = max(0.0, min(1.0, raw))
+        emit_progress(label, start + (end - start) * raw)
 
 
 def load_chirp(source, vendor):
@@ -109,8 +146,142 @@ def features_json(radio):
         "tones": list(features.valid_tones),
         "dtcsCodes": list(features.valid_dtcs_codes),
         "nameLength": features.valid_name_length,
+        "validCharacters": features.valid_characters,
         "hasTuningStep": features.has_tuning_step,
     }
+
+
+def setting_doc(element):
+    doc = getattr(element, "__doc__", None)
+    if not isinstance(doc, str):
+        return None
+    doc = doc.strip()
+    if not doc or doc == element.get_name():
+        return None
+    return doc
+
+
+def setting_value_json(setting):
+    from chirp.settings import (
+        RadioSettingValueBoolean,
+        RadioSettingValueFloat,
+        RadioSettingValueInteger,
+        RadioSettingValueList,
+        RadioSettingValueString,
+    )
+
+    value = setting.value
+    current = value.get_value()
+    options = []
+    minimum = None
+    maximum = None
+    step = None
+    min_length = None
+    max_length = None
+    if isinstance(value, RadioSettingValueBoolean):
+        kind = "boolean"
+        current = bool(current)
+    elif isinstance(value, RadioSettingValueList):
+        kind = "choice"
+        options = [str(option) for option in value.get_options()]
+        current = str(current)
+    elif isinstance(value, RadioSettingValueInteger):
+        kind = "integer"
+        current = int(current)
+        minimum = int(value.get_min())
+        maximum = int(value.get_max())
+        step = int(value.get_step())
+    elif isinstance(value, RadioSettingValueFloat):
+        kind = "number"
+        current = float(current)
+        minimum = float(value.get_min())
+        maximum = float(value.get_max())
+    else:
+        kind = "string"
+        current = str(current).rstrip()
+        if isinstance(value, RadioSettingValueString):
+            min_length = int(value.minlength)
+            max_length = int(value.maxlength)
+    return {
+        "kind": kind,
+        "value": current,
+        "options": options,
+        "mutable": bool(value.get_mutable()),
+        "min": minimum,
+        "max": maximum,
+        "step": step,
+        "minLength": min_length,
+        "maxLength": max_length,
+    }
+
+
+def settings_tree_json(elements, prefix=()):
+    from chirp.settings import RadioSetting, RadioSettingGroup
+
+    result = []
+    for index, element in enumerate(elements):
+        path = list(prefix + (index,))
+        base = {
+            "id": path,
+            "name": element.get_name(),
+            "shortName": element.get_shortname(),
+            "documentation": setting_doc(element),
+        }
+        if isinstance(element, RadioSetting):
+            if len(element) != 1:
+                result.append({
+                    **base,
+                    "kind": "unsupported",
+                    "value": None,
+                    "options": [],
+                    "mutable": False,
+                    "min": None,
+                    "max": None,
+                    "step": None,
+                    "minLength": None,
+                    "maxLength": None,
+                })
+                continue
+            result.append({**base, **setting_value_json(element)})
+        elif isinstance(element, RadioSettingGroup):
+            result.append({
+                **base,
+                "kind": "group",
+                "value": None,
+                "options": [],
+                "mutable": False,
+                "min": None,
+                "max": None,
+                "step": None,
+                "minLength": None,
+                "maxLength": None,
+                "children": settings_tree_json(element, tuple(path)),
+            })
+    return result
+
+
+def apply_setting_changes(settings, changes):
+    from chirp.settings import RadioSetting
+
+    for change in changes:
+        path = change.get("id")
+        if not isinstance(path, list) or not path:
+            raise RuntimeError("A radio setting change was missing its path.")
+        element = settings
+        try:
+            for index in path:
+                element = list(element)[int(index)]
+        except (IndexError, TypeError, ValueError) as exc:
+            raise RuntimeError(
+                "A radio setting change no longer matches the image."
+            ) from exc
+        if not isinstance(element, RadioSetting) or len(element) != 1:
+            raise RuntimeError(
+                "A radio setting change targeted an unsupported value."
+            )
+        if not element.value.get_mutable():
+            continue
+        element.value = change.get("value")
 
 
 def apply_json(radio, mem, item):
@@ -181,7 +352,7 @@ def open_serial(radio_class, port):
     return handle
 
 
-def radio_for(directory, model, port):
+def radio_for(directory, model, port, progress_range=(0.0, 1.0)):
     radio_class = directory.get_radio(model)
     handle = open_serial(radio_class, port)
     try:
@@ -190,13 +361,32 @@ def radio_for(directory, model, port):
         except NotImplementedError:
             pass
         radio = radio_class(handle)
-        # The GUI replaces CHIRP's console progress callback. Do the same so
-        # progress text never contaminates the JSON response on stdout.
-        radio.status_fn = lambda status: None
+        # CHIRP's status callbacks become structured progress events on
+        # stderr, leaving stdout available for the final JSON response.
+        radio.status_fn = lambda status: status_progress(
+            status, *progress_range
+        )
         return radio
     except Exception:
         handle.close()
         raise
+
+
+def radio_from_image(directory, model, image):
+    """Build a driver instance backed only by a saved radio image."""
+    radio = directory.get_radio(model)(None)
+    radio.load_mmap(image)
+    return radio
+
+
+def settings_payload(radio):
+    settings = radio.get_settings()
+    return {
+        "hasSettings": bool(
+            getattr(radio.get_features(), "has_settings", False)
+        ),
+        "settings": settings_tree_json(settings or []),
+    }
 
 
 def main():
@@ -215,6 +405,16 @@ def main():
             command.add_argument("--image", required=True)
             command.add_argument("--channels", required=True)
             command.add_argument("--cleared", default="")
+    read_settings = sub.add_parser("read-settings")
+    read_settings.add_argument("--model", required=True)
+    settings_source = read_settings.add_mutually_exclusive_group(required=True)
+    settings_source.add_argument("--image")
+    settings_source.add_argument("--port")
+    write_settings = sub.add_parser("write-settings")
+    write_settings.add_argument("--model", required=True)
+    write_settings.add_argument("--port", required=True)
+    write_settings.add_argument("--image", required=True)
+    write_settings.add_argument("--settings", required=True)
     args = parser.parse_args()
     try:
         directory = load_chirp(args.source, args.vendor)
@@ -229,32 +429,82 @@ def main():
                 "preDownload": prompts.pre_download,
             }))
             return
-        radio = radio_for(directory, args.model, args.port)
+        if args.command == "read-settings":
+            if args.port is not None:
+                radio = radio_for(
+                    directory,
+                    args.model,
+                    args.port,
+                    progress_range=(0.02, 0.97),
+                )
+                try:
+                    emit_progress("Reading radio settings...", 0.01)
+                    radio.sync_in()
+                    fd, image = tempfile.mkstemp(
+                        prefix="newchirp-", suffix=".img"
+                    )
+                    os.close(fd)
+                    radio.save_mmap(image)
+                    payload = settings_payload(radio)
+                    payload["imagePath"] = image
+                    emit_progress("Radio settings read.", 1.0)
+                    print(json.dumps(payload))
+                finally:
+                    radio.pipe.close()
+            else:
+                radio = radio_from_image(directory, args.model, args.image)
+                print(json.dumps(settings_payload(radio)))
+            return
+        if args.command == "download":
+            progress_range = (0.02, 0.92)
+        elif args.command == "upload":
+            progress_range = (0.10, 0.98)
+        else:
+            progress_range = (0.12, 0.97)
+        radio = radio_for(
+            directory, args.model, args.port, progress_range=progress_range
+        )
         try:
             if args.command == "download":
+                emit_progress("Connecting to radio...", 0.01)
                 radio.sync_in()
+                emit_progress("Saving the radio image...", 0.93)
                 fd, image = tempfile.mkstemp(prefix="newchirp-", suffix=".img")
                 os.close(fd)
                 radio.save_mmap(image)
                 start, end = radio.get_features().memory_bounds
+                locations = list(range(start, end + 1))
                 channels = []
-                for location in range(start, end + 1):
+                for index, location in enumerate(locations):
                     mem = radio.get_memory(location)
                     if not mem.empty:
                         channels.append(memory_json(mem))
+                    if locations and (
+                        index % 20 == 0 or index == len(locations) - 1
+                    ):
+                        emit_progress(
+                            "Building the channel list...",
+                            0.94 + 0.05 * (index + 1) / len(locations),
+                        )
+                emit_progress("Read complete.", 1.0)
                 print(json.dumps({
                     "channels": channels,
                     "imagePath": image,
                     "features": features_json(radio),
                 }))
-            else:
+            elif args.command == "upload":
+                emit_progress("Preparing channels...", 0.02)
                 radio.load_mmap(args.image)
                 with open(args.channels, encoding="utf-8") as handle:
                     items = json.load(handle)
                 from chirp import chirp_common
                 skipped = []
                 adjusted = []
-                for item in items:
+                for index, item in enumerate(items):
+                    requested_name = str(item.get("name", ""))
+                    filtered_name = radio.filter_name(requested_name)
+                    item = dict(item)
+                    item["name"] = filtered_name
                     try:
                         mem = radio.get_memory(int(item["location"]))
                     except Exception:
@@ -266,7 +516,7 @@ def main():
                             if locked_fields:
                                 skipped.append({
                                     "location": int(item["location"]),
-                                    "name": item.get("name", ""),
+                                    "name": filtered_name,
                                     "reason": (
                                         "locked field(s): %s left a required "
                                         "value unchanged" % ", ".join(locked_fields)
@@ -277,19 +527,28 @@ def main():
                             raise RuntimeError(
                                 f"Channel {mem.number}: {errors[0]}")
                         radio.set_memory(mem)
-                        if locked_fields:
+                        if locked_fields or filtered_name != requested_name:
                             adjusted.append({
                                 "location": int(item["location"]),
-                                "name": item.get("name", ""),
+                                "name": filtered_name,
                                 "fields": locked_fields,
+                                "nameFrom": requested_name,
+                                "nameTo": filtered_name,
                             })
                     except chirp_common.ImmutableValueError as exc:
                         skipped.append({
                             "location": int(item["location"]),
-                            "name": item.get("name", ""),
+                            "name": filtered_name,
                             "reason": str(exc),
                             "skipped": True,
                         })
+                    if items and (
+                        index % 10 == 0 or index == len(items) - 1
+                    ):
+                        emit_progress(
+                            "Preparing channels...",
+                            0.03 + 0.06 * (index + 1) / len(items),
+                        )
                 cleared = [
                     int(part) for part in args.cleared.split(",") if part.strip()
                 ]
@@ -300,12 +559,36 @@ def main():
                         radio.set_memory(mem)
                     except Exception:
                         continue
+                emit_progress("Writing the image to the radio...", 0.10)
                 radio.sync_out()
+                emit_progress("Saving the updated image...", 0.99)
+                radio.save_mmap(args.image)
+                emit_progress("Write complete.", 1.0)
                 print(json.dumps({
                     "ok": True,
                     "skipped": skipped,
                     "adjusted": adjusted,
                 }))
+            else:
+                emit_progress("Preparing radio settings...", 0.02)
+                radio.load_mmap(args.image)
+                with open(args.settings, encoding="utf-8") as handle:
+                    payload = json.load(handle)
+                settings = radio.get_settings()
+                if settings is None:
+                    raise RuntimeError(
+                        "This radio does not expose global settings."
+                    )
+                changes = payload.get("changes", [])
+                apply_setting_changes(settings, changes)
+                emit_progress("Applying settings...", 0.10)
+                radio.set_settings(settings)
+                emit_progress("Writing settings to the radio...", 0.12)
+                radio.sync_out()
+                emit_progress("Saving the updated image...", 0.99)
+                radio.save_mmap(args.image)
+                emit_progress("Settings write complete.", 1.0)
+                print(json.dumps({"ok": True, "changed": len(changes)}))
         finally:
             radio.pipe.close()
     except Exception as exc:
