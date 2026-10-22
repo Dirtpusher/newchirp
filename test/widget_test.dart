@@ -61,6 +61,43 @@ void main() {
     expect(find.text('COMMENT'), findsOneWidget);
   });
 
+  testWidgets('adding a channel reveals it and confirms creation', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    await openGmrsStarter(tester);
+
+    final verticalList = find.byWidgetPredicate(
+      (widget) =>
+          widget is Scrollable && widget.axisDirection == AxisDirection.down,
+    );
+    final before = tester.state<ScrollableState>(verticalList).position;
+    expect(before.pixels, lessThan(before.maxScrollExtent));
+
+    await tester.tap(find.text('Add channel'));
+    await tester.pumpAndSettle();
+
+    final after = tester.state<ScrollableState>(verticalList).position;
+    expect(after.pixels, after.maxScrollExtent);
+    expect(find.text('NEW 23'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(SnackBar),
+        matching: find.text('Channel 23 added'),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pumpAndSettle();
+  });
+
   testWidgets('double-clicking a channel opens the modal editor', (
     tester,
   ) async {

@@ -257,6 +257,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
   final _imageStore = RadioImageStore();
   Future<void>? _radioSelectionLoad;
   final _searchController = TextEditingController();
+  final _channelTableKey = GlobalKey<_ChannelTableState>();
   final _settingsScrollController = ScrollController();
   List<RadioChannel> _channels = [];
   int _selected = -1;
@@ -1064,8 +1065,22 @@ class _NewChirpHomeState extends State<NewChirpHome> {
           frequency: 146.52,
         ),
       );
+      _searchController.clear();
+      _query = '';
       _selected = _channels.length - 1;
       _dirty = true;
+    });
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text('Channel $location added'),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _channelTableKey.currentState?.revealSelectedChannel();
     });
   }
 
@@ -2170,6 +2185,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                     child: visible.isEmpty
                         ? const _EmptyLibrary()
                         : _ChannelTable(
+                            key: _channelTableKey,
                             entries: visible,
                             selected: _selected,
                             capabilities: _capabilities,
@@ -4430,6 +4446,7 @@ class _ChannelColumn {
 
 class _ChannelTable extends StatefulWidget {
   const _ChannelTable({
+    super.key,
     required this.entries,
     required this.selected,
     required this.capabilities,
@@ -4473,6 +4490,24 @@ class _ChannelTableState extends State<_ChannelTable> {
   final Map<String, double> _workingWidths = {};
   final Map<String, double> _resizeStartX = {};
   final Map<String, double> _resizeStartWidth = {};
+
+  void revealSelectedChannel() {
+    if (!_verticalController.hasClients) return;
+    final position = _verticalController.position;
+    final target = position.maxScrollExtent;
+    if ((position.pixels - target).abs() < 1) return;
+    unawaited(
+      _verticalController
+          .animateTo(
+            target,
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+          )
+          .then((_) {
+            if (mounted) revealSelectedChannel();
+          }),
+    );
+  }
 
   @override
   void dispose() {
@@ -4827,6 +4862,7 @@ class _ChannelTableState extends State<_ChannelTable> {
                     controller: _verticalController,
                     child: ListView.builder(
                       controller: _verticalController,
+                      itemExtent: 45,
                       itemCount: widget.entries.length,
                       itemBuilder: (context, index) {
                         final entry = widget.entries[index];
