@@ -10,7 +10,7 @@ tags:
   - "module:chirp_bridge.py"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T13:43:31Z"
+timestamp: "2026-10-22T17:02:36Z"
 concept_id: chirp_bridge
 language: python
 ---
@@ -27,11 +27,19 @@ Small JSON boundary between NewChirp and the audited CHIRP driver tree.
 
 | Type | Target |
 |------|--------|
+| related | [emit_progress](/chirp_bridge/emit_progress.md) |
+| related | [status_progress](/chirp_bridge/status_progress.md) |
 | related | [load_chirp](/chirp_bridge/load_chirp.md) |
 | related | [memory_json](/chirp_bridge/memory_json.md) |
 | related | [extra_fields_json](/chirp_bridge/extra_fields_json.md) |
 | related | [features_json](/chirp_bridge/features_json.md) |
+| related | [setting_doc](/chirp_bridge/setting_doc.md) |
+| related | [setting_value_json](/chirp_bridge/setting_value_json.md) |
+| related | [settings_tree_json](/chirp_bridge/settings_tree_json.md) |
+| related | [apply_setting_changes](/chirp_bridge/apply_setting_changes.md) |
 | related | [apply_json](/chirp_bridge/apply_json.md) |
 | related | [open_serial](/chirp_bridge/open_serial.md) |
 | related | [radio_for](/chirp_bridge/radio_for.md) |
+| related | [radio_from_image](/chirp_bridge/radio_from_image.md) |
+| related | [settings_payload](/chirp_bridge/settings_payload.md) |
 | related | [main](/chirp_bridge/main.md) |

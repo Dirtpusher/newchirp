@@ -9,7 +9,7 @@ tags:
   - "module:chirp_bridge.py"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T13:43:31Z"
+timestamp: "2026-10-22T17:02:36Z"
 concept_id: chirp_bridge/features_json
 language: python
 ---
@@ -29,7 +29,7 @@ def features_json(radio)
 | `radio` | `—` | `—` |
 
 ## Source
-Lines 99–113 in `chirp_bridge.py`
+Lines 136–151 in `chirp_bridge.py`
 
 ## Relationships
 

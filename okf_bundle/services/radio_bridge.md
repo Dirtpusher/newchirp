@@ -10,7 +10,7 @@ tags:
   - "domain:radio_bridge.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T21:36:05Z"
+timestamp: "2026-10-22T17:02:43Z"
 concept_id: services/radio_bridge
 language: dart
 ---
@@ -24,11 +24,16 @@ language: dart
 | related | [RadioBridgeException](/services/radio_bridge/RadioBridgeException.md) |
 | related | [RadioInstructions](/services/radio_bridge/RadioInstructions.md) |
 | related | [RadioCapabilities](/services/radio_bridge/RadioCapabilities.md) |
+| related | [RadioProgress](/services/radio_bridge/RadioProgress.md) |
+| related | [RadioSettingNode](/services/radio_bridge/RadioSettingNode.md) |
+| related | [RadioSettings](/services/radio_bridge/RadioSettings.md) |
 | related | [RadioBridge](/services/radio_bridge/RadioBridge.md) |
 | related | [strings](/services/radio_bridge/strings.md) |
 | related | [toString](/services/radio_bridge/toString.md) |
 | related | [RadioBridgeException](/services/radio_bridge/RadioBridgeException.md) |
 | related | [strings](/services/radio_bridge/strings.md) |
+| related | [toChangeJson](/services/radio_bridge/toChangeJson.md) |
+| related | [RadioSettingNode](/services/radio_bridge/RadioSettingNode.md) |
 | related | [cancelActive](/services/radio_bridge/cancelActive.md) |
 | related | [serialPorts](/services/radio_bridge/serialPorts.md) |
 | related | [_windowsSerialPorts](/services/radio_bridge/windowsSerialPorts.md) |
@@ -37,6 +42,8 @@ language: dart
 | related | [instructions](/services/radio_bridge/instructions.md) |
 | related | [download](/services/radio_bridge/download.md) |
 | related | [upload](/services/radio_bridge/upload.md) |
+| related | [readSettings](/services/radio_bridge/readSettings.md) |
+| related | [writeSettings](/services/radio_bridge/writeSettings.md) |
 | related | [_run](/services/radio_bridge/run.md) |
 | related | [_resolvePython](/services/radio_bridge/resolvePython.md) |
 | related | [_bundledResourcesDirectory](/services/radio_bridge/bundledResourcesDirectory.md) |

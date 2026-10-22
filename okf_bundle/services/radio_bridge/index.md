@@ -4,6 +4,8 @@
 
 - [RadioCapabilities](RadioCapabilities.md)
 - [RadioInstructions](RadioInstructions.md)
+- [RadioProgress](RadioProgress.md)
+- [RadioSettings](RadioSettings.md)
 
 ## Functions
 
@@ -21,7 +23,11 @@
 - [models](models.md)
 - [RadioBridge](RadioBridge.md)
 - [RadioBridgeException](RadioBridgeException.md)
+- [RadioSettingNode](RadioSettingNode.md)
+- [readSettings](readSettings.md)
 - [serialPorts](serialPorts.md)
 - [strings](strings.md)
+- [toChangeJson](toChangeJson.md)
 - [toString](toString.md)
 - [upload](upload.md)
+- [writeSettings](writeSettings.md)

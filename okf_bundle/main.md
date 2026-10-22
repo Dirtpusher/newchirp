@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-04T09:56:05Z"
+timestamp: "2026-10-22T17:10:57Z"
 concept_id: main
 language: dart
 ---
@@ -28,6 +28,9 @@ language: dart
 | related | [_Logo](/main/Logo.md) |
 | related | [_NavItem](/main/NavItem.md) |
 | related | [_TransferOverlay](/main/TransferOverlay.md) |
+| related | [_TransferOverlayState](/main/TransferOverlayState.md) |
+| related | [_RadioSettingField](/main/RadioSettingField.md) |
+| related | [_RadioSettingFieldState](/main/RadioSettingFieldState.md) |
 | related | [_TopBar](/main/TopBar.md) |
 | related | [_ChannelApplyMode](/main/ChannelApplyMode.md) |
 | related | [_LibraryState](/main/LibraryState.md) |
@@ -44,12 +47,15 @@ language: dart
 | related | [_TextFieldState](/main/TextFieldState.md) |
 | related | [_ExtraFieldEditor](/main/ExtraFieldEditor.md) |
 | related | [_NumberField](/main/NumberField.md) |
+| related | [_NumberFieldState](/main/NumberFieldState.md) |
 | related | [_ChoiceField](/main/ChoiceField.md) |
 | related | [_EmptyLibrary](/main/EmptyLibrary.md) |
 | related | [_StepTitle](/main/StepTitle.md) |
 | related | [main](/main/main.md) |
 | related | [_clampWindowState](/main/clampWindowState.md) |
-| related | [changed](/main/changed.md) |
+| related | [invalid](/main/invalid.md) |
+| related | [walk](/main/walk.md) |
+| related | [_changed](/main/changed.md) |
 | related | [save](/main/save.md) |
 | related | [rowColor](/main/rowColor.md) |
 | related | [cell](/main/cell.md) |
@@ -69,6 +75,7 @@ language: dart
 | related | [_WindowStateManager](/main/WindowStateManager.md) |
 | related | [build](/main/build.md) |
 | related | [createState](/main/createState.md) |
+| related | [invalid](/main/invalid.md) |
 | related | [initState](/main/initState.md) |
 | related | [_loadColumnLayout](/main/loadColumnLayout.md) |
 | related | [_saveColumnLayout](/main/saveColumnLayout.md) |
@@ -87,6 +94,7 @@ language: dart
 | related | [_loadModels](/main/loadModels.md) |
 | related | [_task](/main/task.md) |
 | related | [_friendlyActionError](/main/friendlyActionError.md) |
+| related | [_actionErrorPresentation](/main/actionErrorPresentation.md) |
 | related | [_showActionError](/main/showActionError.md) |
 | related | [_importCsv](/main/importCsv.md) |
 | related | [_chooseChannelApplyMode](/main/chooseChannelApplyMode.md) |
@@ -98,6 +106,14 @@ language: dart
 | related | [_useGmrsStarter](/main/useGmrsStarter.md) |
 | related | [_restoreStockChannels](/main/restoreStockChannels.md) |
 | related | [_openRadioConnection](/main/openRadioConnection.md) |
+| related | [_selectPage](/main/selectPage.md) |
+| related | [_openRadioSettings](/main/openRadioSettings.md) |
+| related | [_loadRadioSettings](/main/loadRadioSettings.md) |
+| related | [_readRadioSettings](/main/readRadioSettings.md) |
+| related | [_markRadioSettingsChanged](/main/markRadioSettingsChanged.md) |
+| related | [_radioSettingChanges](/main/radioSettingChanges.md) |
+| related | [walk](/main/walk.md) |
+| related | [_writeRadioSettings](/main/writeRadioSettings.md) |
 | related | [_addChannel](/main/addChannel.md) |
 | related | [_duplicateChannel](/main/duplicateChannel.md) |
 | related | [_duplicateChannelAt](/main/duplicateChannelAt.md) |
@@ -111,6 +127,7 @@ language: dart
 | related | [_loadRadioInstructions](/main/loadRadioInstructions.md) |
 | related | [_uploadRadio](/main/uploadRadio.md) |
 | related | [_transferTask](/main/transferTask.md) |
+| related | [_reportTransferProgress](/main/reportTransferProgress.md) |
 | related | [_cancelTransfer](/main/cancelTransfer.md) |
 | related | [build](/main/build.md) |
 | related | [_buildWelcome](/main/buildWelcome.md) |
@@ -119,7 +136,7 @@ language: dart
 | related | [_showUpToDate](/main/showUpToDate.md) |
 | related | [_buildAbout](/main/buildAbout.md) |
 | related | [_showChannelEditor](/main/showChannelEditor.md) |
-| related | [changed](/main/changed.md) |
+| related | [_changed](/main/changed.md) |
 | related | [save](/main/save.md) |
 | related | [_confirmDeleteChannel](/main/confirmDeleteChannel.md) |
 | related | [_buildLibrary](/main/buildLibrary.md) |
@@ -131,10 +148,22 @@ language: dart
 | related | [cell](/main/cell.md) |
 | related | [_headerCell](/main/headerCell.md) |
 | related | [legendItem](/main/legendItem.md) |
+| related | [_settingsMessage](/main/settingsMessage.md) |
+| related | [_buildRadioSettings](/main/buildRadioSettings.md) |
+| related | [_buildRadioSettingsGroup](/main/buildRadioSettingsGroup.md) |
 | related | [_buildRadio](/main/buildRadio.md) |
 | related | [build](/main/build.md) |
 | related | [build](/main/build.md) |
 | related | [build](/main/build.md) |
+| related | [createState](/main/createState.md) |
+| related | [initState](/main/initState.md) |
+| related | [dispose](/main/dispose.md) |
+| related | [build](/main/build.md) |
+| related | [createState](/main/createState.md) |
+| related | [initState](/main/initState.md) |
+| related | [didUpdateWidget](/main/didUpdateWidget.md) |
+| related | [dispose](/main/dispose.md) |
+| related | [_changed](/main/changed.md) |
 | related | [build](/main/build.md) |
 | related | [build](/main/build.md) |
 | related | [createState](/main/createState.md) |
@@ -163,6 +192,12 @@ language: dart
 | related | [dispose](/main/dispose.md) |
 | related | [build](/main/build.md) |
 | related | [build](/main/build.md) |
+| related | [createState](/main/createState.md) |
+| related | [initState](/main/initState.md) |
+| related | [didUpdateWidget](/main/didUpdateWidget.md) |
+| related | [_handleFocusChange](/main/handleFocusChange.md) |
+| related | [_replaceText](/main/replaceText.md) |
+| related | [dispose](/main/dispose.md) |
 | related | [build](/main/build.md) |
 | related | [build](/main/build.md) |
 | related | [build](/main/build.md) |

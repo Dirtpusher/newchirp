@@ -48,6 +48,40 @@
         "services/column_layout_store"
       ]
     },
+    "services/radio_bridge.dart": {
+      "path": "services/radio_bridge.dart",
+      "mtime_ns": 1792688563666535100,
+      "hash": "ccc6d22f84b58c7edbc850f3d0a67a272433eef46e8fcce63c870250285e240c",
+      "concept_ids": [
+        "services/radio_bridge/bundledResourcesDirectory",
+        "services/radio_bridge/cancelActive",
+        "services/radio_bridge/download",
+        "services/radio_bridge/findChirpSource",
+        "services/radio_bridge/instructions",
+        "services/radio_bridge/materializeBridge",
+        "services/radio_bridge/materializePythonDependencies",
+        "services/radio_bridge/models",
+        "services/radio_bridge/parseComPorts",
+        "services/radio_bridge/RadioBridge",
+        "services/radio_bridge/RadioBridgeException",
+        "services/radio_bridge/RadioCapabilities",
+        "services/radio_bridge/RadioInstructions",
+        "services/radio_bridge/RadioProgress",
+        "services/radio_bridge/RadioSettingNode",
+        "services/radio_bridge/RadioSettings",
+        "services/radio_bridge/readSettings",
+        "services/radio_bridge/resolvePython",
+        "services/radio_bridge/run",
+        "services/radio_bridge/serialPorts",
+        "services/radio_bridge/strings",
+        "services/radio_bridge/toChangeJson",
+        "services/radio_bridge/toString",
+        "services/radio_bridge/upload",
+        "services/radio_bridge/windowsSerialPorts",
+        "services/radio_bridge/writeSettings",
+        "services/radio_bridge"
+      ]
+    },
     "services/radio_image_store.dart": {
       "path": "services/radio_image_store.dart",
       "mtime_ns": 1787492611597568200,
@@ -74,52 +108,42 @@
         "services/radio_selection_store"
       ]
     },
+    "services/update_checker.dart": {
+      "path": "services/update_checker.dart",
+      "mtime_ns": 1791108709619432900,
+      "hash": "c49dfaeb8bbcdadebd7be6da4fcdc410747524c1ae1e3ee40a3086fd1d6bded2",
+      "concept_ids": [
+        "services/update_checker/check",
+        "services/update_checker/compareVersions",
+        "services/update_checker/openExternalUrl",
+        "services/update_checker/parseManifest",
+        "services/update_checker/ReleaseManifest",
+        "services/update_checker/toString",
+        "services/update_checker/UpdateChecker",
+        "services/update_checker/UpdateCheckException",
+        "services/update_checker/UpdateCheckResult",
+        "services/update_checker/versionParts",
+        "services/update_checker"
+      ]
+    },
     "services/window_state_store.dart": {
       "path": "services/window_state_store.dart",
       "mtime_ns": 1787521594010069400,
       "hash": "8e6f93272dcc8422b9f3b715307dc67a7055936bcb5e909e3362557a7e8e3fd3",
       "concept_ids": [
-        "services/window_state_store",
-        "services/window_state_store/WindowState",
-        "services/window_state_store/WindowStateStore",
-        "services/window_state_store/toJson",
+        "services/window_state_store/defaultPath",
         "services/window_state_store/load",
         "services/window_state_store/save",
-        "services/window_state_store/defaultPath"
-      ]
-    },
-    "services/radio_bridge.dart": {
-      "path": "services/radio_bridge.dart",
-      "mtime_ns": 1787520965764274500,
-      "hash": "879ff822e7fe26b114414c16bf91f0a6c1e4e0dec9975cc69c8e37ccdb2fa0d0",
-      "concept_ids": [
-        "services/radio_bridge",
-        "services/radio_bridge/RadioBridgeException",
-        "services/radio_bridge/RadioInstructions",
-        "services/radio_bridge/RadioCapabilities",
-        "services/radio_bridge/RadioBridge",
-        "services/radio_bridge/strings",
-        "services/radio_bridge/toString",
-        "services/radio_bridge/cancelActive",
-        "services/radio_bridge/serialPorts",
-        "services/radio_bridge/windowsSerialPorts",
-        "services/radio_bridge/parseComPorts",
-        "services/radio_bridge/models",
-        "services/radio_bridge/instructions",
-        "services/radio_bridge/download",
-        "services/radio_bridge/upload",
-        "services/radio_bridge/run",
-        "services/radio_bridge/resolvePython",
-        "services/radio_bridge/bundledResourcesDirectory",
-        "services/radio_bridge/materializeBridge",
-        "services/radio_bridge/materializePythonDependencies",
-        "services/radio_bridge/findChirpSource"
+        "services/window_state_store/toJson",
+        "services/window_state_store/WindowState",
+        "services/window_state_store/WindowStateStore",
+        "services/window_state_store"
       ]
     },
     "main.dart": {
       "path": "main.dart",
-      "mtime_ns": 1791107765846020700,
-      "hash": "79221bac94f83fc91c63760dc5964a57b6d95b08ebdc4f4d43a000ca044fa1fd",
+      "mtime_ns": 1792689057154219000,
+      "hash": "ed01f3bda402cd579033a24b0b112b63f4b3b9d3db49b5d6569fc242ba7788d5",
       "concept_ids": [
         "main",
         "main/WindowStateManager",
@@ -130,6 +154,9 @@
         "main/Logo",
         "main/NavItem",
         "main/TransferOverlay",
+        "main/TransferOverlayState",
+        "main/RadioSettingField",
+        "main/RadioSettingFieldState",
         "main/TopBar",
         "main/ChannelApplyMode",
         "main/LibraryState",
@@ -146,11 +173,14 @@
         "main/TextFieldState",
         "main/ExtraFieldEditor",
         "main/NumberField",
+        "main/NumberFieldState",
         "main/ChoiceField",
         "main/EmptyLibrary",
         "main/StepTitle",
         "main/main",
         "main/clampWindowState",
+        "main/invalid",
+        "main/walk",
         "main/changed",
         "main/save",
         "main/rowColor",
@@ -187,6 +217,7 @@
         "main/loadModels",
         "main/task",
         "main/friendlyActionError",
+        "main/actionErrorPresentation",
         "main/showActionError",
         "main/importCsv",
         "main/chooseChannelApplyMode",
@@ -198,6 +229,13 @@
         "main/useGmrsStarter",
         "main/restoreStockChannels",
         "main/openRadioConnection",
+        "main/selectPage",
+        "main/openRadioSettings",
+        "main/loadRadioSettings",
+        "main/readRadioSettings",
+        "main/markRadioSettingsChanged",
+        "main/radioSettingChanges",
+        "main/writeRadioSettings",
         "main/addChannel",
         "main/duplicateChannel",
         "main/duplicateChannelAt",
@@ -211,6 +249,7 @@
         "main/loadRadioInstructions",
         "main/uploadRadio",
         "main/transferTask",
+        "main/reportTransferProgress",
         "main/cancelTransfer",
         "main/buildWelcome",
         "main/checkForUpdates",
@@ -224,30 +263,17 @@
         "main/systemPrinters",
         "main/defaultPrinterName",
         "main/buildFrequencyReference",
+        "main/settingsMessage",
+        "main/buildRadioSettings",
+        "main/buildRadioSettingsGroup",
         "main/buildRadio",
+        "main/didUpdateWidget",
         "main/apply",
         "main/showRowMenu",
         "main/columns",
         "main/moveColumn",
-        "main/didUpdateWidget"
-      ]
-    },
-    "services/update_checker.dart": {
-      "path": "services/update_checker.dart",
-      "mtime_ns": 1791107765921976300,
-      "hash": "c49dfaeb8bbcdadebd7be6da4fcdc410747524c1ae1e3ee40a3086fd1d6bded2",
-      "concept_ids": [
-        "services/update_checker",
-        "services/update_checker/UpdateCheckResult",
-        "services/update_checker/UpdateCheckException",
-        "services/update_checker/UpdateChecker",
-        "services/update_checker/ReleaseManifest",
-        "services/update_checker/compareVersions",
-        "services/update_checker/versionParts",
-        "services/update_checker/openExternalUrl",
-        "services/update_checker/toString",
-        "services/update_checker/check",
-        "services/update_checker/parseManifest"
+        "main/handleFocusChange",
+        "main/replaceText"
       ]
     }
   },
@@ -385,7 +411,7 @@
       "type": "Module",
       "resource": "main.dart",
       "render_hash": "stale",
-      "edge_hash": "f0644803fc9dca9ca5e904e830a50055133aad28674fc89cc6404a66ba4ace69",
+      "edge_hash": "c0ef5acdb90b0ed23551e2e59e22cf7b4841590cf090c1634ee0a6ee97cc6999",
       "enriched": false
     },
     "main/NewChirpApp": {
@@ -1249,7 +1275,7 @@
       "type": "Module",
       "resource": "services/radio_bridge.dart",
       "render_hash": "stale",
-      "edge_hash": "faa660e2e5fc8be43f7ef14992c05b42713d1dc756d5ca4484ce7ecf7487f717",
+      "edge_hash": "b29077b9782492875ff38a4a246103a4397f7b37db62695e8c9987cccbeffcbb",
       "enriched": false
     },
     "services/radio_bridge/RadioBridgeException": {
@@ -1771,7 +1797,215 @@
       "render_hash": "stale",
       "edge_hash": "65fa1c0d9985a476f5e611903a1939d4bd0fe0606483c3c6f570495f15f2ad72",
       "enriched": false
+    },
+    "services/radio_bridge/RadioProgress": {
+      "concept_id": "services/radio_bridge/RadioProgress",
+      "type": "Class",
+      "resource": "services\\radio_bridge.dart",
+      "render_hash": "stale",
+      "edge_hash": "6833dfaf2aa53628ffbb361a89079471aa02a71f43c5a1916aedb0c89d6f478b",
+      "enriched": false
+    },
+    "services/radio_bridge/RadioSettingNode": {
+      "concept_id": "services/radio_bridge/RadioSettingNode",
+      "type": "Function",
+      "resource": "services\\radio_bridge.dart",
+      "render_hash": "stale",
+      "edge_hash": "6833dfaf2aa53628ffbb361a89079471aa02a71f43c5a1916aedb0c89d6f478b",
+      "enriched": false
+    },
+    "services/radio_bridge/RadioSettings": {
+      "concept_id": "services/radio_bridge/RadioSettings",
+      "type": "Class",
+      "resource": "services\\radio_bridge.dart",
+      "render_hash": "stale",
+      "edge_hash": "6833dfaf2aa53628ffbb361a89079471aa02a71f43c5a1916aedb0c89d6f478b",
+      "enriched": false
+    },
+    "services/radio_bridge/toChangeJson": {
+      "concept_id": "services/radio_bridge/toChangeJson",
+      "type": "Function",
+      "resource": "services\\radio_bridge.dart",
+      "render_hash": "stale",
+      "edge_hash": "6833dfaf2aa53628ffbb361a89079471aa02a71f43c5a1916aedb0c89d6f478b",
+      "enriched": false
+    },
+    "services/radio_bridge/readSettings": {
+      "concept_id": "services/radio_bridge/readSettings",
+      "type": "Function",
+      "resource": "services\\radio_bridge.dart",
+      "render_hash": "stale",
+      "edge_hash": "6833dfaf2aa53628ffbb361a89079471aa02a71f43c5a1916aedb0c89d6f478b",
+      "enriched": false
+    },
+    "services/radio_bridge/writeSettings": {
+      "concept_id": "services/radio_bridge/writeSettings",
+      "type": "Function",
+      "resource": "services\\radio_bridge.dart",
+      "render_hash": "stale",
+      "edge_hash": "6833dfaf2aa53628ffbb361a89079471aa02a71f43c5a1916aedb0c89d6f478b",
+      "enriched": false
+    },
+    "main/TransferOverlayState": {
+      "concept_id": "main/TransferOverlayState",
+      "type": "Class",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/RadioSettingField": {
+      "concept_id": "main/RadioSettingField",
+      "type": "Class",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/RadioSettingFieldState": {
+      "concept_id": "main/RadioSettingFieldState",
+      "type": "Class",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/invalid": {
+      "concept_id": "main/invalid",
+      "type": "Function",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/walk": {
+      "concept_id": "main/walk",
+      "type": "Function",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/selectPage": {
+      "concept_id": "main/selectPage",
+      "type": "Function",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/openRadioSettings": {
+      "concept_id": "main/openRadioSettings",
+      "type": "Function",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/loadRadioSettings": {
+      "concept_id": "main/loadRadioSettings",
+      "type": "Function",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/markRadioSettingsChanged": {
+      "concept_id": "main/markRadioSettingsChanged",
+      "type": "Function",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/radioSettingChanges": {
+      "concept_id": "main/radioSettingChanges",
+      "type": "Function",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/writeRadioSettings": {
+      "concept_id": "main/writeRadioSettings",
+      "type": "Function",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/reportTransferProgress": {
+      "concept_id": "main/reportTransferProgress",
+      "type": "Function",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/settingsMessage": {
+      "concept_id": "main/settingsMessage",
+      "type": "Function",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/buildRadioSettings": {
+      "concept_id": "main/buildRadioSettings",
+      "type": "Function",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/buildRadioSettingsGroup": {
+      "concept_id": "main/buildRadioSettingsGroup",
+      "type": "Function",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/readRadioSettings": {
+      "concept_id": "main/readRadioSettings",
+      "type": "Function",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/actionErrorPresentation": {
+      "concept_id": "main/actionErrorPresentation",
+      "type": "Function",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/NumberFieldState": {
+      "concept_id": "main/NumberFieldState",
+      "type": "Class",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/handleFocusChange": {
+      "concept_id": "main/handleFocusChange",
+      "type": "Function",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/replaceText": {
+      "concept_id": "main/replaceText",
+      "type": "Function",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
     }
   },
-  "generated_at": "2026-10-04T09:57:31Z"
+  "generated_at": "2026-10-22T17:12:03Z"
 }

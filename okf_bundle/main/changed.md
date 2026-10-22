@@ -1,7 +1,7 @@
 ---
 okf_version: "0.2"
 type: Function
-title: changed
+title: _changed
 resource: main.dart
 tags:
   - "lang:dart"
@@ -9,21 +9,21 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-04T09:56:05Z"
+timestamp: "2026-10-22T17:10:57Z"
 concept_id: main/changed
 language: dart
 ---
 
-# changed
+# _changed
 
 ## Signature
 
 ```dart
-voidchanged(VoidCallback update)
+void_changed(String text)
 ```
 
 ## Source
-Lines 1556–1556 in `main.dart`
+Lines 3831–3831 in `main.dart`
 
 ## Relationships
 

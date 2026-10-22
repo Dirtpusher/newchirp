@@ -9,7 +9,7 @@ tags:
   - "module:chirp_bridge.py"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T13:43:31Z"
+timestamp: "2026-10-22T17:02:36Z"
 concept_id: chirp_bridge/radio_for
 language: python
 ---
@@ -19,7 +19,7 @@ language: python
 ## Signature
 
 ```python
-def radio_for(directory, model, port)
+def radio_for(directory, model, port, progress_range = (0.0, 1.0))
 ```
 
 ## Parameters
@@ -32,8 +32,10 @@ def radio_for(directory, model, port)
 
 | `port` | `—` | `—` |
 
+| `progress_range` | `—` | `(0.0, 1.0)` |
+
 ## Source
-Lines 184–199 in `chirp_bridge.py`
+Lines 355–372 in `chirp_bridge.py`
 
 ## Relationships
 
@@ -41,4 +43,5 @@ Lines 184–199 in `chirp_bridge.py`
 |------|--------|
 | related | [chirp_bridge](/chirp_bridge.md) |
 | calls | [open_serial](/chirp_bridge/open_serial.md) |
+| calls | [status_progress](/chirp_bridge/status_progress.md) |
 | called_by | [main](/chirp_bridge/main.md) |

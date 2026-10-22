@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-04T09:56:05Z"
+timestamp: "2026-10-22T17:10:57Z"
 concept_id: main/cell
 language: dart
 ---
@@ -28,7 +28,7 @@ Widgetcell(
 ```
 
 ## Source
-Lines 2223–2228 in `main.dart`
+Lines 2600–2605 in `main.dart`
 
 ## Relationships
 

@@ -1,28 +1,28 @@
 ---
-description: 'Top-level OKF summary: 27 concepts across 3 domains and 3 modules'
+description: 'Top-level OKF summary: 35 concepts across 3 domains and 3 modules'
 git_branch: main
 git_repo: newchirp
 okf_version: '0.2'
-timestamp: '2026-08-23T18:11:52Z'
+timestamp: '2026-10-22T17:05:55Z'
 title: okf_bundle_scripts — Knowledge Summary
 type: Index
 ---
 
 # okf_bundle_scripts — Knowledge Summary
 
-> OKF v0.2 bundle | 27 concepts | 3 domains | 3 modules
+> OKF v0.2 bundle | 35 concepts | 3 domains | 3 modules
 
 ## Stats
 
 | Type | Count |
 |------|-------|
-| Function | 23 |
+| Function | 31 |
 | Module | 3 |
 | Class | 1 |
 
 | Language | Concepts |
 |----------|----------|
-| python | 27 |
+| python | 35 |
 
 ## Domain Map
 
@@ -32,9 +32,9 @@ Use these links to navigate the bundle or prime an AI agent with focused context
 
 - [build_macos_dmg](build_macos_dmg/index.md) (3 concepts) — Build a styled NewChirp macOS DMG with a drag-to-Applications window.
 
-### [chirp_bridge.py](chirp_bridge.py/index.md) — 9 concepts
+### [chirp_bridge.py](chirp_bridge.py/index.md) — 17 concepts
 
-- [chirp_bridge](chirp_bridge/index.md) (9 concepts) — Small JSON boundary between NewChirp and the audited CHIRP driver tree.
+- [chirp_bridge](chirp_bridge/index.md) (17 concepts) — Small JSON boundary between NewChirp and the audited CHIRP driver tree.
 
 ### [generate_gmrs_frs_pdf.py](generate_gmrs_frs_pdf.py/index.md) — 15 concepts
 
@@ -43,6 +43,12 @@ Use these links to navigate the bundle or prime an AI agent with focused context
 ## Key Concepts
 
 Highest-value concepts across all domains (Classes and Functions with rich descriptions).
+
+| Concept | Type | Module | Description |
+|---------|------|--------|-------------|
+| [emit_progress](/chirp_bridge/emit_progress.md) | Function | `chirp_bridge.py` | Send structured transfer progress without touching the JSON … |
+| [status_progress](/chirp_bridge/status_progress.md) | Function | `chirp_bridge.py` | Translate a CHIRP Status message into a structured progress … |
+| [radio_from_image](/chirp_bridge/radio_from_image.md) | Function | `chirp_bridge.py` | Build a driver instance backed only by a saved radio image. |
 
 ## Usage with OpenCode
 

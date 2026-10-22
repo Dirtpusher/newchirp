@@ -1,44 +1,44 @@
 ---
-description: 'Top-level OKF summary: 184 concepts across 3 domains and 9 modules'
+description: 'Top-level OKF summary: 210 concepts across 3 domains and 9 modules'
 git_branch: main
 git_repo: newchirp
 okf_version: '0.2'
-timestamp: '2026-10-04T09:57:31Z'
+timestamp: '2026-10-22T17:12:03Z'
 title: okf_bundle — Knowledge Summary
 type: Index
 ---
 
 # okf_bundle — Knowledge Summary
 
-> OKF v0.2 bundle | 184 concepts | 3 domains | 9 modules
+> OKF v0.2 bundle | 210 concepts | 3 domains | 9 modules
 
 ## Stats
 
 | Type | Count |
 |------|-------|
-| Function | 142 |
-| Class | 33 |
+| Function | 162 |
+| Class | 39 |
 | Module | 9 |
 
 | Language | Concepts |
 |----------|----------|
-| dart | 184 |
+| dart | 210 |
 
 ## Domain Map
 
 Use these links to navigate the bundle or prime an AI agent with focused context.
 
-### [main.dart](main.dart/index.md) — 109 concepts
+### [main.dart](main.dart/index.md) — 129 concepts
 
-- [main](main/index.md) (109 concepts)
+- [main](main/index.md) (129 concepts)
 
 ### [models](models/index.md) — 8 concepts
 
 - [models/radio_channel](models/radio_channel/index.md) (8 concepts)
 
-### [services](services/index.md) — 67 concepts
+### [services](services/index.md) — 73 concepts
 
-- [services/radio_bridge](services/radio_bridge/index.md) (21 concepts)
+- [services/radio_bridge](services/radio_bridge/index.md) (27 concepts)
 - [services/update_checker](services/update_checker/index.md) (11 concepts)
 - [services/chirp_csv](services/chirp_csv/index.md) (10 concepts)
 - [services/window_state_store](services/window_state_store/index.md) (7 concepts)
@@ -56,10 +56,10 @@ Highest-value concepts across all domains (Classes and Functions with rich descr
 | [_windowsSerialPorts](/services/radio_bridge/windowsSerialPorts.md) | Function | `services/radio_bridge.dart` | Windows: read the live COM ports from the SERIALCOMM registr… |
 | [UpdateCheckResult](/services/update_checker/UpdateCheckResult.md) | Class | `services/update_checker.dart` | Outcome of comparing the installed NewChirp version against … |
 | [compareVersions](/services/update_checker/compareVersions.md) | Function | `services/update_checker.dart` | Compares two dotted version strings, ignoring any `+build` m… |
-| [openExternalUrl](/services/update_checker/openExternalUrl.md) | Function | `services/update_checker.dart` | Opens [url] in the operating system's default browser. |
-| [toString](/services/update_checker/toString.md) | Function | `services/update_checker.dart` | Opens [url] in the operating system's default browser. |
 | [check](/services/update_checker/check.md) | Function | `services/update_checker.dart` | Opens [url] in the operating system's default browser. |
+| [openExternalUrl](/services/update_checker/openExternalUrl.md) | Function | `services/update_checker.dart` | Opens [url] in the operating system's default browser. |
 | [_parseManifest](/services/update_checker/parseManifest.md) | Function | `services/update_checker.dart` | Opens [url] in the operating system's default browser. |
+| [toString](/services/update_checker/toString.md) | Function | `services/update_checker.dart` | Opens [url] in the operating system's default browser. |
 
 ## Usage with OpenCode
 

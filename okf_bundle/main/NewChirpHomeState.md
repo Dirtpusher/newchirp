@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-04T09:56:05Z"
+timestamp: "2026-10-22T17:10:57Z"
 concept_id: main/NewChirpHomeState
 language: dart
 ---
@@ -24,6 +24,7 @@ class _NewChirpHomeState
 
 ## Methods
 
+- `invalid`
 - `initState`
 - `_loadColumnLayout`
 - `_saveColumnLayout`
@@ -42,6 +43,7 @@ class _NewChirpHomeState
 - `_loadModels`
 - `_task`
 - `_friendlyActionError`
+- `_actionErrorPresentation`
 - `_showActionError`
 - `_importCsv`
 - `_chooseChannelApplyMode`
@@ -53,6 +55,14 @@ class _NewChirpHomeState
 - `_useGmrsStarter`
 - `_restoreStockChannels`
 - `_openRadioConnection`
+- `_selectPage`
+- `_openRadioSettings`
+- `_loadRadioSettings`
+- `_readRadioSettings`
+- `_markRadioSettingsChanged`
+- `_radioSettingChanges`
+- `walk`
+- `_writeRadioSettings`
 - `_addChannel`
 - `_duplicateChannel`
 - `_duplicateChannelAt`
@@ -66,6 +76,7 @@ class _NewChirpHomeState
 - `_loadRadioInstructions`
 - `_uploadRadio`
 - `_transferTask`
+- `_reportTransferProgress`
 - `_cancelTransfer`
 - `build`
 - `_buildWelcome`
@@ -86,10 +97,13 @@ class _NewChirpHomeState
 - `cell`
 - `headerCell`
 - `legendItem`
+- `_settingsMessage`
+- `_buildRadioSettings`
+- `_buildRadioSettingsGroup`
 - `_buildRadio`
 
 ## Source
-Lines 247–2719 in `main.dart`
+Lines 251–3492 in `main.dart`
 
 ## Relationships
 
