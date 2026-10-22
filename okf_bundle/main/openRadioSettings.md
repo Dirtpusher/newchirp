@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-22T17:10:57Z"
+timestamp: "2026-10-22T17:16:16Z"
 concept_id: main/openRadioSettings
 language: dart
 ---
@@ -23,7 +23,7 @@ Future_openRadioSettings_openRadioSettings
 ```
 
 ## Source
-Lines 873–873 in `main.dart`
+Lines 874–874 in `main.dart`
 
 ## Relationships
 

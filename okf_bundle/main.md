@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-22T17:10:57Z"
+timestamp: "2026-10-22T17:16:16Z"
 concept_id: main
 language: dart
 ---
@@ -176,6 +176,7 @@ language: dart
 | related | [build](/main/build.md) |
 | related | [_ChannelColumn](/main/ChannelColumn.md) |
 | related | [createState](/main/createState.md) |
+| related | [revealSelectedChannel](/main/revealSelectedChannel.md) |
 | related | [dispose](/main/dispose.md) |
 | related | [_showRowMenu](/main/showRowMenu.md) |
 | related | [_columns](/main/columns.md) |

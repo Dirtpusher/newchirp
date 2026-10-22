@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-22T17:10:57Z"
+timestamp: "2026-10-22T17:16:16Z"
 concept_id: main/printFrequencyReference
 language: dart
 ---
@@ -23,7 +23,7 @@ Future_printFrequencyReference_printFrequencyReference
 ```
 
 ## Source
-Lines 2203–2203 in `main.dart`
+Lines 2219–2219 in `main.dart`
 
 ## Relationships
 

@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-22T17:10:57Z"
+timestamp: "2026-10-22T17:16:16Z"
 concept_id: main/chooseChannelApplyMode
 language: dart
 ---
@@ -23,7 +23,7 @@ Future_chooseChannelApplyMode_chooseChannelApplyMode
 ```
 
 ## Source
-Lines 673–676 in `main.dart`
+Lines 674–677 in `main.dart`
 
 ## Relationships
 

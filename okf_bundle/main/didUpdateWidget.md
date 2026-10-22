@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-22T17:10:57Z"
+timestamp: "2026-10-22T17:16:16Z"
 concept_id: main/didUpdateWidget
 language: dart
 ---
@@ -23,7 +23,7 @@ voiddidUpdateWidget(covariant _NumberField oldWidget)
 ```
 
 ## Source
-Lines 5435–5435 in `main.dart`
+Lines 5471–5471 in `main.dart`
 
 ## Relationships
 

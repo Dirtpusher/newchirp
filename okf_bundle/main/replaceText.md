@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-22T17:10:57Z"
+timestamp: "2026-10-22T17:16:16Z"
 concept_id: main/replaceText
 language: dart
 ---
@@ -23,7 +23,7 @@ void_replaceText(String text)
 ```
 
 ## Source
-Lines 5449–5449 in `main.dart`
+Lines 5485–5485 in `main.dart`
 
 ## Relationships
 

@@ -142,8 +142,8 @@
     },
     "main.dart": {
       "path": "main.dart",
-      "mtime_ns": 1792689057154219000,
-      "hash": "ed01f3bda402cd579033a24b0b112b63f4b3b9d3db49b5d6569fc242ba7788d5",
+      "mtime_ns": 1792689376328209300,
+      "hash": "4d750b8e83c73bd866b9b4a6860d0815de98c1fd0073674b160f55e7f3d51f6a",
       "concept_ids": [
         "main",
         "main/WindowStateManager",
@@ -269,6 +269,7 @@
         "main/buildRadio",
         "main/didUpdateWidget",
         "main/apply",
+        "main/revealSelectedChannel",
         "main/showRowMenu",
         "main/columns",
         "main/moveColumn",
@@ -411,7 +412,7 @@
       "type": "Module",
       "resource": "main.dart",
       "render_hash": "stale",
-      "edge_hash": "c0ef5acdb90b0ed23551e2e59e22cf7b4841590cf090c1634ee0a6ee97cc6999",
+      "edge_hash": "50e0a66dc187a51a177c637abbe9399bc7b74cf4bc4c31329aeabda4c8930830",
       "enriched": false
     },
     "main/NewChirpApp": {
@@ -2005,7 +2006,15 @@
       "render_hash": "stale",
       "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
       "enriched": false
+    },
+    "main/revealSelectedChannel": {
+      "concept_id": "main/revealSelectedChannel",
+      "type": "Function",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
     }
   },
-  "generated_at": "2026-10-22T17:12:03Z"
+  "generated_at": "2026-10-22T17:16:57Z"
 }

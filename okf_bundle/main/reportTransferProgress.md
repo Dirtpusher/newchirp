@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-22T17:10:57Z"
+timestamp: "2026-10-22T17:16:16Z"
 concept_id: main/reportTransferProgress
 language: dart
 ---
@@ -23,7 +23,7 @@ void_reportTransferProgress(RadioProgress progress)
 ```
 
 ## Source
-Lines 1489–1489 in `main.dart`
+Lines 1504–1504 in `main.dart`
 
 ## Relationships
 

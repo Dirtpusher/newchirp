@@ -129,6 +129,7 @@
 - [onWindowMoved](onWindowMoved.md)
 - [onWindowResized](onWindowResized.md)
 - [onWindowUnmaximize](onWindowUnmaximize.md)
+- [revealSelectedChannel](revealSelectedChannel.md)
 - [rowColor](rowColor.md)
 - [save](save.md)
 - [start](start.md)
