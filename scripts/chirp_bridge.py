@@ -124,31 +124,45 @@ def extra_fields_json(mem):
     fields = []
     for setting in mem.extra:
         value = setting.value
+        if not value.initialized:
+            try:
+                value.initialize()
+            except Exception:
+                pass
         current = value.get_value()
         choices = []
-        if isinstance(value, RadioSettingValueBoolean):
+        if current is None:
+            kind = "unsupported"
+            current = None
+            is_mutable = False
+        elif isinstance(value, RadioSettingValueBoolean):
             kind = "boolean"
             current = bool(current)
+            is_mutable = value.get_mutable()
         elif isinstance(value, RadioSettingValueList):
             kind = "choice"
             choices = [str(option) for option in value.get_options()]
             current = str(current)
+            is_mutable = value.get_mutable()
         elif isinstance(value, RadioSettingValueInteger):
             kind = "integer"
             current = int(current)
+            is_mutable = value.get_mutable()
         elif isinstance(value, RadioSettingValueFloat):
             kind = "number"
             current = float(current)
+            is_mutable = value.get_mutable()
         else:
             kind = "string"
             current = str(current).rstrip()
+            is_mutable = value.get_mutable()
         fields.append({
             "name": setting.get_name(),
             "label": setting.get_shortname(),
             "kind": kind,
             "value": current,
             "choices": choices,
-            "mutable": value.get_mutable(),
+            "mutable": is_mutable,
         })
     return fields
 
@@ -191,6 +205,11 @@ def setting_value_json(setting):
     )
 
     value = setting.value
+    if not value.initialized:
+        try:
+            value.initialize()
+        except Exception:
+            pass
     current = value.get_value()
     options = []
     minimum = None
@@ -198,35 +217,50 @@ def setting_value_json(setting):
     step = None
     min_length = None
     max_length = None
-    if isinstance(value, RadioSettingValueBoolean):
+    if current is None:
+        kind = "unsupported"
+        current = None
+        mutable = False
+    elif isinstance(value, RadioSettingValueBoolean):
         kind = "boolean"
         current = bool(current)
+        mutable = value.get_mutable()
     elif isinstance(value, RadioSettingValueList):
         kind = "choice"
         options = [str(option) for option in value.get_options()]
         current = str(current)
+        mutable = value.get_mutable()
     elif isinstance(value, RadioSettingValueInteger):
         kind = "integer"
         current = int(current)
         minimum = int(value.get_min())
         maximum = int(value.get_max())
         step = int(value.get_step())
+        mutable = value.get_mutable()
     elif isinstance(value, RadioSettingValueFloat):
         kind = "number"
         current = float(current)
-        minimum = float(value.get_min())
-        maximum = float(value.get_max())
+        minimum_value = value.get_min()
+        maximum_value = value.get_max()
+        if maximum_value is None:
+            maximum_value = getattr(value, "_max", None)
+        if minimum_value is not None:
+            minimum = float(minimum_value)
+        if maximum_value is not None:
+            maximum = float(maximum_value)
+        mutable = value.get_mutable()
     else:
         kind = "string"
         current = str(current).rstrip()
         if isinstance(value, RadioSettingValueString):
             min_length = int(value.minlength)
             max_length = int(value.maxlength)
+        mutable = value.get_mutable()
     return {
         "kind": kind,
         "value": current,
         "options": options,
-        "mutable": bool(value.get_mutable()),
+        "mutable": bool(mutable),
         "min": minimum,
         "max": maximum,
         "step": step,
