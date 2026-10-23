@@ -42,54 +42,63 @@ if [[ -z "$RESOURCES_DIR" ]]; then
 fi
 mkdir -p "$RESOURCES_DIR"
 
-MACHINE="$(uname -m)"
-case "$MACHINE" in
-  arm64)
-    PY_ARCH="aarch64"
-    EXPECTED_SHA="dbadb0ffe46f8bace50daaf8a0c5fc6903c003690776da9eb5269e33c856bb53"
-    ;;
-  x86_64)
-    PY_ARCH="x86_64"
-    EXPECTED_SHA="187eed2282e9c3a5b6b14953d564ee25a9f35cf2c209c9fa292186ee48b0e4a1"
-    ;;
-  *)
-    echo "Unsupported host architecture: $MACHINE" >&2
-    exit 2
-    ;;
-esac
+bundle_python_runtime() {
+  local py_arch="$1"
+  local expected_sha="$2"
+  local runtime_name="$3"
+  local asset="cpython-${PYTHON_VERSION}+${RELEASE_TAG}-${py_arch}-apple-darwin-install_only_stripped.tar.gz"
+  local archive="$CACHE_DIR/$asset"
+  local extract_dir="$CACHE_DIR/python-${PYTHON_VERSION}-${py_arch}"
+  local runtime_src="$extract_dir/python"
 
-ASSET="cpython-${PYTHON_VERSION}+${RELEASE_TAG}-${PY_ARCH}-apple-darwin-install_only_stripped.tar.gz"
-ARCHIVE="$CACHE_DIR/$ASSET"
-EXTRACT_DIR="$CACHE_DIR/python-${PYTHON_VERSION}-${PY_ARCH}"
-RUNTIME_SRC="$EXTRACT_DIR/python"
+  if [[ ! -x "$runtime_src/bin/python3" ]]; then
+    if [[ ! -f "$archive" ]]; then
+      local url="https://github.com/astral-sh/python-build-standalone/releases/download/${RELEASE_TAG}/${asset//+/%2B}"
+      echo "Downloading bundled Python runtime: $url" >&2
+      curl -fL --retry 3 -o "$archive" "$url"
+    fi
 
-if [[ ! -x "$RUNTIME_SRC/bin/python3" ]]; then
-  if [[ ! -f "$ARCHIVE" ]]; then
-    URL="https://github.com/astral-sh/python-build-standalone/releases/download/${RELEASE_TAG}/${ASSET//+/%2B}"
-    echo "Downloading bundled Python runtime: $URL" >&2
-    curl -fL --retry 3 -o "$ARCHIVE" "$URL"
+    local actual_sha
+    actual_sha="$(shasum -a 256 "$archive" | awk '{print $1}')"
+    if [[ "$actual_sha" != "$expected_sha" ]]; then
+      echo "Checksum mismatch for $asset" >&2
+      echo "Expected $expected_sha" >&2
+      echo "Actual   $actual_sha" >&2
+      exit 1
+    fi
+
+    rm -rf "$extract_dir"
+    mkdir -p "$extract_dir"
+    tar -xzf "$archive" -C "$extract_dir"
   fi
 
-  ACTUAL_SHA="$(shasum -a 256 "$ARCHIVE" | awk '{print $1}')"
-  if [[ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]]; then
-    echo "Checksum mismatch for $ASSET" >&2
-    echo "Expected $EXPECTED_SHA" >&2
-    echo "Actual   $ACTUAL_SHA" >&2
+  if [[ ! -x "$runtime_src/bin/python3" ]]; then
+    echo "Bundled Python runtime is missing: $runtime_src/bin/python3" >&2
     exit 1
   fi
 
-  rm -rf "$EXTRACT_DIR"
-  mkdir -p "$EXTRACT_DIR"
-  tar -xzf "$ARCHIVE" -C "$EXTRACT_DIR"
-fi
+  rm -rf "$RESOURCES_DIR/$runtime_name"
+  ditto "$runtime_src" "$RESOURCES_DIR/$runtime_name"
+}
 
-if [[ ! -x "$RUNTIME_SRC/bin/python3" ]]; then
-  echo "Bundled Python runtime is missing: $RUNTIME_SRC/bin/python3" >&2
-  exit 1
-fi
+bundle_python_runtime \
+  aarch64 \
+  dbadb0ffe46f8bace50daaf8a0c5fc6903c003690776da9eb5269e33c856bb53 \
+  python-arm64
+bundle_python_runtime \
+  x86_64 \
+  187eed2282e9c3a5b6b14953d564ee25a9f35cf2c209c9fa292186ee48b0e4a1 \
+  python-x64
 
 rm -rf "$RESOURCES_DIR/python"
-ditto "$RUNTIME_SRC" "$RESOURCES_DIR/python"
+case "$(uname -m)" in
+  arm64) ln -s python-arm64 "$RESOURCES_DIR/python" ;;
+  x86_64) ln -s python-x64 "$RESOURCES_DIR/python" ;;
+  *)
+    echo "Unsupported host architecture: $(uname -m)" >&2
+    exit 2
+    ;;
+esac
 
 if [[ -n "$CHIRP_SOURCE" ]]; then
   CHIRP_ROOT="$CHIRP_SOURCE"

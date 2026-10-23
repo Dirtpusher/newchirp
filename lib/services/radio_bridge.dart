@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi' show Abi;
 import 'dart:io';
 
 import 'package:flutter/services.dart';
@@ -487,11 +488,20 @@ class RadioBridge {
   Future<String> _resolvePython() async {
     final configured = Platform.environment['NEWCHIRP_PYTHON'];
     final resources = _bundledResourcesDirectory();
+    final macRuntime = switch (Abi.current()) {
+      Abi.macosArm64 => 'python-arm64',
+      Abi.macosX64 => 'python-x64',
+      _ => null,
+    };
     final candidates = <String>[
       if (configured != null && configured.isNotEmpty) configured,
       if (resources != null && Platform.isWindows)
         '${resources.path}/python/python.exe',
-      if (resources != null && !Platform.isWindows)
+      if (resources != null && Platform.isMacOS && macRuntime != null)
+        '${resources.path}/$macRuntime/bin/python3',
+      if (resources != null && !Platform.isWindows && !Platform.isMacOS)
+        '${resources.path}/python/bin/python3',
+      if (resources != null && Platform.isMacOS)
         '${resources.path}/python/bin/python3',
       if (Platform.isMacOS) '/opt/homebrew/bin/python3',
       if (Platform.isMacOS) '/usr/local/bin/python3',

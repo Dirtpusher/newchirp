@@ -50,8 +50,8 @@
     },
     "services/radio_bridge.dart": {
       "path": "services/radio_bridge.dart",
-      "mtime_ns": 1792762523613778729,
-      "hash": "0d72a99eae10ab0662da48265f2a37108ed32f3edc49f5e83eb7bc7397ca83f4",
+      "mtime_ns": 1792765273416125936,
+      "hash": "4550cae62c1b416d84398c743ba1cfa14f68bf1b65440d4521cbf98becb71b35",
       "concept_ids": [
         "services/radio_bridge/RadioBridge",
         "services/radio_bridge/RadioBridgeException",
@@ -143,8 +143,8 @@
     },
     "main.dart": {
       "path": "main.dart",
-      "mtime_ns": 1792762670852379100,
-      "hash": "da7a565b4f77ea8c1d80f08bc7486d764a677d430fc0568c50269bcec9da987f",
+      "mtime_ns": 1792765378822658483,
+      "hash": "e303cea15c08b9bf96f542d23efc6c7f58a1d00991c1fdf2a62876d43f38c5a9",
       "concept_ids": [
         "main",
         "main/WindowStateManager",
@@ -2034,5 +2034,5 @@
       "enriched": false
     }
   },
-  "generated_at": "2026-10-23T13:37:51Z"
+  "generated_at": "2026-10-23T14:22:59Z"
 }
