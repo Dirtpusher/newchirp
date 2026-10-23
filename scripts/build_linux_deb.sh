@@ -55,6 +55,9 @@ esac
 if [[ -z "$OUTPUT" ]]; then
   OUTPUT="$PROJECT_DIR/build/NewChirp-linux-$ARCH_LABEL-${VERSION_LINE}.deb"
 fi
+if [[ "$OUTPUT" != /* ]]; then
+  OUTPUT="$PROJECT_DIR/$OUTPUT"
+fi
 
 PACKAGE_ROOT="$PROJECT_DIR/build/linux-deb/newchirp_${VERSION}_${DEB_ARCH}"
 WORK_DIR="$PROJECT_DIR/build/linux-deb/work"
