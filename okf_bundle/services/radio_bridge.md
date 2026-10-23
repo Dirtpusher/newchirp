@@ -10,7 +10,7 @@ tags:
   - "domain:radio_bridge.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T16:23:25Z"
+timestamp: "2026-10-23T18:20:01Z"
 concept_id: services/radio_bridge
 language: dart
 ---
@@ -41,6 +41,7 @@ language: dart
 | related | [models](/services/radio_bridge/models.md) |
 | related | [instructions](/services/radio_bridge/instructions.md) |
 | related | [readImage](/services/radio_bridge/readImage.md) |
+| related | [imageCapabilities](/services/radio_bridge/imageCapabilities.md) |
 | related | [download](/services/radio_bridge/download.md) |
 | related | [upload](/services/radio_bridge/upload.md) |
 | related | [readSettings](/services/radio_bridge/readSettings.md) |

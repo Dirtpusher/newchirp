@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T17:44:01Z"
+timestamp: "2026-10-23T18:20:27Z"
 concept_id: main/EmptyLibrary
 language: dart
 ---
@@ -27,7 +27,7 @@ class _EmptyLibrary
 - `build`
 
 ## Source
-Lines 5699–5712 in `main.dart`
+Lines 5787–5800 in `main.dart`
 
 ## Relationships
 

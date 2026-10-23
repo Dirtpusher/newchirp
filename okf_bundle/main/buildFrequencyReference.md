@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T17:44:01Z"
+timestamp: "2026-10-23T18:20:27Z"
 concept_id: main/buildFrequencyReference
 language: dart
 ---
@@ -23,7 +23,7 @@ Widget_buildFrequencyReference()
 ```
 
 ## Source
-Lines 2502–2502 in `main.dart`
+Lines 2572–2572 in `main.dart`
 
 ## Relationships
 

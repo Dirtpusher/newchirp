@@ -10,7 +10,7 @@ tags:
   - "domain:radio_channel.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T13:43:31Z"
+timestamp: "2026-10-23T18:20:01Z"
 concept_id: models/radio_channel/RadioChannel
 language: dart
 ---
@@ -20,26 +20,26 @@ language: dart
 ## Signature
 
 ```dart
-RadioChannel({
-    required this.location,
-    required this.name,
-    required this.frequency,
-    this.cleared = false,
-    this.duplex = '',
-    this.offset = 0.6,
-    this.tone = '',
-    this.txTone = 88.5,
-    this.rxTone = 88.5,
-    this.dtcs = 23,
-    this.dtcsPolarity = 'NN',
-    this.rxDtcs = 23,
-    this.crossMode = 'Tone->Tone',
-    this.mode = 'FM',
-    this.step = 5.0,
-    this.skip = '',
-    this.power = '',
-    this.comment = '',
-    List<ChannelExtraField>? extras,
+RadioChannel({
+    required this.location,
+    required this.name,
+    required this.frequency,
+    this.cleared = false,
+    this.duplex = '',
+    this.offset = 0.6,
+    this.tone = '',
+    this.txTone = 88.5,
+    this.rxTone = 88.5,
+    this.dtcs = 23,
+    this.dtcsPolarity = 'NN',
+    this.rxDtcs = 23,
+    this.crossMode = 'Tone->Tone',
+    this.mode = 'FM',
+    this.step = 5.0,
+    this.skip = '',
+    this.power = '',
+    this.comment = '',
+    List<ChannelExtraField>? extras,
   })
 ```
 

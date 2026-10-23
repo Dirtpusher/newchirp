@@ -10,7 +10,7 @@ tags:
   - "domain:radio_bridge.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T16:23:25Z"
+timestamp: "2026-10-23T18:20:01Z"
 concept_id: services/radio_bridge/parseComPorts
 language: dart
 ---
@@ -24,7 +24,7 @@ List_parseComPorts_parseComPorts
 ```
 
 ## Source
-Lines 258–258 in `services\radio_bridge.dart`
+Lines 264–264 in `services\radio_bridge.dart`
 
 ## Relationships
 

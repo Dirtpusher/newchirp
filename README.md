@@ -19,6 +19,7 @@ implementation history, architecture, known risks, and prioritized next work.
 - USB serial-port discovery
 - CHIRP radio-model catalog and guarded read/write workflow
 - Reusable per-model radio images after the first read
+- Radio-aware channel slot allocation within each model's memory range
 - Real transfer progress from CHIRP read/write status with percentage and elapsed time
 - Radio-wide settings editor for drivers that expose CHIRP global settings
 - Help-context icons with detailed instructions

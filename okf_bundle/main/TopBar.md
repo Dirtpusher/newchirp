@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T17:44:01Z"
+timestamp: "2026-10-23T18:20:27Z"
 concept_id: main/TopBar
 language: dart
 ---
@@ -28,7 +28,7 @@ class _TopBar
 - `_buildHelpMenu`
 
 ## Source
-Lines 4079–4297 in `main.dart`
+Lines 4155–4373 in `main.dart`
 
 ## Relationships
 

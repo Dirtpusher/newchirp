@@ -434,14 +434,30 @@ class _NewChirpHomeState extends State<NewChirpHome> {
   Future<void> _loadRadioSelection() async {
     final selection = await _radioSelectionStore.load();
     if (!mounted || selection == null) return;
+    String? storedImage;
     setState(() {
       _model = selection.model;
       _port = selection.port;
+      _capabilities = null;
       final model = selection.model;
       if (model != null && _imageStore.hasForModel(model)) {
         _radioImage = _imageStore.pathForModel(model);
+        storedImage = _radioImage;
       }
     });
+    if (storedImage != null) {
+      unawaited(_loadImageCapabilities(storedImage!));
+    }
+  }
+
+  Future<void> _loadImageCapabilities(String imagePath) async {
+    try {
+      final capabilities = await _bridge.imageCapabilities(imagePath);
+      if (!mounted || _radioImage != imagePath) return;
+      setState(() => _capabilities = capabilities);
+    } catch (_) {
+      // Stored images still support transfer; capabilities are an enhancement.
+    }
   }
 
   Future<void> _saveRadioSelection() async {
@@ -489,17 +505,23 @@ class _NewChirpHomeState extends State<NewChirpHome> {
   Future<void> _loadModels() async {
     final radioSelectionLoad = _radioSelectionLoad;
     if (radioSelectionLoad != null) await radioSelectionLoad;
+    String? storedImage;
     await _task('Loading radio catalog…', () async {
       final models = await _bridge.models();
       setState(() {
         _models = models;
         _model ??= models.firstOrNull;
+        _capabilities = null;
         final model = _model;
         if (model != null && _imageStore.hasForModel(model)) {
           _radioImage = _imageStore.pathForModel(model);
+          storedImage = _radioImage;
         }
       });
     });
+    if (storedImage != null) {
+      unawaited(_loadImageCapabilities(storedImage!));
+    }
   }
 
   Future<void> _task(String label, Future<void> Function() action) async {
@@ -762,7 +784,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
       builder: (context) => _ChannelApplyDialog(
         label: label,
         count: count,
-        initialStart: _nextChannelLocation(),
+        initialStart: _nextChannelLocation() ?? _capabilities?.memoryStart ?? 1,
       ),
     );
   }
@@ -774,9 +796,11 @@ class _NewChirpHomeState extends State<NewChirpHome> {
     String? libraryPath,
   }) {
     if (mode.replaceAll) {
+      final sorted = [...incoming]
+        ..sort((left, right) => left.location.compareTo(right.location));
       setState(() {
-        _channels = incoming;
-        _selected = incoming.isEmpty ? -1 : 0;
+        _channels = sorted;
+        _selected = sorted.isEmpty ? -1 : 0;
         _libraryName = libraryName;
         _libraryPath = libraryPath;
         _libraryOpen = true;
@@ -809,10 +833,35 @@ class _NewChirpHomeState extends State<NewChirpHome> {
     });
   }
 
-  int _nextChannelLocation() {
-    if (_channels.isEmpty) return 1;
-    return _channels.map((c) => c.location).fold(0, (a, b) => a > b ? a : b) +
-        1;
+  int? _nextChannelLocation() => RadioChannel.nextAvailableLocation(
+    _channels,
+    minimum: _capabilities?.memoryStart ?? 1,
+    maximum: _capabilities?.memoryEnd,
+  );
+
+  List<String> _channelIssues(RadioChannel channel) => channel.validate(
+    minimumLocation: _capabilities?.memoryStart,
+    maximumLocation: _capabilities?.memoryEnd,
+  );
+
+  void _sortChannelsByLocation() {
+    _channels.sort((left, right) => left.location.compareTo(right.location));
+  }
+
+  void _showNoEmptyChannelSlot() {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            _capabilities?.memoryEnd == null
+                ? 'No empty channel slot is available.'
+                : 'No empty channel slots are available for this radio.',
+          ),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
+        ),
+      );
   }
 
   Future<void> _saveCsv({bool saveAs = false}) async {
@@ -1139,22 +1188,24 @@ class _NewChirpHomeState extends State<NewChirpHome> {
   }
 
   void _addChannel() {
-    final location = _channels.isEmpty
-        ? 1
-        : _channels.map((c) => c.location).reduce((a, b) => a > b ? a : b) + 1;
+    final location = _nextChannelLocation();
+    if (location == null) {
+      _showNoEmptyChannelSlot();
+      return;
+    }
+    final channel = RadioChannel(
+      location: location,
+      name: 'NEW $location',
+      frequency: 146.52,
+    );
     _recordHistory();
     setState(() {
       _clearedLocations.remove(location);
-      _channels.add(
-        RadioChannel(
-          location: location,
-          name: 'NEW $location',
-          frequency: 146.52,
-        ),
-      );
+      _channels.add(channel);
+      _sortChannelsByLocation();
       _searchController.clear();
       _query = '';
-      _selected = _channels.length - 1;
+      _selected = _channels.indexOf(channel);
       _dirty = true;
     });
     ScaffoldMessenger.of(context)
@@ -1179,16 +1230,22 @@ class _NewChirpHomeState extends State<NewChirpHome> {
   void _duplicateChannelAt(int index) {
     if (index < 0 || index >= _channels.length) return;
     if (_channels[index].cleared) return;
+    final location = _nextChannelLocation();
+    if (location == null) {
+      _showNoEmptyChannelSlot();
+      return;
+    }
     _recordHistory();
-    final copy = _channels[index].copy()
-      ..location =
-          (_channels.map((c) => c.location).fold(0, (a, b) => a > b ? a : b)) +
-          1;
+    final copy = _channels[index].copy()..location = location;
     setState(() {
       _clearedLocations.remove(copy.location);
       _channels.add(copy);
-      _selected = _channels.length - 1;
+      _sortChannelsByLocation();
+      _selected = _channels.indexOf(copy);
       _dirty = true;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _channelTableKey.currentState?.revealSelectedChannel();
     });
   }
 
@@ -1337,7 +1394,8 @@ class _NewChirpHomeState extends State<NewChirpHome> {
           result.imagePath,
         );
         setState(() {
-          _channels = result.channels;
+          _channels = [...result.channels]
+            ..sort((left, right) => left.location.compareTo(right.location));
           _clearedLocations.clear();
           _selected = _channels.isEmpty ? -1 : 0;
           _radioImage = storedImage;
@@ -1424,7 +1482,11 @@ class _NewChirpHomeState extends State<NewChirpHome> {
   Future<void> _uploadRadio() async {
     if (_port == null || _model == null || _radioImage == null) return;
     final issues = _activeChannels
-        .expand((c) => c.validate().map((e) => '${c.location}: $e'))
+        .expand(
+          (channel) => _channelIssues(
+            channel,
+          ).map((issue) => '${channel.location}: $issue'),
+        )
         .toList();
     if (issues.isNotEmpty) {
       await showDialog<void>(
@@ -2062,10 +2124,18 @@ class _NewChirpHomeState extends State<NewChirpHome> {
           void changed(VoidCallback update) => setDialogState(() => update());
 
           void save() {
+            final saved = draft.copy();
             _recordHistory();
             setState(() {
-              _channels[channelIndex] = draft.copy();
+              _channels[channelIndex] = saved;
+              _sortChannelsByLocation();
+              _selected = _channels.indexOf(saved);
               _dirty = true;
+            });
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                _channelTableKey.currentState?.revealSelectedChannel();
+              }
             });
             Navigator.pop(dialogContext);
           }
@@ -2137,7 +2207,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                   entry.value.comment.toLowerCase().contains(q));
     }).toList();
     final invalid = _activeChannels
-        .where((c) => c.validate().isNotEmpty)
+        .where((channel) => _channelIssues(channel).isNotEmpty)
         .length;
     final storedImageReady =
         _model != null &&
@@ -2283,12 +2353,12 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                             const _HelpButton(
                               title: 'Channel editing',
                               details:
-                                  'Add appends a new channel, Duplicate copies the selected row, '
-                                  'and Delete removes it after confirmation. Double-click any row '
-                                  'to edit all of its fields. Right-click a row to copy, cut, paste, '
-                                  'duplicate, or clear it. Clear removes it from the radio on '
-                                  'the next write. Use Cmd/Ctrl+Z to undo and Cmd/Ctrl+Shift+Z '
-                                  'to redo.',
+                                  'Add creates a channel in the next available radio memory slot. '
+                                  'Duplicate copies the selected row, and Delete removes it after '
+                                  'confirmation. Double-click any row to edit all of its fields. '
+                                  'Right-click a row to copy, cut, paste, duplicate, or clear it. '
+                                  'Clear removes it from the radio on the next write. Use '
+                                  'Cmd/Ctrl+Z to undo and Cmd/Ctrl+Shift+Z to redo.',
                             ),
                           ],
                         );
@@ -3491,13 +3561,16 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                               .toList(),
                           onChanged: (value) {
                             final model = value;
+                            String? storedImage;
                             setState(() {
                               _model = model;
+                              _capabilities = null;
                               _radioImage =
                                   model != null &&
                                       _imageStore.hasForModel(model)
                                   ? _imageStore.pathForModel(model)
                                   : null;
+                              storedImage = _radioImage;
                               _radioSettings = null;
                               _settingsDirty = false;
                               _settingsLoadedFromRadio = false;
@@ -3505,6 +3578,9 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                               _settingsLoadedImage = null;
                               _settingsError = null;
                             });
+                            if (storedImage != null) {
+                              unawaited(_loadImageCapabilities(storedImage!));
+                            }
                             unawaited(_saveRadioSelection());
                           },
                         ),
@@ -4648,7 +4724,16 @@ class _ChannelTableState extends State<_ChannelTable> {
   void revealSelectedChannel() {
     if (!_verticalController.hasClients) return;
     final position = _verticalController.position;
-    final target = position.maxScrollExtent;
+    final selectedIndex = widget.entries.indexWhere(
+      (entry) => entry.key == widget.selected,
+    );
+    if (selectedIndex < 0) return;
+    final rowsAfter = widget.entries.length - selectedIndex - 1;
+    final target = rowsAfter < 2
+        ? position.maxScrollExtent
+        : (selectedIndex * 45.0 - position.viewportDimension + 90)
+              .clamp(0.0, position.maxScrollExtent)
+              .toDouble();
     if ((position.pixels - target).abs() < 1) return;
     unawaited(
       _verticalController
@@ -4912,7 +4997,7 @@ class _ChannelTableState extends State<_ChannelTable> {
             Positioned.fill(
               right: 8,
               child: Tooltip(
-                message: 'Drag to reorder',
+                message: 'Drag to reorder column',
                 child: Draggable<String>(
                   data: column.id,
                   axis: Axis.horizontal,
@@ -5121,7 +5206,10 @@ class _ChannelEditor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final issues = channel.validate();
+    final issues = channel.validate(
+      minimumLocation: capabilities?.memoryStart,
+      maximumLocation: capabilities?.memoryEnd,
+    );
     Map<String, String> choices(
       List<String>? values,
       Map<String, String> fallback,

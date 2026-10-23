@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T17:44:01Z"
+timestamp: "2026-10-23T18:20:27Z"
 concept_id: main/restoreStockChannels
 language: dart
 ---
@@ -23,7 +23,7 @@ Future_restoreStockChannels_restoreStockChannels
 ```
 
 ## Source
-Lines 900–900 in `main.dart`
+Lines 949–949 in `main.dart`
 
 ## Relationships
 

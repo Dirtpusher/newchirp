@@ -10,7 +10,7 @@ tags:
   - "domain:radio_channel.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T13:43:31Z"
+timestamp: "2026-10-23T18:20:01Z"
 concept_id: models/radio_channel/toJson
 language: dart
 ---
@@ -24,7 +24,7 @@ MaptoJsontoJson
 ```
 
 ## Source
-Lines 156–156 in `models\radio_channel.dart`
+Lines 206–206 in `models\radio_channel.dart`
 
 ## Relationships
 

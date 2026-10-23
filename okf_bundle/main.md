@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T17:44:01Z"
+timestamp: "2026-10-23T18:20:27Z"
 concept_id: main
 language: dart
 ---
@@ -86,6 +86,7 @@ language: dart
 | related | [_redo](/main/redo.md) |
 | related | [_syncMenuState](/main/syncMenuState.md) |
 | related | [_loadRadioSelection](/main/loadRadioSelection.md) |
+| related | [_loadImageCapabilities](/main/loadImageCapabilities.md) |
 | related | [_saveRadioSelection](/main/saveRadioSelection.md) |
 | related | [_setColumnOrder](/main/setColumnOrder.md) |
 | related | [_setColumnWidth](/main/setColumnWidth.md) |
@@ -101,6 +102,9 @@ language: dart
 | related | [_chooseChannelApplyMode](/main/chooseChannelApplyMode.md) |
 | related | [_applyChannels](/main/applyChannels.md) |
 | related | [_nextChannelLocation](/main/nextChannelLocation.md) |
+| related | [_channelIssues](/main/channelIssues.md) |
+| related | [_sortChannelsByLocation](/main/sortChannelsByLocation.md) |
+| related | [_showNoEmptyChannelSlot](/main/showNoEmptyChannelSlot.md) |
 | related | [_saveCsv](/main/saveCsv.md) |
 | related | [_confirmReplaceLibrary](/main/confirmReplaceLibrary.md) |
 | related | [_newLibrary](/main/newLibrary.md) |

@@ -20,6 +20,7 @@
 - [_windowsSerialPorts](windowsSerialPorts.md) — Windows: read the live COM ports from the SERIALCOMM registry key, then
 - [cancelActive](cancelActive.md)
 - [download](download.md)
+- [imageCapabilities](imageCapabilities.md)
 - [instructions](instructions.md)
 - [models](models.md)
 - [RadioBridge](RadioBridge.md)

@@ -9,7 +9,7 @@ tags:
   - "module:chirp_bridge.py"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T15:23:20Z"
+timestamp: "2026-10-23T18:20:01Z"
 concept_id: chirp_bridge/load_chirp
 language: python
 ---

@@ -121,10 +121,60 @@ class RadioChannel {
         .toList(),
   );
 
-  List<String> validate() {
+  static int? nextAvailableLocation(
+    Iterable<RadioChannel> channels, {
+    int minimum = 1,
+    int? maximum,
+  }) {
+    if (maximum != null && maximum < minimum) return null;
+    final occupied = channels.map((channel) => channel.location).toSet();
+    final highest = occupied.fold<int?>(
+      null,
+      (current, location) =>
+          current == null || location > current ? location : current,
+    );
+    if (highest != null) {
+      final next = highest + 1;
+      if (next >= minimum && (maximum == null || next <= maximum)) {
+        if (!occupied.contains(next)) return next;
+      }
+    } else {
+      return minimum;
+    }
+    if (maximum == null) return minimum;
+    for (var location = minimum; location <= maximum; location++) {
+      if (!occupied.contains(location)) return location;
+    }
+    return null;
+  }
+
+  List<String> validate({int? minimumLocation, int? maximumLocation}) {
     final issues = <String>[];
     if (cleared) return issues;
-    if (location < 0) issues.add('Location must be zero or greater.');
+    if (minimumLocation != null || maximumLocation != null) {
+      final belowMinimum =
+          minimumLocation != null && location < minimumLocation;
+      final aboveMaximum =
+          maximumLocation != null && location > maximumLocation;
+      if (belowMinimum || aboveMaximum) {
+        if (minimumLocation != null && maximumLocation != null) {
+          issues.add(
+            'Location must be between $minimumLocation and $maximumLocation '
+            'for this radio.',
+          );
+        } else if (minimumLocation != null) {
+          issues.add(
+            'Location must be at least $minimumLocation for this radio.',
+          );
+        } else {
+          issues.add(
+            'Location must be at most $maximumLocation for this radio.',
+          );
+        }
+      }
+    } else if (location < 0) {
+      issues.add('Location must be zero or greater.');
+    }
     if (frequency <= 0 || frequency > 1300) {
       issues.add('Frequency must be between 0 and 1300 MHz.');
     }

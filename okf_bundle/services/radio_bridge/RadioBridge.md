@@ -10,7 +10,7 @@ tags:
   - "domain:radio_bridge.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T16:23:25Z"
+timestamp: "2026-10-23T18:20:01Z"
 concept_id: services/radio_bridge/RadioBridge
 language: dart
 ---
@@ -24,7 +24,7 @@ RadioBridge({this.sourcePath, this.newDriversPath})
 ```
 
 ## Source
-Lines 198–198 in `services\radio_bridge.dart`
+Lines 204–204 in `services\radio_bridge.dart`
 
 ## Relationships
 

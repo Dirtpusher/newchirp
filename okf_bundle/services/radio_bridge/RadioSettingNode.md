@@ -10,7 +10,7 @@ tags:
   - "domain:radio_bridge.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T16:23:25Z"
+timestamp: "2026-10-23T18:20:01Z"
 concept_id: services/radio_bridge/RadioSettingNode
 language: dart
 ---
@@ -20,26 +20,26 @@ language: dart
 ## Signature
 
 ```dart
-RadioSettingNode({
-    required this.id,
-    required this.name,
-    required this.shortName,
-    required this.kind,
-    required this.documentation,
-    required this.value,
-    required this.options,
-    required this.mutable,
-    required this.min,
-    required this.max,
-    required this.step,
-    required this.minLength,
-    required this.maxLength,
-    required this.children,
+RadioSettingNode({
+    required this.id,
+    required this.name,
+    required this.shortName,
+    required this.kind,
+    required this.documentation,
+    required this.value,
+    required this.options,
+    required this.mutable,
+    required this.min,
+    required this.max,
+    required this.step,
+    required this.minLength,
+    required this.maxLength,
+    required this.children,
   })
 ```
 
 ## Source
-Lines 103–118 in `services\radio_bridge.dart`
+Lines 109–124 in `services\radio_bridge.dart`
 
 ## Relationships
 

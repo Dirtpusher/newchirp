@@ -97,4 +97,14 @@ void main() {
     expect(mixedCase.uppercaseNames, isFalse);
     expect(missing.uppercaseNames, isFalse);
   });
+
+  test('parses radio memory bounds', () {
+    final capabilities = RadioCapabilities.fromJson({
+      'memoryStart': 1,
+      'memoryEnd': 199,
+    });
+
+    expect(capabilities.memoryStart, 1);
+    expect(capabilities.memoryEnd, 199);
+  });
 }
