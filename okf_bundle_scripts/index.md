@@ -1,17 +1,18 @@
 ---
 description: OKF v0.2 bundle generated from the okf_bundle_scripts codebase
 okf_version: '0.2'
-timestamp: '2026-10-23T10:51:58Z'
+timestamp: '2026-10-23T11:55:33Z'
 title: okf_bundle_scripts
 type: Index
 ---
 
 # okf_bundle_scripts
 
-OKF v0.2 knowledge bundle — 36 concepts across 3 top-level directories.
+OKF v0.2 knowledge bundle — 36 concepts across 4 top-level directories.
 
 ## Top-level Directories
 
 - [build_macos_dmg](build_macos_dmg/index.md)
 - [chirp_bridge](chirp_bridge/index.md)
 - [generate_gmrs_frs_pdf](generate_gmrs_frs_pdf/index.md)
+- [release-tools](release-tools/index.md)

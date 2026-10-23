@@ -1,43 +1,30 @@
 {
   "okf_version": "0.2",
   "manifest_version": 2,
-  "source_root": "C:\\Users\\rlopez\\newchirp\\scripts",
+  "source_root": "/Volumes/RICKEXT/desktop/newchirp/scripts",
   "files": {
-    "chirp_bridge.py": {
-      "path": "chirp_bridge.py",
-      "mtime_ns": 1792688556366212100,
-      "hash": "cdfb0fa6f65f088c7f462a4a2a9f9f1038628988474a8d8427a182e4d9585bd6",
+    "build_macos_dmg.py": {
+      "path": "build_macos_dmg.py",
+      "mtime_ns": 1792753027569896057,
+      "hash": "e624279571e421cd54757125bdf976d42233cf8a45bc400b912bde09bbd246e9",
       "concept_ids": [
-        "chirp_bridge/apply_json",
-        "chirp_bridge/apply_setting_changes",
-        "chirp_bridge/emit_progress",
-        "chirp_bridge/extra_fields_json",
-        "chirp_bridge/features_json",
-        "chirp_bridge/load_chirp",
-        "chirp_bridge/main",
-        "chirp_bridge/memory_json",
-        "chirp_bridge/open_serial",
-        "chirp_bridge/radio_for",
-        "chirp_bridge/radio_from_image",
-        "chirp_bridge/setting_doc",
-        "chirp_bridge/setting_value_json",
-        "chirp_bridge/settings_payload",
-        "chirp_bridge/settings_tree_json",
-        "chirp_bridge/status_progress",
-        "chirp_bridge"
+        "build_macos_dmg/build_background",
+        "build_macos_dmg/main",
+        "build_macos_dmg/project_version",
+        "build_macos_dmg"
       ]
     },
     "generate_gmrs_frs_pdf.py": {
       "path": "generate_gmrs_frs_pdf.py",
-      "mtime_ns": 1787492611838422700,
-      "hash": "a8ee810fdc0e06c1308c5d35af6f371465f049ad49b6348a0cff53526d964c48",
+      "mtime_ns": 1787526889873622751,
+      "hash": "df1a1f0a1b83f1e4347450ea7480e921a0268146a2aa1ad640f71d44348ff7ac",
       "concept_ids": [
+        "generate_gmrs_frs_pdf/PdfWriter",
         "generate_gmrs_frs_pdf/as_pdf",
         "generate_gmrs_frs_pdf/esc",
         "generate_gmrs_frs_pdf/init",
         "generate_gmrs_frs_pdf/line",
         "generate_gmrs_frs_pdf/main",
-        "generate_gmrs_frs_pdf/PdfWriter",
         "generate_gmrs_frs_pdf/rect",
         "generate_gmrs_frs_pdf/rgb",
         "generate_gmrs_frs_pdf/row_color",
@@ -49,15 +36,28 @@
         "generate_gmrs_frs_pdf"
       ]
     },
-    "build_macos_dmg.py": {
-      "path": "build_macos_dmg.py",
-      "mtime_ns": 1792752482758184400,
-      "hash": "8300995012c8012c6213e93daa7501abaafda292f1094c09c0f72fa03dc5c601",
+    "chirp_bridge.py": {
+      "path": "chirp_bridge.py",
+      "mtime_ns": 1792756533008195037,
+      "hash": "bc7baa611e1463cde62056d0e2c5fc5a5d12fc562bf9c90243539cf77f9ca719",
       "concept_ids": [
-        "build_macos_dmg",
-        "build_macos_dmg/project_version",
-        "build_macos_dmg/build_background",
-        "build_macos_dmg/main"
+        "chirp_bridge",
+        "chirp_bridge/emit_progress",
+        "chirp_bridge/status_progress",
+        "chirp_bridge/load_chirp",
+        "chirp_bridge/memory_json",
+        "chirp_bridge/extra_fields_json",
+        "chirp_bridge/features_json",
+        "chirp_bridge/setting_doc",
+        "chirp_bridge/setting_value_json",
+        "chirp_bridge/settings_tree_json",
+        "chirp_bridge/apply_setting_changes",
+        "chirp_bridge/apply_json",
+        "chirp_bridge/open_serial",
+        "chirp_bridge/radio_for",
+        "chirp_bridge/radio_from_image",
+        "chirp_bridge/settings_payload",
+        "chirp_bridge/main"
       ]
     }
   },
@@ -195,7 +195,7 @@
       "type": "Function",
       "resource": "generate_gmrs_frs_pdf.py",
       "render_hash": "stale",
-      "edge_hash": "d886a061d823685acbfcb816547ec5496da2984c3768e28871ae9b369fdbff72",
+      "edge_hash": "c906e118c9c948405f0e608b7ae6241c68c15d661c00ee6a2e93a89d581a9f32",
       "enriched": false
     },
     "generate_gmrs_frs_pdf/text": {
@@ -203,7 +203,7 @@
       "type": "Function",
       "resource": "generate_gmrs_frs_pdf.py",
       "render_hash": "stale",
-      "edge_hash": "507bc1533da9ec5460fc994cb913106f5f6277c3ca7c593a6e34680c5645425a",
+      "edge_hash": "82f28db2f455bf558a68f142329f2cc9f634032604c0ce3c5e6e4fbb8e929c79",
       "enriched": false
     },
     "generate_gmrs_frs_pdf/text_in_rect": {
@@ -367,5 +367,5 @@
       "enriched": false
     }
   },
-  "generated_at": "2026-10-23T10:51:59Z"
+  "generated_at": "2026-10-23T11:55:33Z"
 }

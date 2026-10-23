@@ -3,7 +3,7 @@ okf_version: "0.2"
 type: Function
 title: _windowsSerialPorts
 description: "Windows: read the live COM ports from the SERIALCOMM registry key, then"
-resource: services\radio_bridge.dart
+resource: services/radio_bridge.dart
 tags:
   - "lang:dart"
   - "type:Function"
@@ -11,7 +11,7 @@ tags:
   - "domain:radio_bridge.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-22T17:02:43Z"
+timestamp: "2026-10-23T11:57:18Z"
 concept_id: services/radio_bridge/windowsSerialPorts
 language: dart
 ---
@@ -32,7 +32,7 @@ Windows: read the live COM ports from the SERIALCOMM registry key, then
 fall back to .NET's SerialPort.GetPortNames() so only real ports show up.
 
 ## Source
-Lines 227–227 in `services\radio_bridge.dart`
+Lines 228–228 in `services/radio_bridge.dart`
 
 ## Relationships
 

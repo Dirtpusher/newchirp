@@ -2,7 +2,7 @@
 okf_version: "0.2"
 type: Function
 title: load
-resource: services\column_layout_store.dart
+resource: services/column_layout_store.dart
 tags:
   - "lang:dart"
   - "type:Function"
@@ -10,7 +10,7 @@ tags:
   - "domain:column_layout_store.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T13:43:31Z"
+timestamp: "2026-08-23T23:14:49Z"
 concept_id: services/column_layout_store/load
 language: dart
 ---
@@ -24,7 +24,7 @@ Futureloadload
 ```
 
 ## Source
-Lines 16–16 in `services\column_layout_store.dart`
+Lines 16–16 in `services/column_layout_store.dart`
 
 ## Relationships
 

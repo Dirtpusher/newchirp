@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# Xcode 27's lipo requires one architecture per -verify_arch invocation.
+# Flutter 3.38 passes the target list as separate arguments, so verify each
+# architecture independently while leaving every other lipo call unchanged.
+if [ "$#" -ge 3 ] && [ "$2" = "-verify_arch" ]; then
+  binary="$1"
+  shift 2
+  for arch in "$@"; do
+    /usr/bin/lipo -verify_arch "$arch" "$binary" || exit $?
+  done
+  exit 0
+fi
+
+exec /usr/bin/lipo "$@"

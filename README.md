@@ -116,6 +116,18 @@ Use `-Configuration debug` only for a local dev build; debug Flutter binaries
 link the Visual Studio debug CRT and are not intended for clean end-user
 machines.
 
+### Experimental FTM-150 support
+
+NewChirp includes an experimental Yaesu FTM-150R/E/ASP memory-channel driver
+maintained outside upstream CHIRP. It uses the AH086 layout documented by
+ADMS-17 v1.0.1 and the same clone transport as the FTM-300DR family. Memory
+channel reads and writes are available; APRS, GPS, and digital settings remain
+hidden until verified with real hardware.
+
+Use an SCU-56 USB cable or CT-163 serial cable on the DATA jack. Keep a complete
+microSD ALL backup before uploading. The radio-side menu entries are
+**59 Other -> This** for download and **58 This -> Other** for upload.
+
 ## Code knowledge graph
 
 This project keeps OKF knowledge bundles for coding agents:

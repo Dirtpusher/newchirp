@@ -2,7 +2,7 @@
 okf_version: "0.2"
 type: Module
 title: radio_bridge
-resource: services\radio_bridge.dart
+resource: services/radio_bridge.dart
 tags:
   - "lang:dart"
   - "type:Module"
@@ -10,7 +10,7 @@ tags:
   - "domain:radio_bridge.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-22T17:02:43Z"
+timestamp: "2026-10-23T11:57:18Z"
 concept_id: services/radio_bridge
 language: dart
 ---
@@ -50,4 +50,5 @@ language: dart
 | related | [_materializeBridge](/services/radio_bridge/materializeBridge.md) |
 | related | [_materializePythonDependencies](/services/radio_bridge/materializePythonDependencies.md) |
 | related | [_findChirpSource](/services/radio_bridge/findChirpSource.md) |
+| related | [_findNewChirpDrivers](/services/radio_bridge/findNewChirpDrivers.md) |
 | related | [RadioBridge](/services/radio_bridge/RadioBridge.md) |

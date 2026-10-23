@@ -2,7 +2,7 @@
 okf_version: "0.2"
 type: Function
 title: RadioBridge
-resource: services\radio_bridge.dart
+resource: services/radio_bridge.dart
 tags:
   - "lang:dart"
   - "type:Function"
@@ -10,7 +10,7 @@ tags:
   - "domain:radio_bridge.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-22T17:02:43Z"
+timestamp: "2026-10-23T11:57:18Z"
 concept_id: services/radio_bridge/RadioBridge
 language: dart
 ---
@@ -20,11 +20,11 @@ language: dart
 ## Signature
 
 ```dart
-RadioBridge({this.sourcePath})
+RadioBridge({this.sourcePath, this.newDriversPath})
 ```
 
 ## Source
-Lines 194–194 in `services\radio_bridge.dart`
+Lines 194–194 in `services/radio_bridge.dart`
 
 ## Relationships
 

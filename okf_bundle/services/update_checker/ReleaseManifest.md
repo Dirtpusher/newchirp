@@ -2,7 +2,7 @@
 okf_version: "0.2"
 type: Class
 title: _ReleaseManifest
-resource: services\update_checker.dart
+resource: services/update_checker.dart
 tags:
   - "lang:dart"
   - "type:Class"
@@ -10,7 +10,7 @@ tags:
   - "domain:update_checker.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-04T10:11:49Z"
+timestamp: "2026-10-22T17:59:51Z"
 concept_id: services/update_checker/ReleaseManifest
 language: dart
 ---
@@ -24,7 +24,7 @@ class _ReleaseManifest
 ```
 
 ## Source
-Lines 112–117 in `services\update_checker.dart`
+Lines 112–117 in `services/update_checker.dart`
 
 ## Relationships
 

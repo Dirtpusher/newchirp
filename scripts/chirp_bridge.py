@@ -2,6 +2,8 @@
 """Small JSON boundary between NewChirp and the audited CHIRP driver tree."""
 import argparse
 import builtins
+import glob
+import importlib.util
 import json
 import os
 import re
@@ -50,7 +52,7 @@ def status_progress(status, start=0.0, end=1.0):
         emit_progress(label, start + (end - start) * raw)
 
 
-def load_chirp(source, vendor):
+def load_chirp(source, vendor, newchirp_driver_dir=None):
     # pyserial is shipped as a pure-Python wheel inside NewChirp. Python can
     # import it directly without pip or a user-level installation.
     sys.path.insert(0, vendor)
@@ -67,6 +69,24 @@ def load_chirp(source, vendor):
         ) from exc
     from chirp import directory
     directory.import_drivers()
+    if newchirp_driver_dir and os.path.isdir(newchirp_driver_dir):
+        for driver_path in sorted(
+            glob.glob(os.path.join(newchirp_driver_dir, "*.py"))
+        ):
+            module_name = os.path.splitext(os.path.basename(driver_path))[0]
+            if module_name.startswith("_"):
+                continue
+            full_name = "newchirp.drivers.%s" % module_name
+            spec = importlib.util.spec_from_file_location(
+                full_name, driver_path
+            )
+            if spec is None or spec.loader is None:
+                raise RuntimeError(
+                    "Could not load NewChirp driver %s" % driver_path
+                )
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[full_name] = module
+            spec.loader.exec_module(module)
     return directory
 
 
@@ -393,6 +413,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", required=True)
     parser.add_argument("--vendor", required=True)
+    parser.add_argument("--newchirp-driver-dir")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("list-models")
     model_info = sub.add_parser("model-info")
@@ -417,7 +438,9 @@ def main():
     write_settings.add_argument("--settings", required=True)
     args = parser.parse_args()
     try:
-        directory = load_chirp(args.source, args.vendor)
+        directory = load_chirp(
+            args.source, args.vendor, args.newchirp_driver_dir
+        )
         if args.command == "list-models":
             print(json.dumps({"models": sorted(directory.DRV_TO_RADIO.keys())}))
             return

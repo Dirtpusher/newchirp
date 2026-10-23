@@ -11,6 +11,7 @@
 
 - [_bundledResourcesDirectory](bundledResourcesDirectory.md)
 - [_findChirpSource](findChirpSource.md)
+- [_findNewChirpDrivers](findNewChirpDrivers.md)
 - [_materializeBridge](materializeBridge.md)
 - [_materializePythonDependencies](materializePythonDependencies.md)
 - [_parseComPorts](parseComPorts.md)

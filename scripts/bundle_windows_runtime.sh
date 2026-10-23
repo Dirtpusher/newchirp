@@ -145,6 +145,10 @@ cp -a "$RUNTIME_SRC" "$BUNDLE_DIR/python"
 
 rm -rf "$BUNDLE_DIR/chirp"
 cp -a "$CHIRP_PACKAGE" "$BUNDLE_DIR/chirp"
+if [[ -d "$PROJECT_DIR/drivers" ]]; then
+  mkdir -p "$BUNDLE_DIR/chirp/drivers"
+  cp "$PROJECT_DIR"/drivers/*.py "$BUNDLE_DIR/chirp/drivers/"
+fi
 
 if [[ -f "$CHIRP_ROOT/COPYING" ]]; then
   cp "$CHIRP_ROOT/COPYING" "$BUNDLE_DIR/chirp-COPYING.txt"

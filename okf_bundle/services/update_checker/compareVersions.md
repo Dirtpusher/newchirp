@@ -3,7 +3,7 @@ okf_version: "0.2"
 type: Function
 title: compareVersions
 description: "Compares two dotted version strings, ignoring any `+build` metadata."
-resource: services\update_checker.dart
+resource: services/update_checker.dart
 tags:
   - "lang:dart"
   - "type:Function"
@@ -11,7 +11,7 @@ tags:
   - "domain:update_checker.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-04T10:11:49Z"
+timestamp: "2026-10-22T17:59:51Z"
 concept_id: services/update_checker/compareVersions
 language: dart
 ---
@@ -34,7 +34,7 @@ Returns a positive number when [a] is newer than [b], a negative number
 when [a] is older, and zero when they are equivalent.
 
 ## Source
-Lines 123–123 in `services\update_checker.dart`
+Lines 123–123 in `services/update_checker.dart`
 
 ## Relationships
 

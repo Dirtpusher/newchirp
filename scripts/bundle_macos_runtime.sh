@@ -112,6 +112,10 @@ fi
 
 rm -rf "$RESOURCES_DIR/chirp"
 ditto "$CHIRP_PACKAGE" "$RESOURCES_DIR/chirp"
+if [[ -d "$PROJECT_DIR/drivers" ]]; then
+  mkdir -p "$RESOURCES_DIR/chirp/drivers"
+  cp "$PROJECT_DIR"/drivers/*.py "$RESOURCES_DIR/chirp/drivers/"
+fi
 
 if [[ -f "$CHIRP_ROOT/COPYING" ]]; then
   cp "$CHIRP_ROOT/COPYING" "$RESOURCES_DIR/chirp-COPYING.txt"

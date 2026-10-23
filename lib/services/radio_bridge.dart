@@ -191,8 +191,9 @@ class RadioSettings {
 }
 
 class RadioBridge {
-  RadioBridge({this.sourcePath});
+  RadioBridge({this.sourcePath, this.newDriversPath});
   final String? sourcePath;
+  final String? newDriversPath;
   Process? _activeProcess;
   bool _cancelRequested = false;
 
@@ -402,6 +403,7 @@ class RadioBridge {
     final script = await _materializeBridge();
     final vendor = await _materializePythonDependencies();
     final source = _findChirpSource();
+    final newDrivers = _findNewChirpDrivers();
     final python = await _resolvePython();
     late final Process process;
     try {
@@ -411,6 +413,7 @@ class RadioBridge {
         source,
         '--vendor',
         vendor,
+        if (newDrivers != null) ...['--newchirp-driver-dir', newDrivers],
         ...args,
       ]);
     } on ProcessException catch (error) {
@@ -578,5 +581,14 @@ class RadioBridge {
       'The CHIRP driver folder was not found. Keep chirp-20260626 beside '
       'NewChirp, or set the CHIRP_SOURCE environment variable.',
     );
+  }
+
+  String? _findNewChirpDrivers() {
+    final configured =
+        newDriversPath ?? Platform.environment['NEWCHIRP_DRIVERS'];
+    if (configured == null || configured.isEmpty) return null;
+    final directory = Directory(configured);
+    if (!directory.existsSync()) return null;
+    return directory.absolute.path;
   }
 }
