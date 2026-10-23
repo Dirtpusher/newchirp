@@ -5,14 +5,15 @@
   "files": {
     "models/radio_channel.dart": {
       "path": "models/radio_channel.dart",
-      "mtime_ns": 1787526889853439412,
-      "hash": "850738d3e858941091b0f6ebe7a0e88662395baed614cf132a0483209e3b1a81",
+      "mtime_ns": 1792778322710653297,
+      "hash": "917ab8cb26976c280d5f0d184c6513565ce04abd35fb8d1f6a8ac09b1d9efd34",
       "concept_ids": [
         "models/radio_channel/ChannelExtraField",
         "models/radio_channel/RadioChannel",
         "models/radio_channel/clear",
         "models/radio_channel/copy",
         "models/radio_channel/gmrsStarterChannels",
+        "models/radio_channel/nextAvailableLocation",
         "models/radio_channel/toJson",
         "models/radio_channel/validate",
         "models/radio_channel"
@@ -50,8 +51,8 @@
     },
     "services/radio_bridge.dart": {
       "path": "services/radio_bridge.dart",
-      "mtime_ns": 1792768481651581192,
-      "hash": "593ad447524e0cff8fcc868d06ceec6b7599718514588b1ae6f5888a140ff523",
+      "mtime_ns": 1792778246567419114,
+      "hash": "76a04d60180201b18864b6caf4197f09e7ee8fdf8dea61097ee961d378cee288",
       "concept_ids": [
         "services/radio_bridge/RadioBridge",
         "services/radio_bridge/RadioBridgeException",
@@ -65,6 +66,7 @@
         "services/radio_bridge/download",
         "services/radio_bridge/findChirpSource",
         "services/radio_bridge/findNewChirpDrivers",
+        "services/radio_bridge/imageCapabilities",
         "services/radio_bridge/instructions",
         "services/radio_bridge/materializeBridge",
         "services/radio_bridge/materializePythonDependencies",
@@ -144,8 +146,8 @@
     },
     "main.dart": {
       "path": "main.dart",
-      "mtime_ns": 1792768713996072221,
-      "hash": "2c21eb220cd715d72f5ef01f204912e1d71d72d17745db30e63c322c5c850842",
+      "mtime_ns": 1792778578778362117,
+      "hash": "b00bd743804c0b170089dda49c61055441cfc03d8d138efe0a34946b7d87633a",
       "concept_ids": [
         "main",
         "main/WindowStateManager",
@@ -211,6 +213,7 @@
         "main/redo",
         "main/syncMenuState",
         "main/loadRadioSelection",
+        "main/loadImageCapabilities",
         "main/saveRadioSelection",
         "main/setColumnOrder",
         "main/setColumnWidth",
@@ -226,6 +229,9 @@
         "main/chooseChannelApplyMode",
         "main/applyChannels",
         "main/nextChannelLocation",
+        "main/channelIssues",
+        "main/sortChannelsByLocation",
+        "main/showNoEmptyChannelSlot",
         "main/saveCsv",
         "main/confirmReplaceLibrary",
         "main/newLibrary",
@@ -289,7 +295,7 @@
       "type": "Module",
       "resource": "services/radio_bridge.dart",
       "render_hash": "stale",
-      "edge_hash": "e3fe4b5c7066b7b859b7c8c9a31a326d784c4fd862658250ed12202a7985ea73",
+      "edge_hash": "100d4752bd37dfb4b37951a7db4131904c3e6e61eead5705a18a160b6671282b",
       "enriched": false
     },
     "services/radio_bridge/RadioBridgeException": {
@@ -649,7 +655,7 @@
       "type": "Module",
       "resource": "models/radio_channel.dart",
       "render_hash": "stale",
-      "edge_hash": "9833a703ee85f1dbfcfad74cfc99838a244d16064fa27628e404c9607ffd1c6a",
+      "edge_hash": "719eb7037c79ac552826708160d99273bfc9448d98e6e04f175ae747cb01b6b6",
       "enriched": false
     },
     "models/radio_channel/RadioChannel": {
@@ -865,7 +871,7 @@
       "type": "Module",
       "resource": "main.dart",
       "render_hash": "stale",
-      "edge_hash": "095b191f192c11dc2b486387fbb8ae48e8ca63eb09649ff665d64029725dbbd9",
+      "edge_hash": "1b4168dcf34a3db98b2091ebd8797636a17424123ee38c2e01bde334fd7b77e6",
       "enriched": false
     },
     "main/WindowStateManager": {
@@ -2011,7 +2017,55 @@
       "render_hash": "stale",
       "edge_hash": "65fa1c0d9985a476f5e611903a1939d4bd0fe0606483c3c6f570495f15f2ad72",
       "enriched": false
+    },
+    "models/radio_channel/nextAvailableLocation": {
+      "concept_id": "models/radio_channel/nextAvailableLocation",
+      "type": "Function",
+      "resource": "models/radio_channel.dart",
+      "render_hash": "stale",
+      "edge_hash": "3239590f5028dcfdb25ec350f4afa359df850a98086ea77a4f579e6f00298df4",
+      "enriched": false
+    },
+    "services/radio_bridge/imageCapabilities": {
+      "concept_id": "services/radio_bridge/imageCapabilities",
+      "type": "Function",
+      "resource": "services/radio_bridge.dart",
+      "render_hash": "stale",
+      "edge_hash": "6833dfaf2aa53628ffbb361a89079471aa02a71f43c5a1916aedb0c89d6f478b",
+      "enriched": false
+    },
+    "main/channelIssues": {
+      "concept_id": "main/channelIssues",
+      "type": "Function",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/sortChannelsByLocation": {
+      "concept_id": "main/sortChannelsByLocation",
+      "type": "Function",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/showNoEmptyChannelSlot": {
+      "concept_id": "main/showNoEmptyChannelSlot",
+      "type": "Function",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
+    },
+    "main/loadImageCapabilities": {
+      "concept_id": "main/loadImageCapabilities",
+      "type": "Function",
+      "resource": "main.dart",
+      "render_hash": "stale",
+      "edge_hash": "0d6e4079e36703ebd37c00722f5891d28b0e2811dc114b129215123adcce3605",
+      "enriched": false
     }
   },
-  "generated_at": "2026-10-23T15:18:34Z"
+  "generated_at": "2026-10-23T18:02:59Z"
 }

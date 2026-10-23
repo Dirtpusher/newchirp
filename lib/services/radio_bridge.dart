@@ -43,6 +43,8 @@ class RadioCapabilities {
     required this.powers,
     required this.tones,
     required this.dtcsCodes,
+    required this.memoryStart,
+    required this.memoryEnd,
     required this.nameLength,
     required this.validCharacters,
     required this.hasTuningStep,
@@ -57,6 +59,8 @@ class RadioCapabilities {
   final List<String> powers;
   final List<double> tones;
   final List<int> dtcsCodes;
+  final int? memoryStart;
+  final int? memoryEnd;
   final int nameLength;
   final String validCharacters;
   final bool hasTuningStep;
@@ -85,6 +89,8 @@ class RadioCapabilities {
       dtcsCodes: (json['dtcsCodes'] as List? ?? const [])
           .map((item) => (item as num).toInt())
           .toList(),
+      memoryStart: (json['memoryStart'] as num?)?.toInt(),
+      memoryEnd: (json['memoryEnd'] as num?)?.toInt(),
       nameLength: (json['nameLength'] as num?)?.toInt() ?? 16,
       validCharacters: '${json['validCharacters'] ?? ''}',
       hasTuningStep: json['hasTuningStep'] as bool? ?? true,
@@ -309,6 +315,18 @@ class RadioBridge {
       capabilities: RadioCapabilities.fromJson(
         (data['features'] as Map).cast<String, dynamic>(),
       ),
+    );
+  }
+
+  Future<RadioCapabilities> imageCapabilities(String imagePath) async {
+    final data = await _run([
+      'read-image',
+      '--image',
+      imagePath,
+      '--metadata-only',
+    ]);
+    return RadioCapabilities.fromJson(
+      (data['features'] as Map).cast<String, dynamic>(),
     );
   }
 

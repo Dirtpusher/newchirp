@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T15:18:33Z"
+timestamp: "2026-10-23T18:02:58Z"
 concept_id: main/NewChirpHomeState
 language: dart
 ---
@@ -35,6 +35,7 @@ class _NewChirpHomeState
 - `_redo`
 - `_syncMenuState`
 - `_loadRadioSelection`
+- `_loadImageCapabilities`
 - `_saveRadioSelection`
 - `_setColumnOrder`
 - `_setColumnWidth`
@@ -50,6 +51,9 @@ class _NewChirpHomeState
 - `_chooseChannelApplyMode`
 - `_applyChannels`
 - `_nextChannelLocation`
+- `_channelIssues`
+- `_sortChannelsByLocation`
+- `_showNoEmptyChannelSlot`
 - `_saveCsv`
 - `_confirmReplaceLibrary`
 - `_newLibrary`
@@ -105,7 +109,7 @@ class _NewChirpHomeState
 - `_buildRadio`
 
 ## Source
-Lines 265–3619 in `main.dart`
+Lines 265–3695 in `main.dart`
 
 ## Relationships
 

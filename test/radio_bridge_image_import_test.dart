@@ -24,6 +24,14 @@ void main() {
 
     expect(imported.model, 'Icom_IC-2730A');
     expect(imported.imagePath, image.path);
+    expect(imported.capabilities.memoryStart, 0);
+    expect(imported.capabilities.memoryEnd, 999);
+
+    final capabilities = await RadioBridge(
+      sourcePath: source,
+    ).imageCapabilities(image.path);
+    expect(capabilities.memoryStart, 0);
+    expect(capabilities.memoryEnd, 999);
   });
 
   test('FT-857 images with reserved AM step values remain readable', () async {

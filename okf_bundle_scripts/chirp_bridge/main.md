@@ -7,9 +7,9 @@ tags:
   - "lang:python"
   - "type:Function"
   - "module:chirp_bridge.py"
-  - "git:branch:HEAD"
+  - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T15:14:41Z"
+timestamp: "2026-10-23T17:57:30Z"
 concept_id: chirp_bridge/main
 language: python
 ---
@@ -23,7 +23,7 @@ def main()
 ```
 
 ## Source
-Lines 446–676 in `chirp_bridge.py`
+Lines 449–681 in `chirp_bridge.py`
 
 ## Relationships
 
@@ -36,6 +36,6 @@ Lines 446–676 in `chirp_bridge.py`
 | calls | [emit_progress](/chirp_bridge/emit_progress.md) |
 | calls | [settings_payload](/chirp_bridge/settings_payload.md) |
 | calls | [apply_setting_changes](/chirp_bridge/apply_setting_changes.md) |
-| calls | [memory_json](/chirp_bridge/memory_json.md) |
 | calls | [features_json](/chirp_bridge/features_json.md) |
+| calls | [memory_json](/chirp_bridge/memory_json.md) |
 | calls | [apply_json](/chirp_bridge/apply_json.md) |

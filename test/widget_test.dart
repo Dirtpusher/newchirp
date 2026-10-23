@@ -169,13 +169,15 @@ void main() {
           widget is Scrollable && widget.axisDirection == AxisDirection.down,
     );
     final before = tester.state<ScrollableState>(verticalList).position;
-    expect(before.pixels, lessThan(before.maxScrollExtent));
+    final beforePixels = before.pixels;
+    expect(beforePixels, lessThan(before.maxScrollExtent));
 
     await tester.tap(find.text('Add channel'));
     await tester.pumpAndSettle();
 
     final after = tester.state<ScrollableState>(verticalList).position;
-    expect(after.pixels, after.maxScrollExtent);
+    expect(after.pixels, greaterThan(beforePixels));
+    expect(after.pixels, lessThanOrEqualTo(after.maxScrollExtent));
     expect(find.text('NEW 23'), findsOneWidget);
     expect(
       find.descendant(
@@ -254,6 +256,59 @@ void main() {
 
     expect(find.text('SAVED'), findsOneWidget);
     expect(find.text('GMRS 1'), findsNothing);
+  });
+
+  testWidgets('changing a channel location sorts the table by memory slot', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    await openGmrsStarter(tester);
+
+    final verticalList = find.byWidgetPredicate(
+      (widget) =>
+          widget is Scrollable && widget.axisDirection == AxisDirection.down,
+    );
+    Finder locationField() => find.descendant(
+      of: find.byType(Dialog),
+      matching: find.byWidgetPredicate(
+        (widget) =>
+            widget is TextField && widget.decoration?.labelText == 'Location',
+      ),
+    );
+
+    Future<void> openChannel(String name) async {
+      await tester.scrollUntilVisible(
+        find.text(name).first,
+        100,
+        scrollable: verticalList,
+      );
+      await tester.tap(find.text(name).first);
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(find.text(name).first);
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> setLocation(int location) async {
+      await tester.tap(locationField());
+      await tester.pump();
+      tester.testTextInput.enterText('$location');
+      await tester.pump();
+      await tester.tap(find.text('Save channel'));
+      await tester.pumpAndSettle();
+    }
+
+    await openChannel('GMRS 1');
+    await setLocation(30);
+
+    final gmrs22 = tester.getTopLeft(find.text('GMRS 22'));
+    final gmrs1 = tester.getTopLeft(find.text('GMRS 1'));
+    expect(gmrs22.dy, lessThan(gmrs1.dy));
   });
 
   testWidgets('frequency field keeps focus while typing', (tester) async {

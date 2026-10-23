@@ -8,9 +8,9 @@ tags:
   - "type:Class"
   - "module:services"
   - "domain:radio_bridge.dart"
-  - "git:branch:HEAD"
+  - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T15:14:41Z"
+timestamp: "2026-10-23T17:57:26Z"
 concept_id: services/radio_bridge/RadioSettings
 language: dart
 ---
@@ -24,7 +24,7 @@ class RadioSettings
 ```
 
 ## Source
-Lines 171–195 in `services/radio_bridge.dart`
+Lines 177–201 in `services/radio_bridge.dart`
 
 ## Relationships
 

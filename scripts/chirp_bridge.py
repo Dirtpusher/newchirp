@@ -169,6 +169,7 @@ def extra_fields_json(mem):
 
 def features_json(radio):
     features = radio.get_features()
+    memory_start, memory_end = features.memory_bounds
     return {
         "duplexes": list(features.valid_duplexes),
         "toneModes": list(features.valid_tmodes),
@@ -179,6 +180,8 @@ def features_json(radio):
         "powers": [str(level) for level in features.valid_power_levels],
         "tones": list(features.valid_tones),
         "dtcsCodes": list(features.valid_dtcs_codes),
+        "memoryStart": memory_start,
+        "memoryEnd": memory_end,
         "nameLength": features.valid_name_length,
         "validCharacters": features.valid_characters,
         "hasTuningStep": features.has_tuning_step,
@@ -454,6 +457,7 @@ def main():
     model_info.add_argument("--model", required=True)
     read_image = sub.add_parser("read-image")
     read_image.add_argument("--image", required=True)
+    read_image.add_argument("--metadata-only", action="store_true")
     for name in ("download", "upload"):
         command = sub.add_parser(name)
         command.add_argument("--model", required=True)
@@ -496,12 +500,13 @@ def main():
                 model = directory.get_driver(radio.__class__)
             except Exception:
                 model = directory.radio_class_id(radio.__class__)
-            start, end = radio.get_features().memory_bounds
             channels = []
-            for location in range(start, end + 1):
-                mem = radio.get_memory(location)
-                if not mem.empty:
-                    channels.append(memory_json(mem))
+            if not args.metadata_only:
+                start, end = radio.get_features().memory_bounds
+                for location in range(start, end + 1):
+                    mem = radio.get_memory(location)
+                    if not mem.empty:
+                        channels.append(memory_json(mem))
             print(json.dumps({
                 "model": model,
                 "channels": channels,

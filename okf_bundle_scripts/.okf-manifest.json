@@ -38,8 +38,8 @@
     },
     "chirp_bridge.py": {
       "path": "chirp_bridge.py",
-      "mtime_ns": 1792768481679152913,
-      "hash": "d9b84901af44b85c7cd42116e595a1f0f248ede790b1c2c746f6d9fb1a8aee02",
+      "mtime_ns": 1792778250366790445,
+      "hash": "2b935b04f51f9c6973b275d752c0a5b4586806160367196b3acb073999905886",
       "concept_ids": [
         "chirp_bridge",
         "chirp_bridge/emit_progress",
@@ -367,5 +367,5 @@
       "enriched": false
     }
   },
-  "generated_at": "2026-10-23T15:14:42Z"
+  "generated_at": "2026-10-23T17:57:31Z"
 }
