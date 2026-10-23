@@ -8,9 +8,9 @@ tags:
   - "type:Module"
   - "module:services"
   - "domain:radio_bridge.dart"
-  - "git:branch:main"
+  - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T14:21:13Z"
+timestamp: "2026-10-23T14:37:09Z"
 concept_id: services/radio_bridge
 language: dart
 ---

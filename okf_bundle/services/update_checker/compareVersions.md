@@ -9,9 +9,9 @@ tags:
   - "type:Function"
   - "module:services"
   - "domain:update_checker.dart"
-  - "git:branch:main"
+  - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-22T17:59:51Z"
+timestamp: "2026-10-04T10:27:21Z"
 concept_id: services/update_checker/compareVersions
 language: dart
 ---

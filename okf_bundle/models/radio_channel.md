@@ -8,9 +8,9 @@ tags:
   - "type:Module"
   - "module:models"
   - "domain:radio_channel.dart"
-  - "git:branch:main"
+  - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T23:14:49Z"
+timestamp: "2026-10-04T10:27:21Z"
 concept_id: models/radio_channel
 language: dart
 ---

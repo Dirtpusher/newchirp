@@ -32,6 +32,10 @@ Future<void> main() async {
       await rootBundle.loadString('assets/licenses/PYSERIAL-BSD-3-CLAUSE.txt'),
     );
   });
+  if (Platform.isLinux) {
+    runApp(const NewChirpApp());
+    return;
+  }
   await windowManager.ensureInitialized();
   final windowStateStore = WindowStateStore();
   final saved = await _clampWindowState(await windowStateStore.load());
