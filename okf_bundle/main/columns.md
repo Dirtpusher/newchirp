@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T14:37:09Z"
+timestamp: "2026-10-23T15:14:41Z"
 concept_id: main/columns
 language: dart
 ---
@@ -23,7 +23,7 @@ List_columns_columns
 ```
 
 ## Source
-Lines 4634–4634 in `main.dart`
+Lines 4718–4718 in `main.dart`
 
 ## Relationships
 

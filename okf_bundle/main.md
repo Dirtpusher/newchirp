@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T14:37:09Z"
+timestamp: "2026-10-23T15:14:41Z"
 concept_id: main
 language: dart
 ---
@@ -96,7 +96,8 @@ language: dart
 | related | [_friendlyActionError](/main/friendlyActionError.md) |
 | related | [_actionErrorPresentation](/main/actionErrorPresentation.md) |
 | related | [_showActionError](/main/showActionError.md) |
-| related | [_importCsv](/main/importCsv.md) |
+| related | [_openLibraryFile](/main/openLibraryFile.md) |
+| related | [_importChirpImage](/main/importChirpImage.md) |
 | related | [_chooseChannelApplyMode](/main/chooseChannelApplyMode.md) |
 | related | [_applyChannels](/main/applyChannels.md) |
 | related | [_nextChannelLocation](/main/nextChannelLocation.md) |
@@ -124,6 +125,7 @@ language: dart
 | related | [_deleteChannel](/main/deleteChannel.md) |
 | related | [_clearChannel](/main/clearChannel.md) |
 | related | [_downloadRadio](/main/downloadRadio.md) |
+| related | [_confirmRadioInstructions](/main/confirmRadioInstructions.md) |
 | related | [_loadRadioInstructions](/main/loadRadioInstructions.md) |
 | related | [_uploadRadio](/main/uploadRadio.md) |
 | related | [_transferTask](/main/transferTask.md) |

@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T14:37:09Z"
+timestamp: "2026-10-23T15:14:41Z"
 concept_id: main/transferTask
 language: dart
 ---
@@ -23,7 +23,7 @@ Future_transferTask_transferTask
 ```
 
 ## Source
-Lines 1485–1488 in `main.dart`
+Lines 1570–1573 in `main.dart`
 
 ## Relationships
 

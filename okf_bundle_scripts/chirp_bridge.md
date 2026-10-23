@@ -8,9 +8,9 @@ tags:
   - "lang:python"
   - "type:Module"
   - "module:chirp_bridge.py"
-  - "git:branch:main"
+  - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T14:31:40Z"
+timestamp: "2026-10-23T15:14:41Z"
 concept_id: chirp_bridge
 language: python
 ---

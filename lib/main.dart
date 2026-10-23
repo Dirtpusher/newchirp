@@ -649,10 +649,17 @@ class _NewChirpHomeState extends State<NewChirpHome> {
     );
   }
 
-  Future<void> _importCsv() async {
-    const type = XTypeGroup(label: 'CHIRP CSV', extensions: ['csv']);
+  Future<void> _openLibraryFile() async {
+    const type = XTypeGroup(
+      label: 'CHIRP files',
+      extensions: ['csv', 'img', 'icf', 'itm', 'd72'],
+    );
     final file = await openFile(acceptedTypeGroups: const [type]);
     if (file == null) return;
+    if (!file.path.toLowerCase().endsWith('.csv')) {
+      await _importChirpImage(file);
+      return;
+    }
     late final List<RadioChannel> channels;
     try {
       channels = ChirpCsv.decode(await file.readAsString());
@@ -688,6 +695,60 @@ class _NewChirpHomeState extends State<NewChirpHome> {
         ),
         libraryPath: file.path,
       );
+    });
+  }
+
+  Future<void> _importChirpImage(XFile file) async {
+    late final ({
+      List<RadioChannel> channels,
+      String model,
+      String imagePath,
+      RadioCapabilities capabilities,
+    })
+    imported;
+    try {
+      imported = await _bridge.readImage(file.path);
+    } catch (error) {
+      if (mounted) await _showActionError(error);
+      return;
+    }
+    if (!mounted) return;
+    final proceed = await _confirmReplaceLibrary(
+      destination: 'this CHIRP image',
+    );
+    if (!proceed || !mounted) return;
+
+    await _task('Opening ${file.name}…', () async {
+      String storedImage;
+      try {
+        storedImage = await _imageStore.saveForModel(
+          imported.model,
+          imported.imagePath,
+        );
+      } catch (error) {
+        if (mounted) await _showActionError(error);
+        return;
+      }
+      if (!mounted) return;
+      _recordHistory();
+      _applyChannels(
+        imported.channels,
+        const _ChannelApplyMode(replaceAll: true, startAt: 1),
+        libraryName: file.name.replaceFirst(RegExp(r'\.[^.]+$'), ''),
+      );
+      setState(() {
+        _model = imported.model;
+        _radioImage = storedImage;
+        _capabilities = imported.capabilities;
+        if (!_models.contains(imported.model)) {
+          _models = [..._models, imported.model]..sort();
+        }
+        _radioSettings = null;
+        _settingsLoadedModel = null;
+        _settingsLoadedImage = null;
+        _settingsError = null;
+      });
+      unawaited(_saveRadioSelection());
     });
   }
 
@@ -1605,7 +1666,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                             onNew: _newLibrary,
                             onGmrsStarter: _useGmrsStarter,
                             onRestoreStock: _restoreStockChannels,
-                            onOpen: _importCsv,
+                            onOpen: _openLibraryFile,
                             onSave: () => _saveCsv(),
                             onSaveAs: () => _saveCsv(saveAs: true),
                             canSave: _libraryOpen,
@@ -1696,13 +1757,12 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                         icon: Icons.folder_open_outlined,
                         title: 'Load configuration',
                         description:
-                            'Open an existing CHIRP-compatible CSV file and continue editing.',
-                        buttonLabel: 'Open CSV',
-                        onPressed: _importCsv,
+                            'Open a CHIRP CSV or native image file and continue editing.',
+                        buttonLabel: 'Open file',
+                        onPressed: _openLibraryFile,
                         help:
-                            'Load a CHIRP-compatible CSV channel list for editing and saving. '
-                            'To write to a radio, the app also needs a stored image for the '
-                            'selected model, which is created by reading that model once.',
+                            'Open a CHIRP-compatible CSV or native radio image. Native images '
+                            'retain the selected model and stored image needed for radio transfer.',
                       ),
                       _WelcomeAction(
                         width: cardWidth,
@@ -4173,7 +4233,7 @@ class _TopBar extends StatelessWidget {
           TextButton.icon(
             onPressed: busy ? null : onOpen,
             icon: const Icon(Icons.folder_open_outlined),
-            label: const Text('Open CSV'),
+            label: const Text('Open file'),
           ),
           MenuAnchor(
             builder: (context, controller, child) => FilledButton.icon(

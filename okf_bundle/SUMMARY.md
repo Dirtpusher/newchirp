@@ -1,50 +1,50 @@
 ---
-description: 'Top-level OKF summary: 213 concepts across 3 domains and 9 modules'
+description: 'Top-level OKF summary: 216 concepts across 3 domains and 9 modules'
 git_branch: HEAD
 git_repo: newchirp
 okf_version: '0.2'
-timestamp: '2026-10-23T14:37:18Z'
+timestamp: '2026-10-23T15:14:42Z'
 title: okf_bundle — Knowledge Summary
 type: Index
 ---
 
 # okf_bundle — Knowledge Summary
 
-> OKF v0.2 bundle | 213 concepts | 3 domains | 9 modules
+> OKF v0.2 bundle | 216 concepts | 3 domains | 9 modules
 
 ## Stats
 
 | Type | Count |
 |------|-------|
-| Function | 165 |
+| Function | 168 |
 | Class | 39 |
 | Module | 9 |
 
 | Language | Concepts |
 |----------|----------|
-| dart | 213 |
+| dart | 216 |
 
 ## Domain Map
 
 Use these links to navigate the bundle or prime an AI agent with focused context.
 
-### [main.dart](main.dart/index.md) — 131 concepts
+### [main.dart](main.dart/index.md) — 133 concepts
 
-- [main](main/index.md) (131 concepts)
+- [main](main/index.md) (133 concepts)
 
 ### [models](models/index.md) — 8 concepts
 
 - [models/radio_channel](models/radio_channel/index.md) (8 concepts)
 
-### [services](services/index.md) — 74 concepts
+### [services](services/index.md) — 75 concepts
 
-- [services/radio_bridge](services/radio_bridge/index.md) (28 concepts)
+- [services/radio_bridge](services/radio_bridge/index.md) (29 concepts)
 - [services/update_checker](services/update_checker/index.md) (11 concepts)
 - [services/chirp_csv](services/chirp_csv/index.md) (10 concepts)
 - [services/window_state_store](services/window_state_store/index.md) (7 concepts)
-- [services/radio_image_store](services/radio_image_store/index.md) (6 concepts)
 - [services/radio_selection_store](services/radio_selection_store/index.md) (6 concepts)
 - [services/column_layout_store](services/column_layout_store/index.md) (6 concepts)
+- [services/radio_image_store](services/radio_image_store/index.md) (6 concepts)
 
 ## Key Concepts
 

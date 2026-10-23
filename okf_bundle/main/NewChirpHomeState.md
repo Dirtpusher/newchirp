@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T14:37:09Z"
+timestamp: "2026-10-23T15:14:41Z"
 concept_id: main/NewChirpHomeState
 language: dart
 ---
@@ -45,7 +45,8 @@ class _NewChirpHomeState
 - `_friendlyActionError`
 - `_actionErrorPresentation`
 - `_showActionError`
-- `_importCsv`
+- `_openLibraryFile`
+- `_importChirpImage`
 - `_chooseChannelApplyMode`
 - `_applyChannels`
 - `_nextChannelLocation`
@@ -73,6 +74,7 @@ class _NewChirpHomeState
 - `_deleteChannel`
 - `_clearChannel`
 - `_downloadRadio`
+- `_confirmRadioInstructions`
 - `_loadRadioInstructions`
 - `_uploadRadio`
 - `_transferTask`
@@ -103,7 +105,7 @@ class _NewChirpHomeState
 - `_buildRadio`
 
 ## Source
-Lines 265–3535 in `main.dart`
+Lines 265–3619 in `main.dart`
 
 ## Relationships
 

@@ -126,7 +126,7 @@ void main() {
     expect(find.text('NewChirp'), findsWidgets);
     expect(find.text('What would you like to do?'), findsOneWidget);
     expect(find.text('Start new'), findsNothing);
-    expect(find.text('Open CSV'), findsWidgets);
+    expect(find.text('Open file'), findsWidgets);
     expect(find.text('Use GMRS template'), findsNothing);
     expect(find.text('Connect radio'), findsOneWidget);
     expect(find.text('GMRS 1'), findsNothing);
@@ -611,7 +611,7 @@ void main() {
     expect(find.text('View complete licenses'), findsOneWidget);
     expect(find.textContaining('not affiliated with'), findsOneWidget);
     expect(find.text('New'), findsNothing);
-    expect(find.text('Open CSV'), findsNothing);
+    expect(find.text('Open file'), findsNothing);
     expect(
       find.textContaining('Rick Lopez · Lead Programmer'),
       findsNWidgets(2),
@@ -637,7 +637,7 @@ void main() {
     expect(find.text('Repeater Pairs (GMRS Only)'), findsOneWidget);
     expect(find.text('467.5500'), findsOneWidget);
     expect(find.text('New'), findsNothing);
-    expect(find.text('Open CSV'), findsNothing);
+    expect(find.text('Open file'), findsNothing);
     expect(find.text('Print'), findsOneWidget);
   });
 

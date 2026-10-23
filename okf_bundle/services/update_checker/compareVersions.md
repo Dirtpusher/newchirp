@@ -11,7 +11,7 @@ tags:
   - "domain:update_checker.dart"
   - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-04T10:27:21Z"
+timestamp: "2026-10-22T17:59:51Z"
 concept_id: services/update_checker/compareVersions
 language: dart
 ---

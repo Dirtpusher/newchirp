@@ -1,7 +1,7 @@
 ---
 okf_version: "0.2"
 type: Function
-title: _importCsv
+title: _importChirpImage
 resource: main.dart
 tags:
   - "lang:dart"
@@ -9,21 +9,21 @@ tags:
   - "module:main.dart"
   - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T14:37:09Z"
-concept_id: main/importCsv
+timestamp: "2026-10-23T15:14:41Z"
+concept_id: main/importChirpImage
 language: dart
 ---
 
-# _importCsv
+# _importChirpImage
 
 ## Signature
 
 ```dart
-Future_importCsv_importCsv
+Future_importChirpImage_importChirpImage
 ```
 
 ## Source
-Lines 652–652 in `main.dart`
+Lines 701–701 in `main.dart`
 
 ## Relationships
 

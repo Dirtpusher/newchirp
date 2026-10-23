@@ -72,6 +72,11 @@ by the CHIRP drivers; do not install CHIRP's wxPython GUI requirements.
 Always read a radio before writing it. NewChirp intentionally keeps writing
 locked until a matching radio image has been downloaded in the current session.
 
+Use **Open file** to load either a CHIRP-compatible CSV or a native CHIRP image
+such as `.img`, `.icf`, `.itm`, or `.d72`. Native images use CHIRP model
+detection, retain the original image for radio transfer, and unlock upload when
+the detected model is selected.
+
 ## Verify and build
 
 ```sh

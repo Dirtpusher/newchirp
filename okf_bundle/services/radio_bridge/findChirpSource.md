@@ -10,7 +10,7 @@ tags:
   - "domain:radio_bridge.dart"
   - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T14:37:09Z"
+timestamp: "2026-10-23T15:14:41Z"
 concept_id: services/radio_bridge/findChirpSource
 language: dart
 ---
@@ -24,7 +24,7 @@ String_findChirpSource()
 ```
 
 ## Source
-Lines 566–566 in `services/radio_bridge.dart`
+Lines 595–595 in `services/radio_bridge.dart`
 
 ## Relationships
 

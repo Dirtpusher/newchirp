@@ -452,6 +452,8 @@ def main():
     sub.add_parser("list-models")
     model_info = sub.add_parser("model-info")
     model_info.add_argument("--model", required=True)
+    read_image = sub.add_parser("read-image")
+    read_image.add_argument("--image", required=True)
     for name in ("download", "upload"):
         command = sub.add_parser(name)
         command.add_argument("--model", required=True)
@@ -485,6 +487,26 @@ def main():
                 "experimental": prompts.experimental,
                 "preDownload": prompts.pre_download,
                 "preUpload": prompts.pre_upload,
+            }))
+            return
+        if args.command == "read-image":
+            image_path = os.path.abspath(args.image)
+            radio = directory.get_radio_by_image(image_path)
+            try:
+                model = directory.get_driver(radio.__class__)
+            except Exception:
+                model = directory.radio_class_id(radio.__class__)
+            start, end = radio.get_features().memory_bounds
+            channels = []
+            for location in range(start, end + 1):
+                mem = radio.get_memory(location)
+                if not mem.empty:
+                    channels.append(memory_json(mem))
+            print(json.dumps({
+                "model": model,
+                "channels": channels,
+                "imagePath": image_path,
+                "features": features_json(radio),
             }))
             return
         if args.command == "read-settings":

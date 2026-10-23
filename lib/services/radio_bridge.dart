@@ -290,6 +290,31 @@ class RadioBridge {
   Future<
     ({
       List<RadioChannel> channels,
+      String model,
+      String imagePath,
+      RadioCapabilities capabilities,
+    })
+  >
+  readImage(String imagePath) async {
+    final data = await _run(['read-image', '--image', imagePath]);
+    return (
+      channels: (data['channels'] as List)
+          .map(
+            (entry) =>
+                RadioChannel.fromJson((entry as Map).cast<String, dynamic>()),
+          )
+          .toList(),
+      model: '${data['model']}',
+      imagePath: '${data['imagePath']}',
+      capabilities: RadioCapabilities.fromJson(
+        (data['features'] as Map).cast<String, dynamic>(),
+      ),
+    );
+  }
+
+  Future<
+    ({
+      List<RadioChannel> channels,
       String imagePath,
       RadioCapabilities capabilities,
     })
