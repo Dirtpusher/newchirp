@@ -3,15 +3,15 @@ okf_version: "0.2"
 type: Function
 title: _resolvePython
 description: "The bundled CHIRP tree uses Python 3.10+ syntax, so prefer an interpreter"
-resource: services\radio_bridge.dart
+resource: services/radio_bridge.dart
 tags:
   - "lang:dart"
   - "type:Function"
   - "module:services"
   - "domain:radio_bridge.dart"
-  - "git:branch:main"
+  - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T18:20:01Z"
+timestamp: "2026-10-23T19:03:53Z"
 concept_id: services/radio_bridge/resolvePython
 language: dart
 ---
@@ -32,7 +32,7 @@ The bundled CHIRP tree uses Python 3.10+ syntax, so prefer an interpreter
 that is new enough even when an older system Python is first on PATH.
 
 ## Source
-Lines 544–544 in `services\radio_bridge.dart`
+Lines 544–544 in `services/radio_bridge.dart`
 
 ## Relationships
 

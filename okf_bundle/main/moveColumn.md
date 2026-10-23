@@ -7,9 +7,9 @@ tags:
   - "lang:dart"
   - "type:Function"
   - "module:main.dart"
-  - "git:branch:main"
+  - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T18:21:56Z"
+timestamp: "2026-10-23T19:03:53Z"
 concept_id: main/moveColumn
 language: dart
 ---
@@ -19,10 +19,10 @@ language: dart
 ## Signature
 
 ```dart
-void_moveColumn(
-    String draggedId,
-    String targetId,
-    List<_ChannelColumn> columns,
+void_moveColumn(
+    String draggedId,
+    String targetId,
+    List<_ChannelColumn> columns,
   )
 ```
 

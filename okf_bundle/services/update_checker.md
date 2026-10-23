@@ -2,15 +2,15 @@
 okf_version: "0.2"
 type: Module
 title: update_checker
-resource: services\update_checker.dart
+resource: services/update_checker.dart
 tags:
   - "lang:dart"
   - "type:Module"
   - "module:services"
   - "domain:update_checker.dart"
-  - "git:branch:main"
+  - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T18:18:25Z"
+timestamp: "2026-10-23T19:03:53Z"
 concept_id: services/update_checker
 language: dart
 ---

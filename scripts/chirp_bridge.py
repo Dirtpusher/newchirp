@@ -409,14 +409,30 @@ def open_serial(radio_class, port):
     return handle
 
 
-def radio_for(directory, model, port, progress_range=(0.0, 1.0)):
+def radio_for(
+    directory,
+    model,
+    port,
+    progress_range=(0.0, 1.0),
+    image=None,
+    detect_serial=True,
+):
     radio_class = directory.get_radio(model)
+    if image is not None:
+        # Writes must use the exact class recorded in the image. The driver's
+        # sync_out() owns its programming-mode handshake, like CHIRP's upload
+        # dialog, so probing first would make strict drivers handshake twice.
+        try:
+            radio_class = directory.get_radio_by_image(image).__class__
+        except Exception:
+            pass
     handle = open_serial(radio_class, port)
     try:
-        try:
-            radio_class = radio_class.detect_from_serial(handle)
-        except NotImplementedError:
-            pass
+        if detect_serial:
+            try:
+                radio_class = radio_class.detect_from_serial(handle)
+            except NotImplementedError:
+                pass
         radio = radio_class(handle)
         # CHIRP's status callbacks become structured progress events on
         # stderr, leaving stdout available for the final JSON response.
@@ -546,8 +562,14 @@ def main():
             progress_range = (0.10, 0.98)
         else:
             progress_range = (0.12, 0.97)
+        is_write = args.command in ("upload", "write-settings")
         radio = radio_for(
-            directory, args.model, args.port, progress_range=progress_range
+            directory,
+            args.model,
+            args.port,
+            progress_range=progress_range,
+            image=args.image if is_write else None,
+            detect_serial=not is_write,
         )
         try:
             if args.command == "download":
