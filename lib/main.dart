@@ -963,6 +963,9 @@ class _NewChirpHomeState extends State<NewChirpHome> {
       );
       if (discard != true || !mounted) return;
     }
+    final instructions = await _loadRadioInstructions();
+    if (instructions == null || !mounted) return;
+    if (!await _confirmRadioInstructions(instructions, writing: false)) return;
     setState(() {
       _settingsLoading = true;
       _settingsError = null;
@@ -1054,6 +1057,9 @@ class _NewChirpHomeState extends State<NewChirpHome> {
       ),
     );
     if (confirmed != true || !mounted) return;
+    final instructions = await _loadRadioInstructions();
+    if (instructions == null || !mounted) return;
+    if (!await _confirmRadioInstructions(instructions, writing: true)) return;
     final succeeded = await _transferTask(
       'Writing radio settings - do not disconnect...',
       () async {
@@ -1256,39 +1262,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
     }
     final instructions = await _loadRadioInstructions();
     if (instructions == null || !mounted) return;
-    final messages = instructions.readMessages.toList();
-    if (messages.isNotEmpty) {
-      final ready = await showDialog<bool>(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          icon: Icon(
-            instructions.experimental == null
-                ? Icons.cable
-                : Icons.warning_amber_rounded,
-            color: instructions.experimental == null
-                ? const Color(0xFF1F7455)
-                : const Color(0xFFC46A15),
-          ),
-          title: Text('Before reading ${_model!.replaceAll('_', ' ')}'),
-          content: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520),
-            child: SelectableText(messages.join('\n\n')),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Radio is ready'),
-            ),
-          ],
-        ),
-      );
-      if (ready != true) return;
-    }
+    if (!await _confirmRadioInstructions(instructions, writing: false)) return;
     await _transferTask('Reading radio — do not disconnect…', () async {
       final result = await _bridge.download(
         model: _model!,
@@ -1316,6 +1290,53 @@ class _NewChirpHomeState extends State<NewChirpHome> {
         _settingsLoadedImage = null;
       });
     });
+  }
+
+  Future<bool> _confirmRadioInstructions(
+    RadioInstructions instructions, {
+    required bool writing,
+  }) async {
+    final messages =
+        (writing ? instructions.writeMessages : instructions.readMessages)
+            .map((message) => message.trim())
+            .where((message) => message.isNotEmpty)
+            .toList();
+    if (messages.isEmpty) return true;
+    final ready = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        icon: Icon(
+          instructions.experimental == null
+              ? Icons.cable
+              : Icons.warning_amber_rounded,
+          color: instructions.experimental == null
+              ? const Color(0xFF1F7455)
+              : const Color(0xFFC46A15),
+        ),
+        title: Text(
+          'Before ${writing ? 'writing' : 'reading'} '
+          '${_model!.replaceAll('_', ' ')}',
+        ),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: SelectableText(messages.join('\n\n')),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              writing ? 'Radio is ready to receive' : 'Radio is ready',
+            ),
+          ),
+        ],
+      ),
+    );
+    return ready == true && mounted;
   }
 
   Future<RadioInstructions?> _loadRadioInstructions() async {
@@ -1389,6 +1410,9 @@ class _NewChirpHomeState extends State<NewChirpHome> {
       ),
     );
     if (confirmed != true) return;
+    final instructions = await _loadRadioInstructions();
+    if (instructions == null || !mounted) return;
+    if (!await _confirmRadioInstructions(instructions, writing: true)) return;
     var changes = <Map<String, dynamic>>[];
     await _transferTask('Writing radio — do not disconnect…', () async {
       changes = await _bridge.upload(

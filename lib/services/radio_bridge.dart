@@ -20,13 +20,16 @@ class RadioInstructions {
     required this.info,
     required this.experimental,
     required this.preDownload,
+    required this.preUpload,
   });
 
   final String? info;
   final String? experimental;
   final String? preDownload;
+  final String? preUpload;
 
   Iterable<String> get readMessages => [?experimental, ?info, ?preDownload];
+  Iterable<String> get writeMessages => [?experimental, ?info, ?preUpload];
 }
 
 class RadioCapabilities {
@@ -280,6 +283,7 @@ class RadioBridge {
       info: data['info'] as String?,
       experimental: data['experimental'] as String?,
       preDownload: data['preDownload'] as String?,
+      preUpload: data['preUpload'] as String?,
     );
   }
 

@@ -484,6 +484,7 @@ def main():
                 "info": prompts.info,
                 "experimental": prompts.experimental,
                 "preDownload": prompts.pre_download,
+                "preUpload": prompts.pre_upload,
             }))
             return
         if args.command == "read-settings":
