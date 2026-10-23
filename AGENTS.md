@@ -28,6 +28,15 @@ version becomes the public download only after Windows, macOS, and Linux
 `.deb` artifacts for that version exist. The `.rpm` and AppImage extra buttons
 appear when matching files are also present.
 
+Build release artifacts only on their native platform:
+
+- Build the Windows installer on Windows.
+- Build the macOS DMG on macOS.
+- Build the Linux packages on Linux.
+
+Do not trigger, wait for, or emulate another platform's build workflow from the
+current host. Each machine publishes only the artifact it built.
+
 ## Automatic freshness
 
 VS Code is configured to run `Watch OKF knowledge graph` when the workspace
