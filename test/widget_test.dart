@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:newchirp/main.dart';
+import 'package:newchirp/models/radio_channel.dart';
 import 'package:newchirp/services/column_layout_store.dart';
 import 'package:newchirp/services/radio_bridge.dart';
 import 'package:newchirp/services/update_checker.dart';
@@ -210,6 +211,49 @@ void main() {
     expect(find.text('Channel details'), findsOneWidget);
     expect(find.byTooltip('Close editor'), findsOneWidget);
     expect(find.text('Receive frequency (MHz)'), findsOneWidget);
+  });
+
+  testWidgets('editor provides standard DTCS codes without radio metadata', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    await openGmrsStarter(tester);
+    await tester.tap(find.text('GMRS 1').first);
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.tap(find.text('GMRS 1').first);
+    await tester.pumpAndSettle();
+
+    Finder dropdown(String label) => find.descendant(
+      of: find.byType(Dialog),
+      matching: find.byWidgetPredicate(
+        (widget) =>
+            widget is DropdownButtonFormField<String> &&
+            widget.decoration.labelText == label,
+      ),
+    );
+
+    tester
+        .widget<DropdownButtonFormField<String>>(dropdown('Tone mode'))
+        .onChanged!('DTCS');
+    await tester.pumpAndSettle();
+
+    final dtcsButton = tester.widget<DropdownButton<String>>(
+      find.descendant(
+        of: dropdown('Transmit DTCS'),
+        matching: find.byWidgetPredicate(
+          (widget) => widget is DropdownButton<String>,
+        ),
+      ),
+    );
+    final values = dtcsButton.items!.map((item) => item.value).toList();
+    expect(values, hasLength(standardDtcsCodes.length));
+    expect(values, containsAll(['23', '25', '131', '754']));
   });
 
   testWidgets('channel editor save commits and close cancels unsaved changes', (

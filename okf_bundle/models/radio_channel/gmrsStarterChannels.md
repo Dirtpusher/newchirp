@@ -10,7 +10,7 @@ tags:
   - "domain:radio_channel.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T18:20:01Z"
+timestamp: "2026-10-23T18:21:56Z"
 concept_id: models/radio_channel/gmrsStarterChannels
 language: dart
 ---
@@ -24,7 +24,7 @@ ListgmrsStarterChannelsgmrsStarterChannels
 ```
 
 ## Source
-Lines 228–228 in `models\radio_channel.dart`
+Lines 335–335 in `models\radio_channel.dart`
 
 ## Relationships
 

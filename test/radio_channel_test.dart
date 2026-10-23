@@ -5,6 +5,13 @@ RadioChannel channelAt(int location) =>
     RadioChannel(location: location, name: 'CH $location', frequency: 146.52);
 
 void main() {
+  test('provides the standard DTCS code set without a radio image', () {
+    expect(standardDtcsCodes, hasLength(104));
+    expect(standardDtcsCodes.first, 23);
+    expect(standardDtcsCodes.last, 754);
+    expect(standardDtcsCodes, containsAll([25, 131, 431, 732]));
+  });
+
   test('next channel location stays within radio memory bounds', () {
     expect(
       RadioChannel.nextAvailableLocation(const [], minimum: 1, maximum: 199),
