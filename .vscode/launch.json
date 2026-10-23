@@ -12,6 +12,19 @@
       "preLaunchTask": "Update CHIRP source"
     },
     {
+      "name": "NewChirp (Linux Debug)",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "cwd": "${workspaceFolder}",
+      "deviceId": "linux",
+      "flutterMode": "debug",
+      "preLaunchTask": "Update CHIRP source",
+      "env": {
+        "CHIRP_SOURCE": "${workspaceFolder}/../chirp-20260626"
+      }
+    },
+    {
       "name": "NewChirp (Windows Debug)",
       "type": "dart",
       "request": "launch",
