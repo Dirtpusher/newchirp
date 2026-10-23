@@ -2,7 +2,7 @@
 okf_version: "0.2"
 type: Class
 title: WindowState
-resource: services/window_state_store.dart
+resource: services\window_state_store.dart
 tags:
   - "lang:dart"
   - "type:Class"
@@ -10,7 +10,7 @@ tags:
   - "domain:window_state_store.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-04T10:27:21Z"
+timestamp: "2026-08-23T21:46:34Z"
 concept_id: services/window_state_store/WindowState
 language: dart
 ---
@@ -28,7 +28,7 @@ class WindowState
 - `toJson`
 
 ## Source
-Lines 4–26 in `services/window_state_store.dart`
+Lines 4–26 in `services\window_state_store.dart`
 
 ## Relationships
 

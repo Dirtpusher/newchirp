@@ -3,7 +3,7 @@ okf_version: "0.2"
 type: Function
 title: _parseManifest
 description: "Opens [url] in the operating system's default browser."
-resource: services/update_checker.dart
+resource: services\update_checker.dart
 tags:
   - "lang:dart"
   - "type:Function"
@@ -11,7 +11,7 @@ tags:
   - "domain:update_checker.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-04T10:27:21Z"
+timestamp: "2026-10-04T10:11:49Z"
 concept_id: services/update_checker/parseManifest
 language: dart
 ---
@@ -33,7 +33,7 @@ Opens [url] in the operating system's default browser.
 Returns false when no usable launcher is available.
 
 ## Source
-Lines 93–93 in `services/update_checker.dart`
+Lines 93–93 in `services\update_checker.dart`
 
 ## Relationships
 

@@ -9,7 +9,7 @@ tags:
   - "module:build_macos_dmg.py"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-04T10:27:21Z"
+timestamp: "2026-10-23T10:48:02Z"
 concept_id: build_macos_dmg/main
 language: python
 ---
@@ -26,7 +26,7 @@ def main() -> None
 `None`
 
 ## Source
-Lines 73–138 in `build_macos_dmg.py`
+Lines 80–147 in `build_macos_dmg.py`
 
 ## Relationships
 
@@ -34,3 +34,4 @@ Lines 73–138 in `build_macos_dmg.py`
 |------|--------|
 | related | [build_macos_dmg](/build_macos_dmg.md) |
 | calls | [build_background](/build_macos_dmg/build_background.md) |
+| calls | [project_version](/build_macos_dmg/project_version.md) |

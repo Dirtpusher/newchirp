@@ -6,14 +6,36 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:newchirp/main.dart';
 import 'package:newchirp/services/column_layout_store.dart';
 import 'package:newchirp/services/radio_bridge.dart';
+import 'package:newchirp/services/update_checker.dart';
 
 var _layoutTest = 0;
-NewChirpApp testApp() => NewChirpApp(
+NewChirpApp testApp({
+  UpdateChecker? updateChecker,
+  bool checkForUpdatesOnStartup = false,
+}) => NewChirpApp(
   columnLayoutStore: ColumnLayoutStore(
     path:
         '${Directory.systemTemp.path}/newchirp-widget-layout-$pid-${_layoutTest++}.json',
   ),
+  updateChecker: updateChecker,
+  checkForUpdatesOnStartup: checkForUpdatesOnStartup,
 );
+
+class _FakeUpdateChecker extends UpdateChecker {
+  _FakeUpdateChecker(this.result);
+
+  final UpdateCheckResult result;
+
+  @override
+  Future<UpdateCheckResult> check(String currentVersion) async => result;
+}
+
+class _FailingUpdateChecker extends UpdateChecker {
+  @override
+  Future<UpdateCheckResult> check(String currentVersion) async {
+    throw UpdateCheckException('Update service unavailable.');
+  }
+}
 
 Future<void> openGmrsStarter(WidgetTester tester) async {
   await tester.tap(find.text('New'));
@@ -23,6 +45,75 @@ Future<void> openGmrsStarter(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('startup update check offers a newer release', (tester) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      testApp(
+        updateChecker: _FakeUpdateChecker(
+          const UpdateCheckResult(
+            currentVersion: '1.0.3',
+            latestVersion: '1.0.4',
+            releaseUrl: 'https://newchirp.net/#download',
+          ),
+        ),
+        checkForUpdatesOnStartup: true,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Update available'), findsOneWidget);
+    expect(find.textContaining('NewChirp 1.0.4 is available'), findsOneWidget);
+  });
+
+  testWidgets('startup update failures stay quiet', (tester) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      testApp(
+        updateChecker: _FailingUpdateChecker(),
+        checkForUpdatesOnStartup: true,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Couldn\u2019t check for updates'), findsNothing);
+    expect(find.text('What would you like to do?'), findsOneWidget);
+  });
+
+  testWidgets('Help menu checks for updates on demand', (tester) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      testApp(
+        updateChecker: _FakeUpdateChecker(
+          const UpdateCheckResult(
+            currentVersion: '1.0.3',
+            latestVersion: '1.0.3',
+            releaseUrl: null,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Help'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Check for updates'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('You\u2019re up to date'), findsOneWidget);
+  });
+
   testWidgets('starts with configuration choices', (tester) async {
     tester.view.physicalSize = const Size(1440, 900);
     tester.view.devicePixelRatio = 1;
@@ -513,6 +604,10 @@ void main() {
     expect(find.text('CHIRP compatibility layer'), findsOneWidget);
     expect(find.textContaining('GNU General Public License'), findsOneWidget);
     expect(find.textContaining('WITHOUT ANY WARRANTY'), findsOneWidget);
+    expect(
+      find.textContaining('https://github.com/ricktek954/newchirp'),
+      findsOneWidget,
+    );
     expect(find.text('View complete licenses'), findsOneWidget);
     expect(find.textContaining('not affiliated with'), findsOneWidget);
     expect(find.text('New'), findsNothing);

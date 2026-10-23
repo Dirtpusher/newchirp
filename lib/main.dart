@@ -19,7 +19,7 @@ import 'services/window_state_store.dart';
 
 const _menuChannel = MethodChannel('newchirp/menu');
 
-const String _newChirpVersion = '1.0.2';
+const String _newChirpVersion = '1.0.4';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -181,10 +181,14 @@ class NewChirpApp extends StatelessWidget {
     super.key,
     this.columnLayoutStore,
     this.radioSelectionStore,
+    this.updateChecker,
+    this.checkForUpdatesOnStartup = true,
   });
 
   final ColumnLayoutStore? columnLayoutStore;
   final RadioSelectionStore? radioSelectionStore;
+  final UpdateChecker? updateChecker;
+  final bool checkForUpdatesOnStartup;
 
   @override
   Widget build(BuildContext context) {
@@ -229,6 +233,8 @@ class NewChirpApp extends StatelessWidget {
       home: NewChirpHome(
         columnLayoutStore: columnLayoutStore,
         radioSelectionStore: radioSelectionStore,
+        updateChecker: updateChecker,
+        checkForUpdatesOnStartup: checkForUpdatesOnStartup,
       ),
     );
   }
@@ -239,10 +245,14 @@ class NewChirpHome extends StatefulWidget {
     super.key,
     this.columnLayoutStore,
     this.radioSelectionStore,
+    this.updateChecker,
+    this.checkForUpdatesOnStartup = true,
   });
 
   final ColumnLayoutStore? columnLayoutStore;
   final RadioSelectionStore? radioSelectionStore;
+  final UpdateChecker? updateChecker;
+  final bool checkForUpdatesOnStartup;
 
   @override
   State<NewChirpHome> createState() => _NewChirpHomeState();
@@ -254,6 +264,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
       widget.columnLayoutStore ?? ColumnLayoutStore();
   late final _radioSelectionStore =
       widget.radioSelectionStore ?? RadioSelectionStore();
+  late final _updateChecker = widget.updateChecker ?? UpdateChecker();
   final _imageStore = RadioImageStore();
   Future<void>? _radioSelectionLoad;
   final _searchController = TextEditingController();
@@ -330,6 +341,11 @@ class _NewChirpHomeState extends State<NewChirpHome> {
     _loadColumnLayout();
     _radioSelectionLoad = _loadRadioSelection();
     _refreshPorts();
+    if (widget.checkForUpdatesOnStartup) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) unawaited(_checkForUpdates(startup: true));
+      });
+    }
   }
 
   Future<void> _loadColumnLayout() async {
@@ -1556,6 +1572,8 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                             dirty: _dirty,
                             busy: _busy,
                             status: _status,
+                            checkingForUpdates: _checkingForUpdates,
+                            onCheckForUpdates: () => _checkForUpdates(),
                             onNew: _newLibrary,
                             onGmrsStarter: _useGmrsStarter,
                             onRestoreStock: _restoreStockChannels,
@@ -1701,19 +1719,19 @@ class _NewChirpHomeState extends State<NewChirpHome> {
     );
   }
 
-  Future<void> _checkForUpdates() async {
+  Future<void> _checkForUpdates({bool startup = false}) async {
     if (_checkingForUpdates) return;
     setState(() => _checkingForUpdates = true);
     try {
-      final result = await UpdateChecker().check(_newChirpVersion);
+      final result = await _updateChecker.check(_newChirpVersion);
       if (!mounted) return;
       if (result.updateAvailable) {
         await _showUpdateAvailable(result);
-      } else {
+      } else if (!startup) {
         await _showUpToDate(result);
       }
     } on UpdateCheckException catch (error) {
-      if (!mounted) return;
+      if (!mounted || startup) return;
       await showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
@@ -1871,6 +1889,11 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                       SizedBox(height: 12),
                       SelectableText(
                         'CHIRP project and source: https://github.com/kk7ds/chirp',
+                        style: TextStyle(color: Color(0xFF1F7455)),
+                      ),
+                      SizedBox(height: 6),
+                      SelectableText(
+                        'NewChirp project and source: https://github.com/ricktek954/newchirp',
                         style: TextStyle(color: Color(0xFF1F7455)),
                       ),
                     ],
@@ -3964,6 +3987,8 @@ class _TopBar extends StatelessWidget {
     required this.dirty,
     required this.busy,
     required this.status,
+    required this.checkingForUpdates,
+    required this.onCheckForUpdates,
     required this.onNew,
     required this.onGmrsStarter,
     required this.onRestoreStock,
@@ -3981,6 +4006,8 @@ class _TopBar extends StatelessWidget {
   final bool dirty;
   final bool busy;
   final String status;
+  final bool checkingForUpdates;
+  final VoidCallback onCheckForUpdates;
   final VoidCallback onNew;
   final VoidCallback onGmrsStarter;
   final VoidCallback onRestoreStock;
@@ -4031,6 +4058,8 @@ class _TopBar extends StatelessWidget {
                 icon: const Icon(Icons.print_outlined),
                 label: const Text('Print'),
               ),
+            const SizedBox(width: 8),
+            _buildHelpMenu(),
           ],
         ),
       );
@@ -4136,8 +4165,38 @@ class _TopBar extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(width: 8),
+          _buildHelpMenu(),
         ],
       ),
+    );
+  }
+
+  Widget _buildHelpMenu() {
+    return MenuAnchor(
+      builder: (context, controller, child) => TextButton.icon(
+        onPressed: () =>
+            controller.isOpen ? controller.close() : controller.open(),
+        icon: const Icon(Icons.help_outline),
+        label: const Text('Help'),
+      ),
+      menuChildren: [
+        MenuItemButton(
+          onPressed: checkingForUpdates ? null : onCheckForUpdates,
+          leadingIcon: checkingForUpdates
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.system_update_alt_outlined),
+          child: Text(
+            checkingForUpdates
+                ? 'Checking for updates...'
+                : 'Check for updates',
+          ),
+        ),
+      ],
     );
   }
 }

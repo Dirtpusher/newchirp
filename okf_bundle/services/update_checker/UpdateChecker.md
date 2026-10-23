@@ -2,7 +2,7 @@
 okf_version: "0.2"
 type: Function
 title: UpdateChecker
-resource: services/update_checker.dart
+resource: services\update_checker.dart
 tags:
   - "lang:dart"
   - "type:Function"
@@ -10,7 +10,7 @@ tags:
   - "domain:update_checker.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-04T10:27:21Z"
+timestamp: "2026-10-04T10:11:49Z"
 concept_id: services/update_checker/UpdateChecker
 language: dart
 ---
@@ -20,14 +20,14 @@ language: dart
 ## Signature
 
 ```dart
-UpdateChecker({
-    Uri? manifestUri,
-    Duration timeout = const Duration(seconds: 12),
+UpdateChecker({
+    Uri? manifestUri,
+    Duration timeout = const Duration(seconds: 12),
   })
 ```
 
 ## Source
-Lines 36–39 in `services/update_checker.dart`
+Lines 36–39 in `services\update_checker.dart`
 
 ## Relationships
 

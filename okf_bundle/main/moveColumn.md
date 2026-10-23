@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-22T19:19:22Z"
+timestamp: "2026-10-23T10:46:31Z"
 concept_id: main/moveColumn
 language: dart
 ---
@@ -19,15 +19,15 @@ language: dart
 ## Signature
 
 ```dart
-void_moveColumn(
-    String draggedId,
-    String targetId,
-    List<_ChannelColumn> columns,
+void_moveColumn(
+    String draggedId,
+    String targetId,
+    List<_ChannelColumn> columns,
   )
 ```
 
 ## Source
-Lines 4723–4727 in `main.dart`
+Lines 4782–4786 in `main.dart`
 
 ## Relationships
 

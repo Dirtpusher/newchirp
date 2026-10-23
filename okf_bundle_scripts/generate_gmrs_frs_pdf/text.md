@@ -9,7 +9,7 @@ tags:
   - "module:generate_gmrs_frs_pdf.py"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-04T10:27:21Z"
+timestamp: "2026-08-23T13:43:31Z"
 concept_id: generate_gmrs_frs_pdf/text
 language: python
 ---
@@ -54,5 +54,3 @@ Lines 87–100 in `generate_gmrs_frs_pdf.py`
 | calls | [set_fill](/generate_gmrs_frs_pdf/set_fill.md) |
 | calls | [_esc](/generate_gmrs_frs_pdf/esc.md) |
 | called_by | [build_background](/build_macos_dmg/build_background.md) |
-| called_by | [main](/generate_gmrs_frs_pdf/main.md) |
-| called_by | [text_in_rect](/generate_gmrs_frs_pdf/text_in_rect.md) |

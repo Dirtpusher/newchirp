@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-22T19:19:22Z"
+timestamp: "2026-10-23T10:46:31Z"
 concept_id: main/WelcomeAction
 language: dart
 ---
@@ -27,7 +27,7 @@ class _WelcomeAction
 - `build`
 
 ## Source
-Lines 4323–4387 in `main.dart`
+Lines 4382–4446 in `main.dart`
 
 ## Relationships
 

@@ -40,6 +40,7 @@
 - [_applyChannels](applyChannels.md)
 - [_buildAbout](buildAbout.md)
 - [_buildFrequencyReference](buildFrequencyReference.md)
+- [_buildHelpMenu](buildHelpMenu.md)
 - [_buildLibrary](buildLibrary.md)
 - [_buildRadio](buildRadio.md)
 - [_buildRadioSettings](buildRadioSettings.md)

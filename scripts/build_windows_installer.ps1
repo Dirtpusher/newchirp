@@ -52,6 +52,40 @@ function Find-SignTool {
   return ""
 }
 
+function Find-VcRuntimeDir {
+  $VsWhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
+  if (Test-Path $VsWhere) {
+    $InstallPath = (& $VsWhere -latest -products * `
+      -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+      -property installationPath | Select-Object -First 1)
+    if ($InstallPath) {
+      $RedistRoot = Join-Path $InstallPath.Trim() "VC\Redist\MSVC"
+      if (Test-Path $RedistRoot) {
+        $Candidate = Get-ChildItem $RedistRoot -Directory |
+          Sort-Object Name -Descending |
+          ForEach-Object {
+            Get-ChildItem (Join-Path $_.FullName "x64") -Directory `
+              -Filter "Microsoft.VC*.CRT" -ErrorAction SilentlyContinue
+          } |
+          Where-Object { Test-Path (Join-Path $_.FullName "vcruntime140.dll") } |
+          Select-Object -First 1
+        if ($Candidate) { return $Candidate.FullName }
+      }
+    }
+  }
+
+  $Candidate = Get-ChildItem "C:\Program Files\Microsoft Visual Studio" `
+    -Recurse -Directory -Filter "Microsoft.VC*.CRT" -ErrorAction SilentlyContinue |
+    Where-Object {
+      $_.FullName -match '\\x64\\' -and
+      (Test-Path (Join-Path $_.FullName "vcruntime140.dll"))
+    } |
+    Sort-Object FullName -Descending |
+    Select-Object -First 1
+  if ($Candidate) { return $Candidate.FullName }
+  return ""
+}
+
 $FlutterBat = Join-Path $FlutterRoot "bin\flutter.bat"
 if (-not (Test-Path $FlutterBat)) {
   throw "Flutter SDK not found at '$FlutterBat'. Set -FlutterRoot."
@@ -87,6 +121,15 @@ if (-not $SkipBundle) {
   $BundlePosix = (& $Cygpath -u $BundleDir).Trim()
   Write-Host "==> bundling Python + CHIRP into $BundleDir"
   Invoke-Native $BashPath @($ScriptPosix, "--bundle-dir", $BundlePosix)
+}
+
+if ($Configuration.ToLower() -ne "debug") {
+  $VcRuntimeDir = Find-VcRuntimeDir
+  if (-not $VcRuntimeDir) {
+    throw "Visual C++ runtime files were not found. Install the Visual Studio C++ build tools or pass a machine with the VC redistributable files."
+  }
+  Write-Host "==> bundling Visual C++ runtime from $VcRuntimeDir"
+  Copy-Item (Join-Path $VcRuntimeDir "*.dll") $BundleDir -Force
 }
 
 $Pubspec = Join-Path $ProjectRoot "pubspec.yaml"

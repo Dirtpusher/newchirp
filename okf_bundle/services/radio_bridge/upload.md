@@ -2,7 +2,7 @@
 okf_version: "0.2"
 type: Function
 title: upload
-resource: services/radio_bridge.dart
+resource: services\radio_bridge.dart
 tags:
   - "lang:dart"
   - "type:Function"
@@ -10,7 +10,7 @@ tags:
   - "domain:radio_bridge.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-22T19:19:22Z"
+timestamp: "2026-10-22T17:02:43Z"
 concept_id: services/radio_bridge/upload
 language: dart
 ---
@@ -24,7 +24,7 @@ Futureuploadupload
 ```
 
 ## Source
-Lines 314–321 in `services/radio_bridge.dart`
+Lines 314–321 in `services\radio_bridge.dart`
 
 ## Relationships
 

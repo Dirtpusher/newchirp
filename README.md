@@ -28,7 +28,9 @@ implementation history, architecture, known risks, and prioritized next work.
 
 ## Updates
 
-The About screen checks newchirp.net for a newer release. The app reads a JSON
+NewChirp checks newchirp.net for a newer release on startup and from
+**Help > Check for updates**. Startup checks stay quiet when the app is current
+or offline; an available update opens the download page. The app reads a JSON
 manifest (default `https://newchirp.net/api/releases/latest`) shaped like:
 
 ```json
@@ -90,11 +92,21 @@ installed, build the release bundle and Inno Setup installer with:
 ```
 
 The script runs `flutter pub get`, `flutter build windows --release`, bundles a
-private Python runtime and the CHIRP driver tree next to `newchirp.exe`, and
-then compiles `build\NewChirp-Installer-<version>.exe`. Pass
+private Python runtime, the CHIRP driver tree, and the Visual C++ runtime next
+to `newchirp.exe`, and then compiles
+`build\NewChirp-Installer-<version>.exe`. Pass
 `-Configuration debug` to build a JIT debug app instead, or `-BundleDir` to
 package an already-built bundle. The runtime and CHIRP sources are downloaded
 the first time and cached under `build_support\`.
+
+### Cross-platform releases
+
+`.github/workflows/release.yml` builds the Windows installer, macOS DMG, and
+Linux Debian package from the same `pubspec.yaml` version. Run it with
+**Actions > Build release artifacts > Run workflow**, or push a tag named
+`v<version>`. The workflow verifies each artifact's embedded version and the
+versioned filenames. Tag builds also attach the three artifacts to a GitHub
+release.
 
 Release AOT builds need `gen_snapshot.exe`, which Windows Smart App Control
 blocks when it is enabled. If `flutter build windows --release` fails with an

@@ -3,6 +3,31 @@
 This repository keeps generated OKF knowledge bundles so coding agents can
 answer structural questions without re-reading large source files.
 
+## Release artifact requirements
+
+Every production installer build must contain and expose its version.
+
+1. Use the app version from `pyproject.toml`, `pubspec.yaml`, or the relevant
+   build configuration.
+2. Embed that version in the artifact metadata.
+3. Include the complete semantic version in the filename:
+   - Windows: `NewChirp-Installer-1.0.3.exe`
+   - macOS: `NewChirp-1.0.3.dmg`
+   - Debian: `NewChirp-linux-x64-1.0.3.deb`
+   - RPM: `NewChirp-linux-x64-1.0.3.rpm`
+   - AppImage: `NewChirp-linux-x64-1.0.3.AppImage`
+4. Never overwrite a previously released versioned artifact.
+5. Upload to `/opt/newchirp/public/downloads/` with the versioned filename.
+6. Verify the embedded version after building.
+7. Do not rely solely on generic filenames such as `newchirp-setup.exe` or
+   `newchirp.dmg`. The website intentionally ignores generic filenames when
+   determining the published version.
+
+The website uses the version in the filename as its source of truth. A new
+version becomes the public download only after Windows, macOS, and Linux
+`.deb` artifacts for that version exist. The `.rpm` and AppImage extra buttons
+appear when matching files are also present.
+
 ## Automatic freshness
 
 VS Code is configured to run `Watch OKF knowledge graph` when the workspace

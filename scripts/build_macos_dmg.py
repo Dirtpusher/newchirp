@@ -14,6 +14,13 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 import dmgbuild
 
 
+def project_version() -> str:
+    root = Path(__file__).resolve().parent.parent
+    text = (root / 'pubspec.yaml').read_text(encoding='utf-8')
+    version = text.split('version:', 1)[1].splitlines()[0].strip()
+    return version.split('+', 1)[0]
+
+
 def build_background(destination: Path) -> None:
     width, height = 660, 380
     top = (15, 23, 42)
@@ -75,7 +82,7 @@ def main() -> None:
     parser.add_argument("--app", required=True, help="Path to NewChirp.app")
     parser.add_argument(
         "--output",
-        default="build/NewChirp-Installer.dmg",
+        default=None,
         help="Output DMG path",
     )
     parser.add_argument(
@@ -89,7 +96,9 @@ def main() -> None:
     if not app_path.is_dir():
         raise SystemExit(f"App not found: {app_path}")
 
-    output_path = Path(args.output).resolve()
+    output_path = Path(
+        args.output or f"build/NewChirp-{project_version()}.dmg"
+    ).resolve()
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     staging_dir = Path(tempfile.mkdtemp(prefix="newchirp-dmg-"))

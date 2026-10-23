@@ -1,0 +1,145 @@
+name: Build release artifacts
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.47.1'
+          cache: true
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+      - name: Build Windows installer
+        shell: pwsh
+        run: |
+          $flutterBat = (Get-Command flutter.bat).Source
+          $flutterRoot = Split-Path (Split-Path $flutterBat -Parent) -Parent
+          ./scripts/build_windows_installer.ps1 -FlutterRoot $flutterRoot -IsccPath 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: build/NewChirp-Installer-*.exe
+          if-no-files-found: error
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.47.1'
+          cache: true
+      - name: Build macOS DMG
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(sed -n 's/^version:[[:space:]]*\([^+[:space:]]*\).*/\1/p' pubspec.yaml | head -1)"
+          python3 -m venv .release-venv
+          . .release-venv/bin/activate
+          pip install --upgrade pip pillow dmgbuild
+          flutter pub get
+          flutter test test/update_checker_test.dart
+          flutter build macos --release
+          APP="build/macos/Build/Products/Release/NewChirp.app"
+          if ! CHIRP_ROOT="$(bash scripts/update_chirp.sh)"; then
+            CHIRP_ROOT="$PWD/build_support/chirp-master"
+            rm -rf "$CHIRP_ROOT"
+            mkdir -p "$CHIRP_ROOT"
+            curl -fL --retry 3 \
+              https://codeload.github.com/kk7ds/chirp/tar.gz/refs/heads/master \
+              | tar -xz -C "$CHIRP_ROOT" --strip-components=1
+          fi
+          bash scripts/bundle_macos_runtime.sh \
+            --resources-dir "$APP/Contents/Resources" \
+            --chirp-source "$CHIRP_ROOT"
+          plutil -extract CFBundleShortVersionString raw -o - \
+            "$APP/Contents/Info.plist" | grep -Fx "$VERSION"
+          python scripts/build_macos_dmg.py \
+            --app "$APP" \
+            --output "build/NewChirp-${VERSION}.dmg"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: build/NewChirp-*.dmg
+          if-no-files-found: error
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.47.1'
+          cache: true
+      - name: Install Linux desktop dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang cmake ninja-build pkg-config \
+            libgtk-3-dev liblzma-dev libstdc++-12-dev
+      - name: Build Debian package
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(sed -n 's/^version:[[:space:]]*\([^+[:space:]]*\).*/\1/p' pubspec.yaml | head -1)"
+          flutter config --enable-linux-desktop
+          flutter pub get
+          flutter test test/update_checker_test.dart
+          flutter build linux --release
+          BUNDLE="build/linux/x64/release/bundle"
+          if ! CHIRP_ROOT="$(bash scripts/update_chirp.sh)"; then
+            CHIRP_ROOT="$PWD/build_support/chirp-master"
+            rm -rf "$CHIRP_ROOT"
+            mkdir -p "$CHIRP_ROOT"
+            curl -fL --retry 3 \
+              https://codeload.github.com/kk7ds/chirp/tar.gz/refs/heads/master \
+              | tar -xz -C "$CHIRP_ROOT" --strip-components=1
+          fi
+          bash scripts/bundle_linux_runtime.sh \
+            --bundle-dir "$BUNDLE" \
+            --chirp-source "$CHIRP_ROOT"
+          bash scripts/build_linux_deb.sh \
+            --bundle-dir "$BUNDLE" \
+            --output "build/NewChirp-linux-x64-${VERSION}.deb"
+          dpkg-deb --field "build/NewChirp-linux-x64-${VERSION}.deb" Version \
+            | grep -Fx "${VERSION}-1"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: build/NewChirp-linux-x64-*.deb
+          if-no-files-found: error
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, macos, linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify tag matches app version
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(sed -n 's/^version:[[:space:]]*\([^+[:space:]]*\).*/\1/p' pubspec.yaml | head -1)"
+          test "${GITHUB_REF_NAME}" = "v${VERSION}"
+      - uses: actions/download-artifact@v4
+        with:
+          path: release
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
+          generate_release_notes: true

@@ -40,6 +40,8 @@ The Smart App Control / WDAC blocker is resolved. After the reboot,
 
 - `flutter build windows --release` succeeded.
 - Python + CHIRP are bundled next to `newchirp.exe`.
+- The app-local Visual C++ runtime is bundled next to `newchirp.exe`, so the
+  installer does not depend on a separately installed VC++ redistributable.
 - Inno Setup produced `build\NewChirp-Installer-1.0.0.exe` (release, ~33.8 MB).
 - `newchirp.exe` reports version `1.0.0+1`; no debug CRT DLLs are in the bundle.
 
