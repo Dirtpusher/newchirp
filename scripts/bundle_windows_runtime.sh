@@ -115,8 +115,12 @@ elif [[ -d "$BUILD_SUPPORT_DIR/chirp-20260821" ]]; then
 elif [[ -d "$BUILD_SUPPORT_DIR/chirp-master/chirp" ]]; then
   CHIRP_ROOT="$BUILD_SUPPORT_DIR/chirp-master"
 elif [[ "${NEWCHIRP_AUTO_UPDATE_CHIRP:-1}" != "0" ]]; then
-  if UPDATED_CHIRP="$(NEWCHIRP_PYTHON="$PYTHON_EXE" bash "$SCRIPT_DIR/update_chirp.sh" 2>/dev/null)"; then
+  update_status=0
+  UPDATED_CHIRP="$(NEWCHIRP_PYTHON="$PYTHON_EXE" bash "$SCRIPT_DIR/update_chirp.sh")" || update_status=$?
+  if [[ "$update_status" -eq 0 ]]; then
     CHIRP_ROOT="$UPDATED_CHIRP"
+  elif [[ "$update_status" -eq 2 ]]; then
+    exit 1
   elif [[ ! -d "$BUILD_SUPPORT_DIR/chirp-master/chirp" ]]; then
     echo "warning: Upstream CHIRP archive is unreachable; fetching master directly from GitHub." >&2
     curl -fL --retry 3 -o "$CACHE_DIR/chirp-master.tar.gz" \

@@ -20,47 +20,98 @@ try:
     text = open(path, encoding="utf-8").read()
 except FileNotFoundError:
     print('warning: CHIRP UV5G driver not found at %s; skipping GMRS preset patch' % path, file=sys.stderr)
-    sys.exit(0)
+    text = None
 
-if "UV5G_GMRS_PRESETS" in text:
-    sys.exit(0)
+if text is not None and "UV5G_GMRS_PRESETS" not in text:
+    anchor = 'MSTRING_BFK6 = b"PROGRAMBF-K6PROU"\n'
+    insert = (
+        anchor
+        + "\nUV5G_GMRS_PRESETS = (\n"
+        + "    bandplan_na.GMRS_LOW +\n"
+        + "    bandplan_na.GMRS_HHONLY +\n"
+        + "    bandplan_na.GMRS_HIRPT +\n"
+        + "    bandplan_na.GMRS_HIRPT\n"
+        + ")\n"
+    )
+    old = (
+        "        if mem.number >= 1 and mem.number <= 30:\n"
+        "            mem.immutable = ['freq', 'duplex', 'offset']\n"
+    )
+    new = (
+        "        if mem.number >= 1 and mem.number <= 30:\n"
+        "            mem.freq = UV5G_GMRS_PRESETS[mem.number - 1]\n"
+        "            if mem.number >= 15:\n"
+        "                mem.duplex = '+'\n"
+        "                mem.offset = 5000000\n"
+        "            else:\n"
+        "                mem.duplex = ''\n"
+        "                mem.offset = 0\n"
+        "            mem.immutable = ['freq', 'duplex', 'offset']\n"
+    )
+    if anchor not in text:
+        print('warning: CHIRP UV5G patch anchor missing in %s; GMRS presets were not injected (upstream may have renamed MSTRING_BFK6)' % path, file=sys.stderr)
+    elif old not in text:
+        print('warning: CHIRP UV5G patch target block missing in %s; GMRS preset frequencies were not applied' % path, file=sys.stderr)
+    else:
+        text = text.replace(anchor, insert, 1).replace(old, new, 1)
+        open(path, "w", encoding="utf-8").write(text)
 
-anchor = 'MSTRING_BFK6 = b"PROGRAMBF-K6PROU"\n'
-insert = (
-    anchor
-    + "\nUV5G_GMRS_PRESETS = (\n"
-    + "    bandplan_na.GMRS_LOW +\n"
-    + "    bandplan_na.GMRS_HHONLY +\n"
-    + "    bandplan_na.GMRS_HIRPT +\n"
-    + "    bandplan_na.GMRS_HIRPT\n"
-    + ")\n"
+def stop_for_power_on_order(reason):
+    print(
+        "Stopped. The Baofeng UV-5R driver could not keep Power-On Message "
+        "above Power-On Message 1 and Power-On Message 2. NewChirp will not "
+        "continue, so the app does not go back to the old order. " + reason,
+        file=sys.stderr,
+    )
+    sys.exit(2)
+
+uv5r_path = sys.argv[1] + "/chirp/drivers/uv5r.py"
+try:
+    uv5r_text = open(uv5r_path, encoding="utf-8").read()
+except FileNotFoundError:
+    stop_for_power_on_order("The driver file is missing: %s" % uv5r_path)
+
+uv5r_old = (
+    "            rs = RadioSetting(\"ponmsg\", \"Power-On Message\",\n"
+    "                              RadioSettingValueList(\n"
+    "                                  PONMSG_LIST,\n"
+    "                                  current_index=_settings.ponmsg))\n"
+    "            rs.set_doc(\n"
+    "                \"Chooses the startup display: Full shows the normal \"\n"
+    "                \"full-screen test, while Message shows the two programmed \"\n"
+    "                \"Power-On Message lines.\")\n"
+    "            other.append(rs)\n"
 )
-if anchor not in text:
-    print('warning: CHIRP UV5G patch anchor missing in %s; GMRS presets were not injected (upstream may have renamed MSTRING_BFK6)' % path, file=sys.stderr)
-    sys.exit(0)
-text = text.replace(anchor, insert, 1)
-
-old = (
-    "        if mem.number >= 1 and mem.number <= 30:\n"
-    "            mem.immutable = ['freq', 'duplex', 'offset']\n"
+uv5r_anchor = (
+    "        _msg = self._memobj.poweron_msg\n"
+    "        rs = RadioSetting(\"poweron_msg.line1\", \"Power-On Message 1\",\n"
 )
-new = (
-    "        if mem.number >= 1 and mem.number <= 30:\n"
-    "            mem.freq = UV5G_GMRS_PRESETS[mem.number - 1]\n"
-    "            if mem.number >= 15:\n"
-    "                mem.duplex = '+'\n"
-    "                mem.offset = 5000000\n"
-    "            else:\n"
-    "                mem.duplex = ''\n"
-    "                mem.offset = 0\n"
-    "            mem.immutable = ['freq', 'duplex', 'offset']\n"
+uv5r_moved = (
+    "        _settings = self._memobj.settings\n"
+    "        rs = RadioSetting(\"ponmsg\", \"Power-On Message\",\n"
+    "                          RadioSettingValueList(\n"
+    "                              PONMSG_LIST,\n"
+    "                              current_index=_settings.ponmsg))\n"
+    "        rs.set_doc(\n"
+    "            \"Chooses the startup display: Full shows the normal \"\n"
+    "            \"full-screen test, while Message shows the two programmed \"\n"
+    "            \"Power-On Message lines.\")\n"
+    "        other.append(rs)\n"
+    "\n"
+    + uv5r_anchor
 )
-if old not in text:
-    print('warning: CHIRP UV5G patch target block missing in %s; GMRS preset frequencies were not applied' % path, file=sys.stderr)
+if uv5r_moved in uv5r_text:
     sys.exit(0)
-text = text.replace(old, new, 1)
-
-open(path, "w", encoding="utf-8").write(text)
+if uv5r_old not in uv5r_text or uv5r_anchor not in uv5r_text:
+    stop_for_power_on_order(
+        "Those lines are not in the expected place: %s" % uv5r_path
+    )
+uv5r_text = uv5r_text.replace(uv5r_old, "", 1).replace(uv5r_anchor, uv5r_moved, 1)
+if uv5r_moved not in uv5r_text or uv5r_old in uv5r_text:
+    stop_for_power_on_order(
+        "The move did not land cleanly: %s" % uv5r_path
+    )
+open(uv5r_path, "w", encoding="utf-8").write(uv5r_text)
 PY
 }
 

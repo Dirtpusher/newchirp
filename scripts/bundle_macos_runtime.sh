@@ -103,8 +103,12 @@ esac
 if [[ -n "$CHIRP_SOURCE" ]]; then
   CHIRP_ROOT="$CHIRP_SOURCE"
 elif [[ "${NEWCHIRP_AUTO_UPDATE_CHIRP:-1}" != "0" ]]; then
-  if UPDATED_CHIRP="$(bash "$SCRIPT_DIR/update_chirp.sh")"; then
+  update_status=0
+  UPDATED_CHIRP="$(bash "$SCRIPT_DIR/update_chirp.sh")" || update_status=$?
+  if [[ "$update_status" -eq 0 ]]; then
     CHIRP_ROOT="$UPDATED_CHIRP"
+  elif [[ "$update_status" -eq 2 ]]; then
+    exit 1
   else
     echo "warning: Could not check for a newer CHIRP build; using the local snapshot." >&2
     CHIRP_ROOT="$PROJECT_DIR/../chirp-20260626"
