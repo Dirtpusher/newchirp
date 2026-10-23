@@ -2,11 +2,13 @@
 
 ## Classs
 
+- [_PlatformRelease](PlatformRelease.md)
 - [_ReleaseManifest](ReleaseManifest.md)
 - [UpdateCheckResult](UpdateCheckResult.md) — Outcome of comparing the installed NewChirp version against the release
 
 ## Functions
 
+- [_currentPlatformKey](currentPlatformKey.md)
 - [_parseManifest](parseManifest.md) — Opens [url] in the operating system's default browser.
 - [_versionParts](versionParts.md)
 - [check](check.md) — Opens [url] in the operating system's default browser.

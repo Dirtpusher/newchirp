@@ -1,28 +1,28 @@
 ---
-description: 'Top-level OKF summary: 216 concepts across 3 domains and 9 modules'
+description: 'Top-level OKF summary: 218 concepts across 3 domains and 9 modules'
 git_branch: main
 git_repo: newchirp
 okf_version: '0.2'
-timestamp: '2026-10-23T15:18:34Z'
+timestamp: '2026-10-23T18:18:26Z'
 title: okf_bundle — Knowledge Summary
 type: Index
 ---
 
 # okf_bundle — Knowledge Summary
 
-> OKF v0.2 bundle | 216 concepts | 3 domains | 9 modules
+> OKF v0.2 bundle | 218 concepts | 3 domains | 9 modules
 
 ## Stats
 
 | Type | Count |
 |------|-------|
-| Function | 168 |
-| Class | 39 |
+| Function | 169 |
+| Class | 40 |
 | Module | 9 |
 
 | Language | Concepts |
 |----------|----------|
-| dart | 216 |
+| dart | 218 |
 
 ## Domain Map
 
@@ -36,10 +36,10 @@ Use these links to navigate the bundle or prime an AI agent with focused context
 
 - [models/radio_channel](models/radio_channel/index.md) (8 concepts)
 
-### [services](services/index.md) — 75 concepts
+### [services](services/index.md) — 77 concepts
 
 - [services/radio_bridge](services/radio_bridge/index.md) (29 concepts)
-- [services/update_checker](services/update_checker/index.md) (11 concepts)
+- [services/update_checker](services/update_checker/index.md) (13 concepts)
 - [services/chirp_csv](services/chirp_csv/index.md) (10 concepts)
 - [services/window_state_store](services/window_state_store/index.md) (7 concepts)
 - [services/column_layout_store](services/column_layout_store/index.md) (6 concepts)
@@ -56,10 +56,10 @@ Highest-value concepts across all domains (Classes and Functions with rich descr
 | [_windowsSerialPorts](/services/radio_bridge/windowsSerialPorts.md) | Function | `services/radio_bridge.dart` | Windows: read the live COM ports from the SERIALCOMM registr… |
 | [UpdateCheckResult](/services/update_checker/UpdateCheckResult.md) | Class | `services/update_checker.dart` | Outcome of comparing the installed NewChirp version against … |
 | [compareVersions](/services/update_checker/compareVersions.md) | Function | `services/update_checker.dart` | Compares two dotted version strings, ignoring any `+build` m… |
-| [check](/services/update_checker/check.md) | Function | `services/update_checker.dart` | Opens [url] in the operating system's default browser. |
 | [openExternalUrl](/services/update_checker/openExternalUrl.md) | Function | `services/update_checker.dart` | Opens [url] in the operating system's default browser. |
-| [_parseManifest](/services/update_checker/parseManifest.md) | Function | `services/update_checker.dart` | Opens [url] in the operating system's default browser. |
 | [toString](/services/update_checker/toString.md) | Function | `services/update_checker.dart` | Opens [url] in the operating system's default browser. |
+| [check](/services/update_checker/check.md) | Function | `services/update_checker.dart` | Opens [url] in the operating system's default browser. |
+| [_parseManifest](/services/update_checker/parseManifest.md) | Function | `services/update_checker.dart` | Opens [url] in the operating system's default browser. |
 
 ## Usage with OpenCode
 

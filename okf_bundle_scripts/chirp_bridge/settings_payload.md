@@ -7,9 +7,9 @@ tags:
   - "lang:python"
   - "type:Function"
   - "module:chirp_bridge.py"
-  - "git:branch:HEAD"
+  - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T15:14:41Z"
+timestamp: "2026-10-23T15:23:20Z"
 concept_id: chirp_bridge/settings_payload
 language: python
 ---

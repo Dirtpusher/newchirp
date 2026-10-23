@@ -36,24 +36,35 @@ class UpdateChecker {
   UpdateChecker({
     Uri? manifestUri,
     Duration timeout = const Duration(seconds: 12),
-  })  : manifestUri = manifestUri ?? defaultManifestUri,
-        _timeout = timeout;
+    String? platform,
+  }) : manifestUri = manifestUri ?? defaultManifestUri,
+       _platform = platform,
+       _timeout = timeout;
 
   /// Machine-readable release manifest served by newchirp.net.
   ///
   /// Expected JSON body:
   ///
   ///     {
-  ///       version: 1.0.2,
+  ///       version: 1.0.7,
   ///       release_url: https://newchirp.net/#download,
-  ///       downloads: {windows: ..., macos: ..., linux: ...}
+  ///       downloads: {windows: ..., macos: ..., linux: ...},
+  ///       platforms: {
+  ///         windows: {version: 1.0.8},
+  ///         macos: {version: 1.0.7},
+  ///         linux: {version: 1.0.7}
+  ///       }
   ///     }
   ///
-  /// Only `version` is required; `release_url` (or `url`) is optional.
-  static final Uri defaultManifestUri =
-      Uri.parse('https://newchirp.net/api/releases/latest');
+  /// The app prefers its own entry in `platforms`; `version` (or `latest`) is
+  /// the fallback for manifests from older servers. `release_url` (or `url`)
+  /// is optional.
+  static final Uri defaultManifestUri = Uri.parse(
+    'https://newchirp.net/api/releases/latest',
+  );
 
   final Uri manifestUri;
+  final String? _platform;
   final Duration _timeout;
 
   Future<UpdateCheckResult> check(String currentVersion) async {
@@ -67,12 +78,16 @@ class UpdateChecker {
           'The update service returned status ${response.statusCode}.',
         );
       }
-      final body =
-          await response.transform(utf8.decoder).join().timeout(_timeout);
+      final body = await response
+          .transform(utf8.decoder)
+          .join()
+          .timeout(_timeout);
       final manifest = _parseManifest(body);
+      final platformRelease =
+          manifest.platforms[_platform ?? _currentPlatformKey()];
       return UpdateCheckResult(
         currentVersion: currentVersion,
-        latestVersion: manifest.version,
+        latestVersion: platformRelease?.version ?? manifest.version,
         releaseUrl: manifest.releaseUrl,
       );
     } on UpdateCheckException {
@@ -96,12 +111,29 @@ class UpdateChecker {
       throw const FormatException('Manifest is not a JSON object.');
     }
     final version = decoded['version'] ?? decoded['latest'];
-    if (version is! String || version.trim().isEmpty) {
+    final platforms = <String, _PlatformRelease>{};
+    final platformValues = decoded['platforms'];
+    if (platformValues is Map) {
+      for (final entry in platformValues.entries) {
+        final key = entry.key;
+        final value = entry.value;
+        if (key is! String || value is! Map) continue;
+        final platformVersion = value['version'];
+        if (platformVersion is! String || platformVersion.trim().isEmpty) {
+          continue;
+        }
+        platforms[key] = _PlatformRelease(version: platformVersion.trim());
+      }
+    }
+    if ((version is! String || version.trim().isEmpty) && platforms.isEmpty) {
       throw const FormatException('Manifest is missing a version.');
     }
     final urlValue = decoded['release_url'] ?? decoded['url'];
     return _ReleaseManifest(
-      version: version.trim(),
+      version: version is String && version.trim().isNotEmpty
+          ? version.trim()
+          : platforms.values.first.version,
+      platforms: platforms,
       releaseUrl: urlValue is String && urlValue.trim().isNotEmpty
           ? urlValue.trim()
           : null,
@@ -110,10 +142,29 @@ class UpdateChecker {
 }
 
 class _ReleaseManifest {
-  const _ReleaseManifest({required this.version, this.releaseUrl});
+  const _ReleaseManifest({
+    required this.version,
+    required this.platforms,
+    this.releaseUrl,
+  });
 
   final String version;
+  final Map<String, _PlatformRelease> platforms;
   final String? releaseUrl;
+}
+
+class _PlatformRelease {
+  const _PlatformRelease({required this.version});
+
+  final String version;
+}
+
+String _currentPlatformKey() {
+  if (Platform.isWindows) return 'windows';
+  if (Platform.isMacOS) return 'macos';
+  if (Platform.isLinux) return 'linux';
+  if (Platform.isAndroid) return 'android';
+  return '';
 }
 
 /// Compares two dotted version strings, ignoring any `+build` metadata.
@@ -134,10 +185,13 @@ int compareVersions(String a, String b) {
 
 List<int> _versionParts(String version) {
   final core = version.split('+').first.split('-').first.trim();
-  return core.split('.').map((part) {
-    final digits = RegExp(r'\d+').stringMatch(part);
-    return digits == null ? 0 : int.parse(digits);
-  }).toList(growable: false);
+  return core
+      .split('.')
+      .map((part) {
+        final digits = RegExp(r'\d+').stringMatch(part);
+        return digits == null ? 0 : int.parse(digits);
+      })
+      .toList(growable: false);
 }
 
 /// Opens [url] in the operating system's default browser.

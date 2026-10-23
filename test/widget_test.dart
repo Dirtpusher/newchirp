@@ -645,18 +645,23 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    final source = Directory('build_support/chirp-20261023').existsSync()
+        ? 'build_support/chirp-20261023'
+        : '../chirp-20260626';
     final models = await tester.runAsync(
-      () => RadioBridge(sourcePath: '../chirp-20260626').models(),
+      () => RadioBridge(sourcePath: source).models(),
     );
     final instructions = await tester.runAsync(
-      () => RadioBridge(
-        sourcePath: '../chirp-20260626',
-      ).instructions('Baofeng_UV-5R_Mini'),
+      () => RadioBridge(sourcePath: source).instructions('Baofeng_UV-5R_Mini'),
     );
 
     expect(models, contains('Baofeng_UV-5R'));
     expect(models, contains('Yaesu_FT-60'));
     expect(instructions?.experimental, contains('beta version'));
     expect(instructions?.preDownload, contains('Turn off your radio'));
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
   });
 }

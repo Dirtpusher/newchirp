@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T15:18:33Z"
+timestamp: "2026-10-23T17:44:01Z"
 concept_id: main/settingsMessage
 language: dart
 ---
@@ -19,16 +19,16 @@ language: dart
 ## Signature
 
 ```dart
-Widget_settingsMessage({
-    required IconData icon,
-    required String title,
-    required String body,
-    Widget? action,
+Widget_settingsMessage({
+    required IconData icon,
+    required String title,
+    required String body,
+    Widget? action,
   })
 ```
 
 ## Source
-Lines 2952–2957 in `main.dart`
+Lines 2955–2960 in `main.dart`
 
 ## Relationships
 

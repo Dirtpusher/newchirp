@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T15:18:33Z"
+timestamp: "2026-10-23T17:44:01Z"
 concept_id: main/buildRadioSettingsGroup
 language: dart
 ---
@@ -19,14 +19,14 @@ language: dart
 ## Signature
 
 ```dart
-Widget_buildRadioSettingsGroup(
-    RadioSettingNode group, {
-    bool nested = false,
+Widget_buildRadioSettingsGroup(
+    RadioSettingNode group, {
+    bool nested = false,
   })
 ```
 
 ## Source
-Lines 3267–3270 in `main.dart`
+Lines 3270–3273 in `main.dart`
 
 ## Relationships
 

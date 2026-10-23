@@ -494,6 +494,15 @@ class RadioBridge {
     }
     if (exitCode != 0) {
       final details = stderr.isNotEmpty ? stderr : stdout;
+      if ((exitCode & 0xFFFFFFFF) == 0xC0000005) {
+        throw RadioBridgeException(
+          'NewChirp\u2019s radio helper crashed while communicating with the '
+          'radio (Windows access violation, exit code 0xC0000005).\n\n'
+          'Unplug and reconnect the programming cable, put the radio back in '
+          'CLONE mode, and try again. If it keeps happening, restart NewChirp '
+          'and the computer before retrying.',
+        );
+      }
       throw RadioBridgeException(
         details.isEmpty
             ? 'Radio bridge failed with exit code $exitCode.'

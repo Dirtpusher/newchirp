@@ -54,6 +54,51 @@ void main() {
       expect(result.releaseUrl, 'https://newchirp.net/#download');
     });
 
+    test('uses the version published for the current platform', () async {
+      final uri = await serve(
+        jsonEncode({
+          'version': '1.0.7',
+          'platforms': {
+            'windows': {'version': '1.0.8'},
+            'macos': {'version': '1.0.7'},
+            'linux': {'version': '1.0.7'},
+          },
+        }),
+      );
+
+      final windows = await UpdateChecker(
+        manifestUri: uri,
+        platform: 'windows',
+      ).check('1.0.7');
+      final macos = await UpdateChecker(
+        manifestUri: uri,
+        platform: 'macos',
+      ).check('1.0.7');
+
+      expect(windows.latestVersion, '1.0.8');
+      expect(windows.updateAvailable, isTrue);
+      expect(macos.latestVersion, '1.0.7');
+      expect(macos.updateAvailable, isFalse);
+    });
+
+    test('accepts platform versions without a legacy version', () async {
+      final uri = await serve(
+        jsonEncode({
+          'platforms': {
+            'windows': {'version': '1.0.8'},
+          },
+        }),
+      );
+
+      final result = await UpdateChecker(
+        manifestUri: uri,
+        platform: 'windows',
+      ).check('1.0.7');
+
+      expect(result.latestVersion, '1.0.8');
+      expect(result.updateAvailable, isTrue);
+    });
+
     test('reports up to date when versions match', () async {
       final uri = await serve(jsonEncode({'version': '1.0.1'}));
       final result = await UpdateChecker(manifestUri: uri).check('1.0.1');

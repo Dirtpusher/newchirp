@@ -23,7 +23,10 @@ void main() {
     ).readImage(image.path);
 
     expect(imported.model, 'Icom_IC-2730A');
-    expect(imported.imagePath, image.path);
+    expect(
+      imported.imagePath.replaceAll('\\', '/'),
+      image.path.replaceAll('\\', '/'),
+    );
   });
 
   test('FT-857 images with reserved AM step values remain readable', () async {

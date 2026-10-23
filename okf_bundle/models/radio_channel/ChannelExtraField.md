@@ -2,15 +2,15 @@
 okf_version: "0.2"
 type: Function
 title: ChannelExtraField
-resource: models/radio_channel.dart
+resource: models\radio_channel.dart
 tags:
   - "lang:dart"
   - "type:Function"
   - "module:models"
   - "domain:radio_channel.dart"
-  - "git:branch:HEAD"
+  - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T23:14:49Z"
+timestamp: "2026-08-23T13:43:31Z"
 concept_id: models/radio_channel/ChannelExtraField
 language: dart
 ---
@@ -31,7 +31,7 @@ ChannelExtraField({
 ```
 
 ## Source
-Lines 140–147 in `models/radio_channel.dart`
+Lines 140–147 in `models\radio_channel.dart`
 
 ## Relationships
 

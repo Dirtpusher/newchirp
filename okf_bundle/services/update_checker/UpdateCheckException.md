@@ -2,15 +2,15 @@
 okf_version: "0.2"
 type: Function
 title: UpdateCheckException
-resource: services/update_checker.dart
+resource: services\update_checker.dart
 tags:
   - "lang:dart"
   - "type:Function"
   - "module:services"
   - "domain:update_checker.dart"
-  - "git:branch:HEAD"
+  - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-22T17:59:51Z"
+timestamp: "2026-10-23T18:18:25Z"
 concept_id: services/update_checker/UpdateCheckException
 language: dart
 ---
@@ -24,7 +24,7 @@ UpdateCheckException(this.message)
 ```
 
 ## Source
-Lines 26–26 in `services/update_checker.dart`
+Lines 26–26 in `services\update_checker.dart`
 
 ## Relationships
 

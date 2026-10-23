@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T15:18:33Z"
+timestamp: "2026-10-23T17:44:01Z"
 concept_id: main/applyChannels
 language: dart
 ---
@@ -19,11 +19,11 @@ language: dart
 ## Signature
 
 ```dart
-void_applyChannels(
-    List<RadioChannel> incoming,
-    _ChannelApplyMode mode, {
-    required String libraryName,
-    String? libraryPath,
+void_applyChannels(
+    List<RadioChannel> incoming,
+    _ChannelApplyMode mode, {
+    required String libraryName,
+    String? libraryPath,
   })
 ```
 

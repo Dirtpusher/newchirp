@@ -17,7 +17,11 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: '3.47.1'
+          # Flutter 3.47.x can crash or render a black window on older Windows
+          # 10 GPUs limited to D3D11 feature level 9_3. Keep the Windows
+          # release on the last field-validated stable build until the fix is
+          # available in a stable Flutter release.
+          flutter-version: '3.44.2'
           cache: true
       - name: Install Inno Setup
         run: choco install innosetup --no-progress -y

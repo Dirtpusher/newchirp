@@ -2,15 +2,15 @@
 okf_version: "0.2"
 type: Class
 title: ChirpCsv
-resource: services/chirp_csv.dart
+resource: services\chirp_csv.dart
 tags:
   - "lang:dart"
   - "type:Class"
   - "module:services"
   - "domain:chirp_csv.dart"
-  - "git:branch:HEAD"
+  - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T23:14:49Z"
+timestamp: "2026-08-23T13:43:31Z"
 concept_id: services/chirp_csv/ChirpCsv
 language: dart
 ---
@@ -35,7 +35,7 @@ class ChirpCsv
 - `_parse`
 
 ## Source
-Lines 3–139 in `services/chirp_csv.dart`
+Lines 3–139 in `services\chirp_csv.dart`
 
 ## Relationships
 

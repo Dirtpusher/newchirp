@@ -2,15 +2,15 @@
 okf_version: "0.2"
 type: Function
 title: load
-resource: services/window_state_store.dart
+resource: services\window_state_store.dart
 tags:
   - "lang:dart"
   - "type:Function"
   - "module:services"
   - "domain:window_state_store.dart"
-  - "git:branch:HEAD"
+  - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T23:14:49Z"
+timestamp: "2026-10-23T16:26:58Z"
 concept_id: services/window_state_store/load
 language: dart
 ---
@@ -24,7 +24,7 @@ Futureloadload
 ```
 
 ## Source
-Lines 33–33 in `services/window_state_store.dart`
+Lines 33–33 in `services\window_state_store.dart`
 
 ## Relationships
 

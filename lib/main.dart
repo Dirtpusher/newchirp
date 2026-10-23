@@ -19,7 +19,7 @@ import 'services/window_state_store.dart';
 
 const _menuChannel = MethodChannel('newchirp/menu');
 
-const String _newChirpVersion = '1.0.7';
+const String _newChirpVersion = '1.0.8';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -1007,8 +1007,8 @@ class _NewChirpHomeState extends State<NewChirpHome> {
         builder: (context) => AlertDialog(
           title: const Text('Replace unsaved settings changes?'),
           content: const Text(
-            'Reading the radio will replace the settings changes currently '
-            'shown on this page.',
+            'Reading settings from the radio will replace the unsaved settings '
+            'changes shown on this page. The current channel list is not changed.',
           ),
           actions: [
             TextButton(
@@ -1017,7 +1017,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Read from radio'),
+              child: const Text('Read settings'),
             ),
           ],
         ),
@@ -1304,7 +1304,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
           ),
           title: const Text('Replace current channel list?'),
           content: const Text(
-            'Reading a radio will replace the current channel list. '
+            'Reading channels from the radio will replace the current channel list. '
             'Save it as a CSV first if you want to keep it.',
           ),
           actions: [
@@ -1314,7 +1314,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Read radio'),
+              child: const Text('Read channels'),
             ),
           ],
         ),
@@ -1324,33 +1324,36 @@ class _NewChirpHomeState extends State<NewChirpHome> {
     final instructions = await _loadRadioInstructions();
     if (instructions == null || !mounted) return;
     if (!await _confirmRadioInstructions(instructions, writing: false)) return;
-    await _transferTask('Reading radio — do not disconnect…', () async {
-      final result = await _bridge.download(
-        model: _model!,
-        port: _port!,
-        onProgress: _reportTransferProgress,
-      );
-      final storedImage = await _imageStore.saveForModel(
-        _model!,
-        result.imagePath,
-      );
-      setState(() {
-        _channels = result.channels;
-        _clearedLocations.clear();
-        _selected = _channels.isEmpty ? -1 : 0;
-        _radioImage = storedImage;
-        _capabilities = result.capabilities;
-        _libraryName = _model!.replaceAll('_', ' ');
-        _libraryOpen = true;
-        _dirty = false;
-        _page = 0;
-        _radioSettings = null;
-        _settingsDirty = false;
-        _settingsLoadedFromRadio = false;
-        _settingsLoadedModel = null;
-        _settingsLoadedImage = null;
-      });
-    });
+    await _transferTask(
+      'Reading radio channels - do not disconnect...',
+      () async {
+        final result = await _bridge.download(
+          model: _model!,
+          port: _port!,
+          onProgress: _reportTransferProgress,
+        );
+        final storedImage = await _imageStore.saveForModel(
+          _model!,
+          result.imagePath,
+        );
+        setState(() {
+          _channels = result.channels;
+          _clearedLocations.clear();
+          _selected = _channels.isEmpty ? -1 : 0;
+          _radioImage = storedImage;
+          _capabilities = result.capabilities;
+          _libraryName = _model!.replaceAll('_', ' ');
+          _libraryOpen = true;
+          _dirty = false;
+          _page = 0;
+          _radioSettings = null;
+          _settingsDirty = false;
+          _settingsLoadedFromRadio = false;
+          _settingsLoadedModel = null;
+          _settingsLoadedImage = null;
+        });
+      },
+    );
   }
 
   Future<bool> _confirmRadioInstructions(
@@ -1767,15 +1770,15 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                       _WelcomeAction(
                         width: cardWidth,
                         icon: Icons.settings_input_antenna,
-                        title: 'Read from a radio',
+                        title: 'Read channels from a radio',
                         description:
                             'Connect a programming cable and import the radio’s current channels.',
                         buttonLabel: 'Connect radio',
                         onPressed: _openRadioConnection,
                         help:
                             'Open the radio connection screen, choose your cable and exact model, '
-                            'then read from the radio once. That read creates a reusable image for '
-                            'the model and unlocks writing.',
+                            'then choose Read channels from the radio. Settings are read separately '
+                            'from the Radio settings page.',
                       ),
                     ],
                   );
@@ -3062,7 +3065,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                                     ? null
                                     : _readRadioSettings,
                                 icon: const Icon(Icons.cable),
-                                label: const Text('Read from radio'),
+                                label: const Text('Read settings from radio'),
                               ),
                             if (hasImage)
                               OutlinedButton.icon(
@@ -3102,8 +3105,8 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                     title: 'Read radio settings',
                     body: canReadRadio
                         ? 'Read the current settings directly from the connected '
-                              'radio. This also refreshes the stored image used '
-                              'when writing settings back.'
+                              'radio. This refreshes the stored image and settings '
+                              'only; the current channel list is not changed.'
                         : 'Select the programming cable and exact model on Radio '
                               'connection, then read the radio to load its '
                               'settings.',
@@ -3113,7 +3116,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                                 ? null
                                 : _readRadioSettings,
                             icon: const Icon(Icons.cable),
-                            label: const Text('Read from radio'),
+                            label: const Text('Read settings from radio'),
                           )
                         : FilledButton.icon(
                             onPressed: _openRadioConnection,
@@ -3136,7 +3139,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                                 ? null
                                 : _readRadioSettings,
                             icon: const Icon(Icons.cable),
-                            label: const Text('Read from radio'),
+                            label: const Text('Read settings from radio'),
                           ),
                         TextButton.icon(
                           onPressed: _settingsLoading || _busy
@@ -3153,7 +3156,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                     icon: Icons.tune,
                     title: 'Settings have not loaded yet',
                     body: canReadRadio
-                        ? 'Choose Read from radio for the current values, or '
+                        ? 'Choose Read settings from radio for the current values, or '
                               'reload the stored image for cached values.'
                         : 'Load the settings from the stored radio image.',
                     action: Wrap(
@@ -3166,7 +3169,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                                 ? null
                                 : _readRadioSettings,
                             icon: const Icon(Icons.cable),
-                            label: const Text('Read from radio'),
+                            label: const Text('Read settings from radio'),
                           ),
                         TextButton.icon(
                           onPressed: _settingsLoading || _busy
@@ -3361,7 +3364,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Read the radio first, edit its channels in the library, then write the verified image back.',
+                'Read channels from the radio first, edit them in the library, then write the verified image back.',
                 style: Theme.of(
                   context,
                 ).textTheme.bodyLarge?.copyWith(color: Colors.black54),
@@ -3513,9 +3516,11 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                         number: '3',
                         title: 'Transfer safely',
                         help:
-                            'Read pulls the full memory image from the radio and stores it for this '
-                            'model. Write sends the current channel list back using that image. Keep '
-                            'the radio connected and powered on during either transfer.',
+                            'Read channels pulls the full memory image from the radio, replaces the '
+                            'current channel list, and stores the image for this model. Radio '
+                            'settings have a separate read action on the Radio settings page. Write '
+                            'sends the current channel list back using the stored image. Keep the '
+                            'radio connected and powered on during either transfer.',
                       ),
                       const SizedBox(height: 12),
                       Row(
@@ -3529,7 +3534,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                               icon: const Icon(Icons.south),
                               label: const Padding(
                                 padding: EdgeInsets.symmetric(vertical: 12),
-                                child: Text('Read from radio'),
+                                child: Text('Read channels from radio'),
                               ),
                             ),
                           ),
@@ -3550,9 +3555,11 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                           const _HelpButton(
                             title: 'Transfer safely',
                             details:
-                                'Read pulls the full memory image from the radio and stores it for '
-                                'this model. Write sends the current channel list back using that '
-                                'image. Keep the radio connected and powered on during either.',
+                                'Read channels pulls the full memory image from the radio, replaces '
+                                'the current channel list, and stores the image for this model. '
+                                'Radio settings have a separate read action on the Radio settings '
+                                'page. Write sends the current channel list back using that image. '
+                                'Keep the radio connected and powered on during either.',
                           ),
                         ],
                       ),

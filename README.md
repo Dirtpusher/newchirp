@@ -35,23 +35,33 @@ manifest (default `https://newchirp.net/api/releases/latest`) shaped like:
 
 ```json
 {
-  "version": "1.0.2",
+  "version": "1.0.7",
   "release_url": "https://newchirp.net/#download",
-  "downloads": { "windows": "...", "macos": "...", "linux": "..." }
+  "downloads": { "windows": "...", "macos": "...", "linux": "..." },
+  "platforms": {
+    "windows": { "version": "1.0.8", "download_url": "..." },
+    "macos": { "version": "1.0.7", "download_url": "..." },
+    "linux": { "version": "1.0.7", "download_url": "..." }
+  }
 }
 ```
 
-Only `version` is required; `release_url` (or `url`) is optional and is opened
-when the user accepts the update. The installed version is `_newChirpVersion`
-in `lib/main.dart` and should be kept in sync with `version` in `pubspec.yaml`.
-The check logic lives in `lib/services/update_checker.dart`.
+The app reads its own entry from `platforms`, so each platform can publish on
+its own schedule. The top-level `version` is the newest release shared by all
+desktop platforms and remains for older clients that only understand that
+field. `release_url` (or `url`) is optional and is opened when the user accepts
+the update. The installed version is `_newChirpVersion` in `lib/main.dart` and
+should be kept in sync with `version` in `pubspec.yaml`. The check logic lives
+in `lib/services/update_checker.dart`.
 
-When cutting a release, bump the version in all three places so they agree:
+When cutting a desktop release, bump both app version locations so they agree:
 
 - `_newChirpVersion` in `lib/main.dart`
 - `version` in `pubspec.yaml`
-- `RELEASE.version` in the web server (`/opt/newchirp/server.mjs`), which
-  serves `GET /api/releases/latest`
+
+Then upload the versioned artifact for that platform. The website discovers it
+without a code or release-constant change, and other platforms can keep serving
+their previous versions.
 
 ## Run
 
@@ -89,11 +99,16 @@ flutter build macos
 
 Build status and resumption checklist: `docs/BUILD_PROGRESS.md`.
 
+Windows release builds use Flutter 3.44.2. Flutter 3.47.x can crash on startup
+or render a black window on older Windows 10 GPUs limited to D3D11 feature
+level 9_3, so do not use it for a Windows release until that fix reaches a
+stable Flutter release.
+
 On a Windows machine with the Flutter SDK and Visual Studio (C++ workload)
 installed, build the release bundle and Inno Setup installer with:
 
 ```powershell
-.\scripts\build_windows_installer.ps1
+.\scripts\build_windows_installer.ps1 -FlutterRoot C:\flutter-3.44.2
 ```
 
 The script runs `flutter pub get`, `flutter build windows --release`, bundles a
@@ -107,11 +122,12 @@ the first time and cached under `build_support\`.
 ### Cross-platform releases
 
 `.github/workflows/release.yml` builds the Windows installer, macOS DMG, and
-Linux Debian package from the same `pubspec.yaml` version. Run it with
-**Actions > Build release artifacts > Run workflow**, or push a tag named
-`v<version>`. The workflow verifies each artifact's embedded version and the
-versioned filenames. Tag builds also attach the three artifacts to a GitHub
-release.
+Linux Debian package. Run it with **Actions > Build release artifacts > Run
+workflow**, or push a tag named `v<version>`. The workflow verifies each
+artifact's embedded version and versioned filename. Tag builds attach the three
+artifacts to a GitHub release. Platforms do not need the same version or need
+to publish together; each versioned artifact becomes that platform's current
+download as soon as it is uploaded.
 
 Release AOT builds need `gen_snapshot.exe`, which Windows Smart App Control
 blocks when it is enabled. If `flutter build windows --release` fails with an

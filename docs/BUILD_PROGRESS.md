@@ -12,7 +12,9 @@ end users can run on a clean Windows machine.
 
 ## What is already done
 
-- Installed Flutter SDK 3.47.1 at `C:\flutter` (Dart 3.13.1).
+- Flutter SDK 3.47.1 was originally used on this machine. Windows release
+  builds must now use Flutter 3.44.2: 3.47.x can crash on startup or show a
+  black window on older Windows 10 GPUs limited to D3D11 feature level 9_3.
 - Installed Inno Setup 6.7.3 at
   `C:\Users\rlopez\AppData\Local\Programs\Inno Setup 6\ISCC.exe`.
 - Confirmed Visual Studio Community 2026 (18.7.3) with the C++ workload, MSBuild,
@@ -62,7 +64,7 @@ Two packaging script bugs were fixed in `scripts/build_windows_installer.ps1`:
 
 ## Useful commands / paths
 
-- Flutter: `C:\flutter\bin\flutter.bat`
+- Flutter for Windows releases: 3.44.2 (`C:\flutter-3.44.2\bin\flutter.bat`)
 - Git Bash (for the runtime bundler): `C:\Program Files\Git\bin\bash.exe`
 - Inno Setup: `C:\Users\rlopez\AppData\Local\Programs\Inno Setup 6\ISCC.exe`
 - App bundle (debug): `build\windows\x64\runner\Debug`

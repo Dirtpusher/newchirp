@@ -2,15 +2,15 @@
 okf_version: "0.2"
 type: Module
 title: update_checker
-resource: services/update_checker.dart
+resource: services\update_checker.dart
 tags:
   - "lang:dart"
   - "type:Module"
   - "module:services"
   - "domain:update_checker.dart"
-  - "git:branch:HEAD"
+  - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-22T17:59:51Z"
+timestamp: "2026-10-23T18:18:25Z"
 concept_id: services/update_checker
 language: dart
 ---
@@ -25,6 +25,8 @@ language: dart
 | related | [UpdateCheckException](/services/update_checker/UpdateCheckException.md) |
 | related | [UpdateChecker](/services/update_checker/UpdateChecker.md) |
 | related | [_ReleaseManifest](/services/update_checker/ReleaseManifest.md) |
+| related | [_PlatformRelease](/services/update_checker/PlatformRelease.md) |
+| related | [_currentPlatformKey](/services/update_checker/currentPlatformKey.md) |
 | related | [compareVersions](/services/update_checker/compareVersions.md) |
 | related | [_versionParts](/services/update_checker/versionParts.md) |
 | related | [openExternalUrl](/services/update_checker/openExternalUrl.md) |
