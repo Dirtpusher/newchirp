@@ -3,53 +3,19 @@
   "manifest_version": 2,
   "source_root": "/Volumes/RICKEXT/desktop/newchirp/lib",
   "files": {
-    "services/radio_bridge.dart": {
-      "path": "services/radio_bridge.dart",
-      "mtime_ns": 1792768481651581192,
-      "hash": "593ad447524e0cff8fcc868d06ceec6b7599718514588b1ae6f5888a140ff523",
+    "models/radio_channel.dart": {
+      "path": "models/radio_channel.dart",
+      "mtime_ns": 1787526889853439412,
+      "hash": "850738d3e858941091b0f6ebe7a0e88662395baed614cf132a0483209e3b1a81",
       "concept_ids": [
-        "services/radio_bridge",
-        "services/radio_bridge/RadioBridgeException",
-        "services/radio_bridge/RadioInstructions",
-        "services/radio_bridge/RadioCapabilities",
-        "services/radio_bridge/RadioProgress",
-        "services/radio_bridge/RadioSettingNode",
-        "services/radio_bridge/RadioSettings",
-        "services/radio_bridge/RadioBridge",
-        "services/radio_bridge/strings",
-        "services/radio_bridge/toString",
-        "services/radio_bridge/toChangeJson",
-        "services/radio_bridge/cancelActive",
-        "services/radio_bridge/serialPorts",
-        "services/radio_bridge/windowsSerialPorts",
-        "services/radio_bridge/parseComPorts",
-        "services/radio_bridge/models",
-        "services/radio_bridge/instructions",
-        "services/radio_bridge/readImage",
-        "services/radio_bridge/download",
-        "services/radio_bridge/upload",
-        "services/radio_bridge/readSettings",
-        "services/radio_bridge/writeSettings",
-        "services/radio_bridge/run",
-        "services/radio_bridge/resolvePython",
-        "services/radio_bridge/bundledResourcesDirectory",
-        "services/radio_bridge/materializeBridge",
-        "services/radio_bridge/materializePythonDependencies",
-        "services/radio_bridge/findChirpSource",
-        "services/radio_bridge/findNewChirpDrivers"
-      ]
-    },
-    "services/radio_selection_store.dart": {
-      "path": "services/radio_selection_store.dart",
-      "mtime_ns": 1787526889854243083,
-      "hash": "aefeaa9ad666caf79e256acf1d1af15cf468495cde4e4dd3515b715ba57bd97c",
-      "concept_ids": [
-        "services/radio_selection_store",
-        "services/radio_selection_store/RadioSelection",
-        "services/radio_selection_store/RadioSelectionStore",
-        "services/radio_selection_store/load",
-        "services/radio_selection_store/save",
-        "services/radio_selection_store/defaultPath"
+        "models/radio_channel/ChannelExtraField",
+        "models/radio_channel/RadioChannel",
+        "models/radio_channel/clear",
+        "models/radio_channel/copy",
+        "models/radio_channel/gmrsStarterChannels",
+        "models/radio_channel/toJson",
+        "models/radio_channel/validate",
+        "models/radio_channel"
       ]
     },
     "services/chirp_csv.dart": {
@@ -57,31 +23,16 @@
       "mtime_ns": 1787526889853586163,
       "hash": "1d0d2204b57a9fe4753793712ec972cdd40ba6099dca82b4b249a2165a80806f",
       "concept_ids": [
-        "services/chirp_csv",
         "services/chirp_csv/ChirpCsv",
         "services/chirp_csv/col",
-        "services/chirp_csv/value",
-        "services/chirp_csv/number",
-        "services/chirp_csv/integer",
-        "services/chirp_csv/encode",
         "services/chirp_csv/decode",
+        "services/chirp_csv/encode",
         "services/chirp_csv/escape",
-        "services/chirp_csv/parse"
-      ]
-    },
-    "models/radio_channel.dart": {
-      "path": "models/radio_channel.dart",
-      "mtime_ns": 1787526889853439412,
-      "hash": "850738d3e858941091b0f6ebe7a0e88662395baed614cf132a0483209e3b1a81",
-      "concept_ids": [
-        "models/radio_channel",
-        "models/radio_channel/RadioChannel",
-        "models/radio_channel/ChannelExtraField",
-        "models/radio_channel/gmrsStarterChannels",
-        "models/radio_channel/copy",
-        "models/radio_channel/clear",
-        "models/radio_channel/toJson",
-        "models/radio_channel/validate"
+        "services/chirp_csv/integer",
+        "services/chirp_csv/number",
+        "services/chirp_csv/parse",
+        "services/chirp_csv/value",
+        "services/chirp_csv"
       ]
     },
     "services/column_layout_store.dart": {
@@ -89,12 +40,48 @@
       "mtime_ns": 1787526889853744664,
       "hash": "3cbc77b232410ab3567a72cdc0fc28a7edd906c0dc0c62cf73150e5e3172f566",
       "concept_ids": [
-        "services/column_layout_store",
         "services/column_layout_store/ColumnLayout",
         "services/column_layout_store/ColumnLayoutStore",
+        "services/column_layout_store/defaultPath",
         "services/column_layout_store/load",
         "services/column_layout_store/save",
-        "services/column_layout_store/defaultPath"
+        "services/column_layout_store"
+      ]
+    },
+    "services/radio_bridge.dart": {
+      "path": "services/radio_bridge.dart",
+      "mtime_ns": 1792768481651581192,
+      "hash": "593ad447524e0cff8fcc868d06ceec6b7599718514588b1ae6f5888a140ff523",
+      "concept_ids": [
+        "services/radio_bridge/RadioBridge",
+        "services/radio_bridge/RadioBridgeException",
+        "services/radio_bridge/RadioCapabilities",
+        "services/radio_bridge/RadioInstructions",
+        "services/radio_bridge/RadioProgress",
+        "services/radio_bridge/RadioSettingNode",
+        "services/radio_bridge/RadioSettings",
+        "services/radio_bridge/bundledResourcesDirectory",
+        "services/radio_bridge/cancelActive",
+        "services/radio_bridge/download",
+        "services/radio_bridge/findChirpSource",
+        "services/radio_bridge/findNewChirpDrivers",
+        "services/radio_bridge/instructions",
+        "services/radio_bridge/materializeBridge",
+        "services/radio_bridge/materializePythonDependencies",
+        "services/radio_bridge/models",
+        "services/radio_bridge/parseComPorts",
+        "services/radio_bridge/readImage",
+        "services/radio_bridge/readSettings",
+        "services/radio_bridge/resolvePython",
+        "services/radio_bridge/run",
+        "services/radio_bridge/serialPorts",
+        "services/radio_bridge/strings",
+        "services/radio_bridge/toChangeJson",
+        "services/radio_bridge/toString",
+        "services/radio_bridge/upload",
+        "services/radio_bridge/windowsSerialPorts",
+        "services/radio_bridge/writeSettings",
+        "services/radio_bridge"
       ]
     },
     "services/radio_image_store.dart": {
@@ -102,12 +89,43 @@
       "mtime_ns": 1787526889854147624,
       "hash": "01dbc10ad65696e5c963128028ba7d55ab035eba80b6d5da424c7127c7eb8fa7",
       "concept_ids": [
-        "services/radio_image_store",
         "services/radio_image_store/RadioImageStore",
-        "services/radio_image_store/saveForModel",
         "services/radio_image_store/hasForModel",
+        "services/radio_image_store/imageDirectory",
         "services/radio_image_store/pathForModel",
-        "services/radio_image_store/imageDirectory"
+        "services/radio_image_store/saveForModel",
+        "services/radio_image_store"
+      ]
+    },
+    "services/radio_selection_store.dart": {
+      "path": "services/radio_selection_store.dart",
+      "mtime_ns": 1787526889854243083,
+      "hash": "aefeaa9ad666caf79e256acf1d1af15cf468495cde4e4dd3515b715ba57bd97c",
+      "concept_ids": [
+        "services/radio_selection_store/RadioSelection",
+        "services/radio_selection_store/RadioSelectionStore",
+        "services/radio_selection_store/defaultPath",
+        "services/radio_selection_store/load",
+        "services/radio_selection_store/save",
+        "services/radio_selection_store"
+      ]
+    },
+    "services/update_checker.dart": {
+      "path": "services/update_checker.dart",
+      "mtime_ns": 1792691991956112734,
+      "hash": "280327400ab9fa8991209a8d12434dc8d6e007833ef799903333076ab8e47186",
+      "concept_ids": [
+        "services/update_checker/ReleaseManifest",
+        "services/update_checker/UpdateCheckException",
+        "services/update_checker/UpdateCheckResult",
+        "services/update_checker/UpdateChecker",
+        "services/update_checker/check",
+        "services/update_checker/compareVersions",
+        "services/update_checker/openExternalUrl",
+        "services/update_checker/parseManifest",
+        "services/update_checker/toString",
+        "services/update_checker/versionParts",
+        "services/update_checker"
       ]
     },
     "services/window_state_store.dart": {
@@ -115,19 +133,19 @@
       "mtime_ns": 1787526889854324166,
       "hash": "86c6b4a01b10d3a881e9437259adb1984e015cf75e552fdaa395c8b89c7fffb0",
       "concept_ids": [
-        "services/window_state_store",
         "services/window_state_store/WindowState",
         "services/window_state_store/WindowStateStore",
-        "services/window_state_store/toJson",
+        "services/window_state_store/defaultPath",
         "services/window_state_store/load",
         "services/window_state_store/save",
-        "services/window_state_store/defaultPath"
+        "services/window_state_store/toJson",
+        "services/window_state_store"
       ]
     },
     "main.dart": {
       "path": "main.dart",
-      "mtime_ns": 1792768481651334068,
-      "hash": "ce529d5106a3ba47b80839063797b7d783df86698b0b9d0940cfeb66805f5623",
+      "mtime_ns": 1792768713996072221,
+      "hash": "2c21eb220cd715d72f5ef01f204912e1d71d72d17745db30e63c322c5c850842",
       "concept_ids": [
         "main",
         "main/WindowStateManager",
@@ -262,24 +280,6 @@
         "main/moveColumn",
         "main/handleFocusChange",
         "main/replaceText"
-      ]
-    },
-    "services/update_checker.dart": {
-      "path": "services/update_checker.dart",
-      "mtime_ns": 1792691991956112734,
-      "hash": "280327400ab9fa8991209a8d12434dc8d6e007833ef799903333076ab8e47186",
-      "concept_ids": [
-        "services/update_checker",
-        "services/update_checker/UpdateCheckResult",
-        "services/update_checker/UpdateCheckException",
-        "services/update_checker/UpdateChecker",
-        "services/update_checker/ReleaseManifest",
-        "services/update_checker/compareVersions",
-        "services/update_checker/versionParts",
-        "services/update_checker/openExternalUrl",
-        "services/update_checker/toString",
-        "services/update_checker/check",
-        "services/update_checker/parseManifest"
       ]
     }
   },
@@ -2013,5 +2013,5 @@
       "enriched": false
     }
   },
-  "generated_at": "2026-10-23T15:14:42Z"
+  "generated_at": "2026-10-23T15:18:34Z"
 }
