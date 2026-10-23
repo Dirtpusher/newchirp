@@ -2,15 +2,15 @@
 okf_version: "0.2"
 type: Function
 title: _parseComPorts
-resource: services/radio_bridge.dart
+resource: services\radio_bridge.dart
 tags:
   - "lang:dart"
   - "type:Function"
   - "module:services"
   - "domain:radio_bridge.dart"
-  - "git:branch:HEAD"
+  - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T19:03:53Z"
+timestamp: "2026-10-23T18:20:01Z"
 concept_id: services/radio_bridge/parseComPorts
 language: dart
 ---
@@ -24,7 +24,7 @@ List_parseComPorts_parseComPorts
 ```
 
 ## Source
-Lines 264–264 in `services/radio_bridge.dart`
+Lines 264–264 in `services\radio_bridge.dart`
 
 ## Relationships
 

@@ -2,15 +2,15 @@
 okf_version: "0.2"
 type: Function
 title: _imageDirectory
-resource: services/radio_image_store.dart
+resource: services\radio_image_store.dart
 tags:
   - "lang:dart"
   - "type:Function"
   - "module:services"
   - "domain:radio_image_store.dart"
-  - "git:branch:HEAD"
+  - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T23:14:49Z"
+timestamp: "2026-10-23T16:26:58Z"
 concept_id: services/radio_image_store/imageDirectory
 language: dart
 ---
@@ -24,7 +24,7 @@ Directory_imageDirectory()
 ```
 
 ## Source
-Lines 23–23 in `services/radio_image_store.dart`
+Lines 23–23 in `services\radio_image_store.dart`
 
 ## Relationships
 

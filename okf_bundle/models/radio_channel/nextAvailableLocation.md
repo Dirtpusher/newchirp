@@ -2,15 +2,15 @@
 okf_version: "0.2"
 type: Function
 title: nextAvailableLocation
-resource: models/radio_channel.dart
+resource: models\radio_channel.dart
 tags:
   - "lang:dart"
   - "type:Function"
   - "module:models"
   - "domain:radio_channel.dart"
-  - "git:branch:HEAD"
+  - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T18:19:01Z"
+timestamp: "2026-10-23T18:21:56Z"
 concept_id: models/radio_channel/nextAvailableLocation
 language: dart
 ---
@@ -24,7 +24,7 @@ intnextAvailableLocationnextAvailableLocation
 ```
 
 ## Source
-Lines 231–235 in `models/radio_channel.dart`
+Lines 231–235 in `models\radio_channel.dart`
 
 ## Relationships
 

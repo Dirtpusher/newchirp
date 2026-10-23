@@ -3,7 +3,7 @@ description: 'Top-level OKF summary: 224 concepts across 3 domains and 9 modules
 git_branch: main
 git_repo: newchirp
 okf_version: '0.2'
-timestamp: '2026-10-23T19:32:11Z'
+timestamp: '2026-10-23T19:44:29Z'
 title: okf_bundle — Knowledge Summary
 type: Index
 ---
@@ -56,10 +56,10 @@ Highest-value concepts across all domains (Classes and Functions with rich descr
 | [_windowsSerialPorts](/services/radio_bridge/windowsSerialPorts.md) | Function | `services/radio_bridge.dart` | Windows: read the live COM ports from the SERIALCOMM registr… |
 | [UpdateCheckResult](/services/update_checker/UpdateCheckResult.md) | Class | `services/update_checker.dart` | Outcome of comparing the installed NewChirp version against … |
 | [compareVersions](/services/update_checker/compareVersions.md) | Function | `services/update_checker.dart` | Compares two dotted version strings, ignoring any `+build` m… |
-| [check](/services/update_checker/check.md) | Function | `services/update_checker.dart` | Opens [url] in the operating system's default browser. |
 | [openExternalUrl](/services/update_checker/openExternalUrl.md) | Function | `services/update_checker.dart` | Opens [url] in the operating system's default browser. |
-| [_parseManifest](/services/update_checker/parseManifest.md) | Function | `services/update_checker.dart` | Opens [url] in the operating system's default browser. |
 | [toString](/services/update_checker/toString.md) | Function | `services/update_checker.dart` | Opens [url] in the operating system's default browser. |
+| [check](/services/update_checker/check.md) | Function | `services/update_checker.dart` | Opens [url] in the operating system's default browser. |
+| [_parseManifest](/services/update_checker/parseManifest.md) | Function | `services/update_checker.dart` | Opens [url] in the operating system's default browser. |
 
 ## Usage with OpenCode
 

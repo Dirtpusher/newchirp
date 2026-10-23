@@ -2,15 +2,15 @@
 okf_version: "0.2"
 type: Class
 title: RadioProgress
-resource: services/radio_bridge.dart
+resource: services\radio_bridge.dart
 tags:
   - "lang:dart"
   - "type:Class"
   - "module:services"
   - "domain:radio_bridge.dart"
-  - "git:branch:HEAD"
+  - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T19:03:53Z"
+timestamp: "2026-10-23T18:20:01Z"
 concept_id: services/radio_bridge/RadioProgress
 language: dart
 ---
@@ -24,7 +24,7 @@ class RadioProgress
 ```
 
 ## Source
-Lines 101–106 in `services/radio_bridge.dart`
+Lines 101–106 in `services\radio_bridge.dart`
 
 ## Relationships
 

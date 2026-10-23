@@ -3,15 +3,15 @@ okf_version: "0.2"
 type: Class
 title: UpdateCheckResult
 description: Outcome of comparing the installed NewChirp version against the release
-resource: services/update_checker.dart
+resource: services\update_checker.dart
 tags:
   - "lang:dart"
   - "type:Class"
   - "module:services"
   - "domain:update_checker.dart"
-  - "git:branch:HEAD"
+  - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T19:03:53Z"
+timestamp: "2026-10-23T18:18:25Z"
 concept_id: services/update_checker/UpdateCheckResult
 language: dart
 ---
@@ -32,7 +32,7 @@ Outcome of comparing the installed NewChirp version against the release
 manifest published by newchirp.net.
 
 ## Source
-Lines 7–22 in `services/update_checker.dart`
+Lines 7–22 in `services\update_checker.dart`
 
 ## Relationships
 

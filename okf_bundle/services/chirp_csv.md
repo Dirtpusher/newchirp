@@ -2,15 +2,15 @@
 okf_version: "0.2"
 type: Module
 title: chirp_csv
-resource: services/chirp_csv.dart
+resource: services\chirp_csv.dart
 tags:
   - "lang:dart"
   - "type:Module"
   - "module:services"
   - "domain:chirp_csv.dart"
-  - "git:branch:HEAD"
+  - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T23:14:49Z"
+timestamp: "2026-08-23T13:43:31Z"
 concept_id: services/chirp_csv
 language: dart
 ---
