@@ -13,7 +13,8 @@ param(
   [string]$PfxPath = "",
   [string]$PfxPassword = "",
   [string]$CertThumbprint = "",
-  [string]$TimestampUrl = "http://timestamp.digicert.com"
+  [string]$TimestampUrl = "http://timestamp.digicert.com",
+  [string]$VcRedistPath = ""
 )
 
 $ErrorActionPreference = "Continue"
@@ -86,6 +87,31 @@ function Find-VcRuntimeDir {
   return ""
 }
 
+function Resolve-VcRedist {
+  param([string]$ConfiguredPath)
+  $Path = $ConfiguredPath
+  if (-not $Path) {
+    $CacheDir = Join-Path $ProjectRoot "build_support\cache"
+    New-Item -ItemType Directory -Force -Path $CacheDir | Out-Null
+    $Path = Join-Path $CacheDir "vc_redist.x64.exe"
+    if (-not (Test-Path $Path)) {
+      Write-Host "==> downloading Microsoft Visual C++ x64 redistributable"
+      Invoke-WebRequest -UseBasicParsing `
+        -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" `
+        -OutFile $Path -TimeoutSec 300
+    }
+  }
+  if (-not (Test-Path $Path)) {
+    throw "Visual C++ redistributable not found at $Path."
+  }
+  $Signature = Get-AuthenticodeSignature $Path
+  if ($Signature.Status -ne "Valid" -or
+      $Signature.SignerCertificate.Subject -notmatch "O=Microsoft Corporation") {
+    throw "Visual C++ redistributable signature validation failed for $Path."
+  }
+  return (Resolve-Path $Path).Path
+}
+
 $FlutterBat = Join-Path $FlutterRoot "bin\flutter.bat"
 if (-not (Test-Path $FlutterBat)) {
   throw "Flutter SDK not found at '$FlutterBat'. Set -FlutterRoot."
@@ -132,6 +158,12 @@ if ($Configuration.ToLower() -ne "debug") {
   Copy-Item (Join-Path $VcRuntimeDir "*.dll") $BundleDir -Force
 }
 
+$VcRedist = ""
+if ($Configuration.ToLower() -ne "debug") {
+  $VcRedist = Resolve-VcRedist $VcRedistPath
+  Write-Host "==> bundling Microsoft VC++ redistributable from $VcRedist"
+}
+
 $Pubspec = Join-Path $ProjectRoot "pubspec.yaml"
 $VersionLine = (Select-String -Path $Pubspec -Pattern '^version:\s*(\S+)' |
   Select-Object -First 1)
@@ -147,12 +179,16 @@ if (-not $SkipInstaller) {
   }
   $Iss = Join-Path $ProjectRoot "installer\newchirp.iss"
   Write-Host "==> compiling installer for version $DisplayVersion"
-  Invoke-Native $IsccPath @(
+  $IsccArgs = @(
     "/DSourceDir=$BundleDir",
     "/DMyAppVersion=$DisplayVersion",
-    "/DMyAppPublisher=com.rickext.newchirp",
-    $Iss
+    "/DMyAppPublisher=com.rickext.newchirp"
   )
+  if ($VcRedist) {
+    $IsccArgs += "/DVcRedistPath=$VcRedist"
+  }
+  $IsccArgs += $Iss
+  Invoke-Native $IsccPath $IsccArgs
 }
 
 $Installer = Join-Path $ProjectRoot "build\NewChirp-Installer-$DisplayVersion.exe"

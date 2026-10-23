@@ -19,7 +19,7 @@ import 'services/window_state_store.dart';
 
 const _menuChannel = MethodChannel('newchirp/menu');
 
-const String _newChirpVersion = '1.0.5';
+const String _newChirpVersion = '1.0.6';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

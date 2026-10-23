@@ -52,6 +52,9 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion; Excludes: "*.pdb;*.exp;*.ilk;*.lib;*.obj"
 Source: "..\assets\licenses\CHIRP-GPL-3.0.txt"; DestDir: "{app}\licenses"; Flags: ignoreversion
 Source: "..\assets\licenses\PYSERIAL-BSD-3-CLAUSE.txt"; DestDir: "{app}\licenses"; Flags: ignoreversion
+#ifdef VcRedistPath
+Source: "{#VcRedistPath}"; DestDir: "{tmp}"; DestName: "vc_redist.x64.exe"
+#endif
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\newchirp.exe"
@@ -60,3 +63,24 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\newchirp.exe"; Tasks: deskt
 
 [Run]
 Filename: "{app}\newchirp.exe"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+
+[Code]
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  ResultCode: Integer;
+begin
+  if CurStep = ssPostInstall then
+  begin
+    if FileExists(ExpandConstant('{tmp}\vc_redist.x64.exe')) then
+    begin
+      WizardForm.StatusLabel.Caption :='Installing Microsoft Visual C++ x64 runtime...';
+      if Exec(ExpandConstant('{tmp}\vc_redist.x64.exe'),
+          '/install /quiet /norestart', '', SW_HIDE,
+          ewWaitUntilTerminated, ResultCode) then
+        Log(Format('Microsoft VC++ redistributable returned code %d.', [ResultCode]))
+      else
+        Log('Could not launch the Microsoft VC++ redistributable.');
+      WizardForm.StatusLabel.Caption := '';
+    end;
+  end;
+end;
