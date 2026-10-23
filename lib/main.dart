@@ -5224,9 +5224,13 @@ class _ChannelEditor extends StatelessWidget {
       for (final tone in capabilities?.tones ?? const <double>[])
         tone.toStringAsFixed(1): tone.toStringAsFixed(1),
     };
+    final dtcsCodes = {
+      ...(capabilities?.dtcsCodes ?? standardDtcsCodes),
+      channel.dtcs,
+      channel.rxDtcs,
+    }.toList()..sort();
     final dtcsChoices = {
-      for (final code in capabilities?.dtcsCodes ?? const <int>[])
-        '$code': code.toString().padLeft(3, '0'),
+      for (final code in dtcsCodes) '$code': code.toString().padLeft(3, '0'),
     };
     final usesTxTone =
         channel.tone == 'Tone' ||
@@ -5414,12 +5418,7 @@ class _ChannelEditor extends StatelessWidget {
                           child: _ChoiceField(
                             label: 'Transmit DTCS',
                             value: '${channel.dtcs}',
-                            choices: dtcsChoices.isEmpty
-                                ? {
-                                    '${channel.dtcs}': '${channel.dtcs}'
-                                        .padLeft(3, '0'),
-                                  }
-                                : dtcsChoices,
+                            choices: dtcsChoices,
                             onValue: (v) =>
                                 onChanged(() => channel.dtcs = int.parse(v)),
                           ),
@@ -5430,12 +5429,7 @@ class _ChannelEditor extends StatelessWidget {
                           child: _ChoiceField(
                             label: 'Receive DTCS',
                             value: '${channel.rxDtcs}',
-                            choices: dtcsChoices.isEmpty
-                                ? {
-                                    '${channel.rxDtcs}': '${channel.rxDtcs}'
-                                        .padLeft(3, '0'),
-                                  }
-                                : dtcsChoices,
+                            choices: dtcsChoices,
                             onValue: (v) =>
                                 onChanged(() => channel.rxDtcs = int.parse(v)),
                           ),
