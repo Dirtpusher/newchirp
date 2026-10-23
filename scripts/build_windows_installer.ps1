@@ -112,6 +112,27 @@ function Resolve-VcRedist {
   return (Resolve-Path $Path).Path
 }
 
+function Test-BundledChirpDrivers {
+  param([string]$Bundle)
+
+  $Python = Join-Path $Bundle "python\python.exe"
+  if (-not (Test-Path $Python)) {
+    throw "Bundled Python runtime not found at '$Python'."
+  }
+  $Bridge = Join-Path $ProjectRoot "scripts\chirp_bridge.py"
+  $Vendor = Get-ChildItem (Join-Path $ProjectRoot "assets\python") `
+    -Filter "pyserial-*.whl" | Select-Object -First 1
+  if (-not $Vendor) {
+    throw "Bundled pyserial wheel not found under assets\python."
+  }
+
+  Write-Host "==> verifying bundled CHIRP drivers"
+  & $Python $Bridge --source $Bundle --vendor $Vendor.FullName list-models | Out-Null
+  if ($LASTEXITCODE -ne 0) {
+    throw "Bundled CHIRP driver verification failed. Ensure the selected CHIRP snapshot supports every driver in drivers\."
+  }
+}
+
 $FlutterBat = Join-Path $FlutterRoot "bin\flutter.bat"
 if (-not (Test-Path $FlutterBat)) {
   throw "Flutter SDK not found at '$FlutterBat'. Set -FlutterRoot."
@@ -148,6 +169,8 @@ if (-not $SkipBundle) {
   Write-Host "==> bundling Python + CHIRP into $BundleDir"
   Invoke-Native $BashPath @($ScriptPosix, "--bundle-dir", $BundlePosix)
 }
+
+Test-BundledChirpDrivers $BundleDir
 
 if ($Configuration.ToLower() -ne "debug") {
   $VcRuntimeDir = Find-VcRuntimeDir
