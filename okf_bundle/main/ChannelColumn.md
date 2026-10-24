@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-24T14:57:22Z"
+timestamp: "2026-10-24T17:59:44Z"
 concept_id: main/ChannelColumn
 language: dart
 ---
@@ -19,11 +19,11 @@ language: dart
 ## Signature
 
 ```dart
-_ChannelColumn(this.label, this.width, this.value, {String? id})
+_ChannelColumn(this.label, this.width, this.value, {String? id, this.help})
 ```
 
 ## Source
-Lines 4877–4877 in `main.dart`
+Lines 5021–5021 in `main.dart`
 
 ## Relationships
 

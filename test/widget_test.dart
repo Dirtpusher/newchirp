@@ -132,6 +132,31 @@ void main() {
     expect(find.text('You\u2019re up to date'), findsOneWidget);
   });
 
+  testWidgets('Help glossary defines radio abbreviations', (tester) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Help'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Abbreviations & terms'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('CTCSS'), findsOneWidget);
+    final search = find.descendant(
+      of: find.byType(Dialog),
+      matching: find.byType(TextField),
+    );
+    await tester.enterText(search, 'polarity');
+    await tester.pumpAndSettle();
+
+    expect(find.text('DTCS POL'), findsOneWidget);
+    expect(find.text('CTCSS'), findsNothing);
+  });
+
   testWidgets('starts with configuration choices', (tester) async {
     tester.view.physicalSize = const Size(1440, 900);
     tester.view.devicePixelRatio = 1;
@@ -168,6 +193,13 @@ void main() {
     expect(find.text('DTCS POL'), findsOneWidget);
     expect(find.text('POWER'), findsOneWidget);
     expect(find.text('COMMENT'), findsOneWidget);
+    expect(
+      find.byTooltip(
+        'Receive frequency: the frequency the radio listens on.\n\n'
+        'Drag to reorder column',
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('adding a channel reveals it and confirms creation', (

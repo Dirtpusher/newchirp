@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-24T14:57:22Z"
+timestamp: "2026-10-24T17:59:44Z"
 concept_id: main
 language: dart
 ---
@@ -31,6 +31,8 @@ language: dart
 | related | [_TransferOverlayState](/main/TransferOverlayState.md) |
 | related | [_RadioSettingField](/main/RadioSettingField.md) |
 | related | [_RadioSettingFieldState](/main/RadioSettingFieldState.md) |
+| related | [_GlossaryDialog](/main/GlossaryDialog.md) |
+| related | [_GlossaryDialogState](/main/GlossaryDialogState.md) |
 | related | [_TopBar](/main/TopBar.md) |
 | related | [_ChannelApplyMode](/main/ChannelApplyMode.md) |
 | related | [_LibraryState](/main/LibraryState.md) |
@@ -62,6 +64,7 @@ language: dart
 | related | [cell](/main/cell.md) |
 | related | [_headerCell](/main/headerCell.md) |
 | related | [legendItem](/main/legendItem.md) |
+| related | [_showAbbreviationGlossary](/main/showAbbreviationGlossary.md) |
 | related | [inactive](/main/inactive.md) |
 | related | [label](/main/label.md) |
 | related | [choices](/main/choices.md) |
@@ -173,6 +176,9 @@ language: dart
 | related | [didUpdateWidget](/main/didUpdateWidget.md) |
 | related | [dispose](/main/dispose.md) |
 | related | [_changed](/main/changed.md) |
+| related | [build](/main/build.md) |
+| related | [createState](/main/createState.md) |
+| related | [dispose](/main/dispose.md) |
 | related | [build](/main/build.md) |
 | related | [build](/main/build.md) |
 | related | [_buildHelpMenu](/main/buildHelpMenu.md) |

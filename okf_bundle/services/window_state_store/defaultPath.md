@@ -8,7 +8,7 @@ tags:
   - "type:Function"
   - "module:services"
   - "domain:window_state_store.dart"
-  - "git:branch:main"
+  - "git:branch:HEAD"
   - "git:repo:newchirp"
 timestamp: "2026-08-23T23:14:49Z"
 concept_id: services/window_state_store/defaultPath

@@ -4356,6 +4356,145 @@ class _RadioSettingFieldState extends State<_RadioSettingField> {
   }
 }
 
+const _glossaryTerms = <(String, String)>[
+  (
+    'FRS',
+    'Family Radio Service. A license-free UHF service in the United States.',
+  ),
+  (
+    'GMRS',
+    'General Mobile Radio Service. A licensed UHF service in the United States.',
+  ),
+  ('RX', 'Receive. The frequency or tone used when listening.'),
+  ('TX', 'Transmit. The frequency or tone used when sending.'),
+  (
+    'CTCSS',
+    'Continuous Tone-Coded Squelch System. A subaudible analog tone commonly called a PL tone.',
+  ),
+  (
+    'TSQL',
+    'Tone squelch. Requires a matching CTCSS tone for both receive and transmit.',
+  ),
+  (
+    'DCS',
+    'Digital-Coded Squelch System. A digital squelch code; NewChirp labels it DTCS.',
+  ),
+  (
+    'DTCS',
+    'Digital-Coded Squelch System. A digital code used like a CTCSS tone to open a receiver or repeater.',
+  ),
+  (
+    'DTCS POL',
+    'DTCS polarity. Normal or inverted code polarity must match between the radio and repeater.',
+  ),
+  ('FM', 'Frequency modulation. Standard analog voice mode.'),
+  (
+    'NFM',
+    'Narrowband FM. Uses less bandwidth and is common on FRS, GMRS, and busy repeater systems.',
+  ),
+  (
+    'AM',
+    'Amplitude modulation. Used by some aircraft and amateur-radio channels.',
+  ),
+  (
+    'DUPLEX',
+    'Transmit/receive relationship. Simplex uses the same frequency; offsets and splits use different transmit frequencies.',
+  ),
+  ('OFFSET', 'The frequency difference between receive and transmit.'),
+  (
+    'SPLIT',
+    'Independent receive and transmit frequencies rather than a fixed offset.',
+  ),
+  ('STEP', 'Tuning step size used when changing frequency.'),
+  ('SCAN', 'Whether the channel is included in scanning or marked to skip.'),
+];
+
+Future<void> _showAbbreviationGlossary(BuildContext context) {
+  return showDialog<void>(
+    context: context,
+    builder: (context) => const _GlossaryDialog(),
+  );
+}
+
+class _GlossaryDialog extends StatefulWidget {
+  const _GlossaryDialog();
+
+  @override
+  State<_GlossaryDialog> createState() => _GlossaryDialogState();
+}
+
+class _GlossaryDialogState extends State<_GlossaryDialog> {
+  final _controller = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final query = _query.trim().toLowerCase();
+    final terms = _glossaryTerms
+        .where(
+          (entry) =>
+              query.isEmpty ||
+              entry.$1.toLowerCase().contains(query) ||
+              entry.$2.toLowerCase().contains(query),
+        )
+        .toList();
+    return AlertDialog(
+      title: const Text('Abbreviations & terms'),
+      content: SizedBox(
+        width: 640,
+        height: 520,
+        child: Column(
+          children: [
+            TextField(
+              controller: _controller,
+              autofocus: true,
+              onChanged: (value) => setState(() => _query = value),
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.search),
+                hintText: 'Search abbreviations or definitions',
+              ),
+            ),
+            const SizedBox(height: 14),
+            Expanded(
+              child: terms.isEmpty
+                  ? const Center(child: Text('No matching terms.'))
+                  : ListView.separated(
+                      itemCount: terms.length,
+                      separatorBuilder: (_, _) => const Divider(height: 1),
+                      itemBuilder: (context, index) {
+                        final term = terms[index];
+                        return ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                          ),
+                          title: Text(
+                            term.$1,
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          subtitle: Text(term.$2),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        FilledButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Close'),
+        ),
+      ],
+    );
+  }
+}
+
 class _TopBar extends StatelessWidget {
   const _TopBar({
     required this.libraryName,
@@ -4434,7 +4573,7 @@ class _TopBar extends StatelessWidget {
                 label: const Text('Print'),
               ),
             const SizedBox(width: 8),
-            _buildHelpMenu(),
+            _buildHelpMenu(context),
           ],
         ),
       );
@@ -4541,13 +4680,13 @@ class _TopBar extends StatelessWidget {
             ],
           ),
           const SizedBox(width: 8),
-          _buildHelpMenu(),
+          _buildHelpMenu(context),
         ],
       ),
     );
   }
 
-  Widget _buildHelpMenu() {
+  Widget _buildHelpMenu(BuildContext context) {
     return MenuAnchor(
       builder: (context, controller, child) => TextButton.icon(
         onPressed: () =>
@@ -4556,6 +4695,11 @@ class _TopBar extends StatelessWidget {
         label: const Text('Help'),
       ),
       menuChildren: [
+        MenuItemButton(
+          onPressed: () => _showAbbreviationGlossary(context),
+          leadingIcon: const Icon(Icons.menu_book_outlined),
+          child: const Text('Abbreviations & terms'),
+        ),
         MenuItemButton(
           onPressed: checkingForUpdates ? null : onCheckForUpdates,
           leadingIcon: checkingForUpdates
@@ -4874,12 +5018,13 @@ class _Metric extends StatelessWidget {
 }
 
 class _ChannelColumn {
-  _ChannelColumn(this.label, this.width, this.value, {String? id})
+  _ChannelColumn(this.label, this.width, this.value, {String? id, this.help})
     : id = id ?? label;
   final String id;
   final String label;
   double width;
   final String Function(RadioChannel) value;
+  final String? help;
 }
 
 class _ChannelTable extends StatefulWidget {
@@ -5023,21 +5168,31 @@ class _ChannelTableState extends State<_ChannelTable> {
     String inactive(bool active, Object value) => active ? '$value' : '—';
     final showStep = widget.capabilities?.hasTuningStep ?? true;
     final columns = <_ChannelColumn>[
-      _ChannelColumn('#', 52, (channel) => '${channel.location}'),
+      _ChannelColumn(
+        '#',
+        52,
+        (channel) => '${channel.location}',
+        help: 'Memory channel number or slot stored in the radio.',
+      ),
       _ChannelColumn(
         'NAME',
         160,
         (channel) => channel.name.isEmpty ? '—' : channel.name,
+        help: 'Channel name stored in the radio memory.',
       ),
       _ChannelColumn(
         'RX FREQUENCY',
         126,
         (channel) => channel.frequency.toStringAsFixed(6),
+        help: 'Receive frequency: the frequency the radio listens on.',
       ),
       _ChannelColumn(
         'TONE MODE',
         96,
         (channel) => channel.tone.isEmpty ? 'None' : channel.tone,
+        help:
+            'Receive/transmit squelch mode. Tone is CTCSS, TSQL is tone '
+            'squelch, DTCS is a digital code, and Cross uses different tones.',
       ),
       _ChannelColumn(
         'TX TONE',
@@ -5047,6 +5202,7 @@ class _ChannelTableState extends State<_ChannelTable> {
               (channel.tone == 'Cross' && channel.crossMode.startsWith('Tone')),
           channel.txTone.toStringAsFixed(1),
         ),
+        help: 'Transmit CTCSS tone in hertz. Set Tone Mode to Tone first.',
       ),
       _ChannelColumn(
         'RX TONE',
@@ -5056,6 +5212,9 @@ class _ChannelTableState extends State<_ChannelTable> {
               (channel.tone == 'Cross' && channel.crossMode.endsWith('Tone')),
           channel.rxTone.toStringAsFixed(1),
         ),
+        help:
+            'Receive CTCSS tone in hertz. Set Tone Mode to TSQL or a matching '
+            'Cross mode first.',
       ),
       _ChannelColumn(
         'DTCS',
@@ -5065,6 +5224,7 @@ class _ChannelTableState extends State<_ChannelTable> {
               (channel.tone == 'Cross' && channel.crossMode.startsWith('DTCS')),
           channel.dtcs.toString().padLeft(3, '0'),
         ),
+        help: 'Transmit DTCS digital squelch code.',
       ),
       _ChannelColumn(
         'RX DTCS',
@@ -5073,6 +5233,7 @@ class _ChannelTableState extends State<_ChannelTable> {
           channel.tone == 'Cross' && channel.crossMode.endsWith('DTCS'),
           channel.rxDtcs.toString().padLeft(3, '0'),
         ),
+        help: 'Receive DTCS digital squelch code.',
       ),
       _ChannelColumn(
         'DTCS POL',
@@ -5082,11 +5243,15 @@ class _ChannelTableState extends State<_ChannelTable> {
               (channel.tone == 'Cross' && channel.crossMode.contains('DTCS')),
           channel.dtcsPolarity,
         ),
+        help: 'DTCS polarity: normal or inverted for transmit and receive.',
       ),
       _ChannelColumn(
         'DUPLEX',
         82,
         (channel) => channel.duplex.isEmpty ? 'Simplex' : channel.duplex,
+        help:
+            'Transmit/receive relationship. Simplex uses one frequency; '
+            'offsets or split use different transmit frequencies.',
       ),
       _ChannelColumn(
         'OFFSET / TX FREQ',
@@ -5095,33 +5260,46 @@ class _ChannelTableState extends State<_ChannelTable> {
           channel.duplex.isNotEmpty && channel.duplex != 'off',
           channel.offset.toStringAsFixed(6),
         ),
+        help:
+            'Frequency offset, or the independent transmit frequency for split.',
       ),
       _ChannelColumn(
         'CROSS MODE',
         112,
         (channel) => inactive(channel.tone == 'Cross', channel.crossMode),
+        help: 'Separate receive and transmit tone/code modes used with Cross.',
       ),
-      _ChannelColumn('MODE', 68, (channel) => channel.mode),
+      _ChannelColumn(
+        'MODE',
+        68,
+        (channel) => channel.mode,
+        help:
+            'Voice modulation: FM, narrowband FM, or AM depending on the radio.',
+      ),
       if (showStep)
         _ChannelColumn(
           'STEP',
           68,
           (channel) => channel.step.toStringAsFixed(2),
+          help: 'Tuning step size in kHz.',
         ),
       _ChannelColumn(
         'POWER',
         82,
         (channel) => channel.power.isEmpty ? '—' : channel.power,
+        help: 'Selected transmit power level.',
       ),
       _ChannelColumn(
         'SCAN',
         72,
         (channel) => channel.skip.isEmpty ? 'Include' : channel.skip,
+        help: 'Whether the channel is included in scanning.',
       ),
       _ChannelColumn(
         'COMMENT',
         210,
         (channel) => channel.comment.isEmpty ? '—' : channel.comment,
+        help: 'Free-form notes stored with the channel when supported.',
       ),
     ];
 
@@ -5133,15 +5311,21 @@ class _ChannelTableState extends State<_ChannelTable> {
     }
     for (final extra in extras.entries) {
       columns.add(
-        _ChannelColumn(extra.value.toUpperCase(), 96, (channel) {
-          final matches = channel.extras.where(
-            (field) => field.name == extra.key,
-          );
-          if (matches.isEmpty) return '—';
-          final value = matches.first.value;
-          if (value is bool) return value ? 'On' : 'Off';
-          return value?.toString() ?? '—';
-        }, id: 'extra:${extra.key}'),
+        _ChannelColumn(
+          extra.value.toUpperCase(),
+          96,
+          (channel) {
+            final matches = channel.extras.where(
+              (field) => field.name == extra.key,
+            );
+            if (matches.isEmpty) return '—';
+            final value = matches.first.value;
+            if (value is bool) return value ? 'On' : 'Off';
+            return value?.toString() ?? '—';
+          },
+          id: 'extra:${extra.key}',
+          help: 'Radio-specific channel setting reported by the CHIRP driver.',
+        ),
       );
     }
     final baseOrder = {
@@ -5209,7 +5393,10 @@ class _ChannelTableState extends State<_ChannelTable> {
             Positioned.fill(
               right: 8,
               child: Tooltip(
-                message: 'Drag to reorder column',
+                message: column.help == null
+                    ? 'Drag to reorder column'
+                    : '${column.help}\n\nDrag to reorder column',
+                waitDuration: const Duration(milliseconds: 350),
                 child: Draggable<String>(
                   data: column.id,
                   axis: Axis.horizontal,
@@ -5556,6 +5743,11 @@ class _ChannelEditor extends StatelessWidget {
                     'Channel details',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                   ),
+                ),
+                IconButton(
+                  onPressed: () => _showAbbreviationGlossary(context),
+                  tooltip: 'Abbreviations & terms',
+                  icon: const Icon(Icons.menu_book_outlined),
                 ),
                 IconButton(
                   onPressed: onDelete,

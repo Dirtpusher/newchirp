@@ -8,7 +8,7 @@ tags:
   - "type:Class"
   - "module:services"
   - "domain:update_checker.dart"
-  - "git:branch:main"
+  - "git:branch:HEAD"
   - "git:repo:newchirp"
 timestamp: "2026-10-23T19:03:53Z"
 concept_id: services/update_checker/PlatformRelease

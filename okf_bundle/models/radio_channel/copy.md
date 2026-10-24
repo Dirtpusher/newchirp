@@ -8,7 +8,7 @@ tags:
   - "type:Function"
   - "module:models"
   - "domain:radio_channel.dart"
-  - "git:branch:main"
+  - "git:branch:HEAD"
   - "git:repo:newchirp"
 timestamp: "2026-10-23T18:19:01Z"
 concept_id: models/radio_channel/copy
