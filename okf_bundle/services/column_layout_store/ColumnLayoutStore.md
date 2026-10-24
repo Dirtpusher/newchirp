@@ -10,7 +10,7 @@ tags:
   - "domain:column_layout_store.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T13:43:31Z"
+timestamp: "2026-08-23T23:14:49Z"
 concept_id: services/column_layout_store/ColumnLayoutStore
 language: dart
 ---

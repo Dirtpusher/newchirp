@@ -10,7 +10,7 @@ tags:
   - "domain:window_state_store.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T16:26:58Z"
+timestamp: "2026-08-23T23:14:49Z"
 concept_id: services/window_state_store/WindowStateStore
 language: dart
 ---

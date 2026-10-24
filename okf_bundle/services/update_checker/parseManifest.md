@@ -11,7 +11,7 @@ tags:
   - "domain:update_checker.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T18:18:25Z"
+timestamp: "2026-10-23T19:03:53Z"
 concept_id: services/update_checker/parseManifest
 language: dart
 ---
