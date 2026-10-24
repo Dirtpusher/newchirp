@@ -19,7 +19,7 @@ import 'services/window_state_store.dart';
 
 const _menuChannel = MethodChannel('newchirp/menu');
 
-const String _newChirpVersion = '1.0.9';
+const String _newChirpVersion = '1.0.14';
 
 String adaptRadioPromptButton(String message, String buttonLabel) {
   return message.replaceAllMapped(
