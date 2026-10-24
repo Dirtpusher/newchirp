@@ -7,9 +7,9 @@ tags:
   - "lang:dart"
   - "type:Module"
   - "module:main.dart"
-  - "git:branch:main"
+  - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-24T09:07:22Z"
+timestamp: "2026-10-24T09:26:32Z"
 concept_id: main
 language: dart
 ---
@@ -104,6 +104,7 @@ language: dart
 | related | [_nextChannelLocation](/main/nextChannelLocation.md) |
 | related | [_channelIssues](/main/channelIssues.md) |
 | related | [_sortChannelsByLocation](/main/sortChannelsByLocation.md) |
+| related | [_moveChannel](/main/moveChannel.md) |
 | related | [_showNoEmptyChannelSlot](/main/showNoEmptyChannelSlot.md) |
 | related | [_saveCsv](/main/saveCsv.md) |
 | related | [_confirmReplaceLibrary](/main/confirmReplaceLibrary.md) |
@@ -191,6 +192,7 @@ language: dart
 | related | [_moveColumn](/main/moveColumn.md) |
 | related | [_headerCell](/main/headerCell.md) |
 | related | [label](/main/label.md) |
+| related | [_channelRow](/main/channelRow.md) |
 | related | [build](/main/build.md) |
 | related | [build](/main/build.md) |
 | related | [choices](/main/choices.md) |

@@ -2,15 +2,15 @@
 okf_version: "0.2"
 type: Function
 title: _defaultPath
-resource: services\window_state_store.dart
+resource: services/window_state_store.dart
 tags:
   - "lang:dart"
   - "type:Function"
   - "module:services"
   - "domain:window_state_store.dart"
-  - "git:branch:main"
+  - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T16:26:58Z"
+timestamp: "2026-08-23T23:14:49Z"
 concept_id: services/window_state_store/defaultPath
 language: dart
 ---
@@ -24,7 +24,7 @@ String_defaultPath()
 ```
 
 ## Source
-Lines 74–74 in `services\window_state_store.dart`
+Lines 74–74 in `services/window_state_store.dart`
 
 ## Relationships
 

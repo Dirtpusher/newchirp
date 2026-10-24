@@ -2,15 +2,15 @@
 okf_version: "0.2"
 type: Function
 title: integer
-resource: services\chirp_csv.dart
+resource: services/chirp_csv.dart
 tags:
   - "lang:dart"
   - "type:Function"
   - "module:services"
   - "domain:chirp_csv.dart"
-  - "git:branch:main"
+  - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T13:43:31Z"
+timestamp: "2026-08-23T23:14:49Z"
 concept_id: services/chirp_csv/integer
 language: dart
 ---
@@ -24,7 +24,7 @@ intinteger(List<String> row, String name, int fallback)
 ```
 
 ## Source
-Lines 72–72 in `services\chirp_csv.dart`
+Lines 72–72 in `services/chirp_csv.dart`
 
 ## Relationships
 

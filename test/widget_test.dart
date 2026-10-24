@@ -355,6 +355,37 @@ void main() {
     expect(gmrs22.dy, lessThan(gmrs1.dy));
   });
 
+  testWidgets('dragging a channel rearranges and renumbers the rows', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(testApp());
+    await tester.pumpAndSettle();
+    await openGmrsStarter(tester);
+
+    final handles = find.byTooltip('Drag to rearrange channel');
+    expect(handles, findsWidgets);
+    final start = tester.getCenter(handles.first);
+    final target = tester.getCenter(find.text('GMRS 5').first);
+    final gesture = await tester.startGesture(start);
+    await tester.pump();
+    await gesture.moveTo(target);
+    await tester.pump();
+    await gesture.up();
+    await tester.pumpAndSettle();
+
+    final gmrs2 = tester.getTopLeft(find.text('GMRS 2'));
+    final gmrs1 = tester.getTopLeft(find.text('GMRS 1'));
+    final gmrs6 = tester.getTopLeft(find.text('GMRS 6'));
+    expect(gmrs2.dy, lessThan(gmrs1.dy));
+    expect(gmrs1.dy, lessThan(gmrs6.dy));
+    expect(find.text('Moved GMRS 1 to channel 5'), findsOneWidget);
+  });
+
   testWidgets('frequency field keeps focus while typing', (tester) async {
     tester.view.physicalSize = const Size(1440, 900);
     tester.view.devicePixelRatio = 1;

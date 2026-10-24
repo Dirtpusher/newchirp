@@ -848,6 +848,56 @@ class _NewChirpHomeState extends State<NewChirpHome> {
     _channels.sort((left, right) => left.location.compareTo(right.location));
   }
 
+  void _moveChannel(int fromIndex, int toIndex) {
+    if (_query.isNotEmpty ||
+        fromIndex == toIndex ||
+        fromIndex < 0 ||
+        toIndex < 0 ||
+        fromIndex >= _channels.length ||
+        toIndex >= _channels.length ||
+        _channels[fromIndex].cleared) {
+      return;
+    }
+
+    final slots = _channels.map((channel) => channel.location).toList();
+    final representedSlots = slots.toSet();
+    final deletedSlots = _clearedLocations
+        .where((location) => !representedSlots.contains(location))
+        .toSet();
+    final moved = _channels[fromIndex];
+
+    _recordHistory();
+    setState(() {
+      _channels.removeAt(fromIndex);
+      _channels.insert(toIndex, moved);
+      for (var index = 0; index < _channels.length; index++) {
+        _channels[index].location = slots[index];
+      }
+      _clearedLocations
+        ..clear()
+        ..addAll(deletedSlots)
+        ..addAll(
+          _channels
+              .where((channel) => channel.cleared)
+              .map((channel) => channel.location),
+        );
+      _selected = toIndex;
+      _dirty = true;
+    });
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text('Moved ${moved.name} to channel ${moved.location}'),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _channelTableKey.currentState?.revealSelectedChannel();
+    });
+  }
+
   void _showNoEmptyChannelSlot() {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -2357,6 +2407,8 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                                   'Duplicate copies the selected row, and Delete removes it after '
                                   'confirmation. Double-click any row to edit all of its fields. '
                                   'Right-click a row to copy, cut, paste, duplicate, or clear it. '
+                                  'Drag the handle at the left edge of a row to move it; intervening '
+                                  'channels shift through the same memory slots. '
                                   'Clear removes it from the radio on the next write. Use '
                                   'Cmd/Ctrl+Z to undo and Cmd/Ctrl+Shift+Z to redo.',
                             ),
@@ -2385,6 +2437,8 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                             onPaste: _pasteChannel,
                             onDuplicate: _duplicateChannelAt,
                             onClear: _clearChannel,
+                            onMove: _moveChannel,
+                            reorderEnabled: _query.isEmpty,
                             onOpen: (index) {
                               setState(() => _selected = index);
                               _showChannelEditor(index);
@@ -4691,6 +4745,8 @@ class _ChannelTable extends StatefulWidget {
     required this.onPaste,
     required this.onDuplicate,
     required this.onClear,
+    required this.onMove,
+    required this.reorderEnabled,
     required this.onOpen,
   });
 
@@ -4708,6 +4764,8 @@ class _ChannelTable extends StatefulWidget {
   final Future<void> Function(int) onPaste;
   final ValueChanged<int> onDuplicate;
   final ValueChanged<int> onClear;
+  final void Function(int fromIndex, int toIndex) onMove;
+  final bool reorderEnabled;
   final ValueChanged<int> onOpen;
 
   @override
@@ -5065,13 +5123,145 @@ class _ChannelTableState extends State<_ChannelTable> {
     );
   }
 
+  Widget _channelRow(
+    BuildContext context,
+    MapEntry<int, RadioChannel> entry,
+    List<_ChannelColumn> columns,
+    double dragHandleWidth,
+  ) {
+    final isCleared = entry.value.cleared;
+    final canDrag = widget.reorderEnabled && !isCleared;
+    final dragLabel = entry.value.name.isEmpty
+        ? 'Channel ${entry.value.location}'
+        : entry.value.name;
+    return DragTarget<int>(
+      onWillAcceptWithDetails: (details) =>
+          widget.reorderEnabled && details.data != entry.key,
+      onAcceptWithDetails: (details) => widget.onMove(details.data, entry.key),
+      builder: (context, candidates, rejected) {
+        final isDropTarget = candidates.isNotEmpty;
+        return Listener(
+          behavior: HitTestBehavior.opaque,
+          onPointerDown: (_) => widget.onSelect(entry.key),
+          child: GestureDetector(
+            onSecondaryTapDown: (details) =>
+                _showRowMenu(context, entry.key, details.globalPosition),
+            child: Tooltip(
+              message: isCleared
+                  ? 'Empty channel'
+                  : 'Double-click to edit channel',
+              child: InkWell(
+                onDoubleTap: () => widget.onOpen(entry.key),
+                child: Container(
+                  height: 45,
+                  color: isDropTarget
+                      ? const Color(0xFFD7EAE1)
+                      : entry.key == widget.selected
+                      ? const Color(0xFFE8F3ED)
+                      : isCleared
+                      ? const Color(0xFFFAFAFA)
+                      : Colors.white,
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: dragHandleWidth,
+                        child: Draggable<int>(
+                          data: entry.key,
+                          maxSimultaneousDrags: canDrag ? 1 : 0,
+                          onDragStarted: () => widget.onSelect(entry.key),
+                          feedback: Material(
+                            elevation: 6,
+                            color: const Color(0xFF1F7455),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 9,
+                              ),
+                              child: Text(
+                                'Move $dragLabel',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                          childWhenDragging: Opacity(
+                            opacity: 0.3,
+                            child: Icon(
+                              Icons.drag_indicator,
+                              size: 18,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                          child: MouseRegion(
+                            cursor: canDrag
+                                ? SystemMouseCursors.grab
+                                : SystemMouseCursors.basic,
+                            child: Tooltip(
+                              message: canDrag
+                                  ? 'Drag to rearrange channel'
+                                  : 'Clear search to rearrange channels',
+                              child: Icon(
+                                Icons.drag_indicator,
+                                size: 18,
+                                color: canDrag
+                                    ? Colors.black45
+                                    : Colors.black26,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      for (final column in columns)
+                        SizedBox(
+                          width: column.width,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                isCleared && column.label != '#'
+                                    ? '—'
+                                    : column.value(entry.value),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontWeight: column.label == 'NAME'
+                                      ? FontWeight.w600
+                                      : FontWeight.w400,
+                                  color: isCleared
+                                      ? Colors.black38
+                                      : column.label == '#'
+                                      ? Colors.black54
+                                      : null,
+                                  fontFeatures: column.label == 'RX FREQUENCY'
+                                      ? const [FontFeature.tabularFigures()]
+                                      : null,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    const dragHandleWidth = 30.0;
     final columns = _columns();
-    final tableWidth = columns.fold<double>(
-      0,
-      (sum, column) => sum + column.width,
-    );
+    final tableWidth =
+        dragHandleWidth +
+        columns.fold<double>(0, (sum, column) => sum + column.width);
     return LayoutBuilder(
       builder: (context, constraints) => Scrollbar(
         controller: _horizontalController,
@@ -5091,6 +5281,17 @@ class _ChannelTableState extends State<_ChannelTable> {
                   color: const Color(0xFFF3F6F4),
                   child: Row(
                     children: [
+                      SizedBox(
+                        width: dragHandleWidth,
+                        child: const Tooltip(
+                          message: 'Drag rows to rearrange channels',
+                          child: Icon(
+                            Icons.drag_indicator,
+                            size: 18,
+                            color: Colors.black45,
+                          ),
+                        ),
+                      ),
                       for (final column in columns)
                         _headerCell(column, columns),
                     ],
@@ -5105,74 +5306,11 @@ class _ChannelTableState extends State<_ChannelTable> {
                       itemCount: widget.entries.length,
                       itemBuilder: (context, index) {
                         final entry = widget.entries[index];
-                        final isCleared = entry.value.cleared;
-                        return Listener(
-                          behavior: HitTestBehavior.opaque,
-                          onPointerDown: (_) => widget.onSelect(entry.key),
-                          child: GestureDetector(
-                            onSecondaryTapDown: (details) => _showRowMenu(
-                              context,
-                              entry.key,
-                              details.globalPosition,
-                            ),
-                            child: Tooltip(
-                              message: isCleared
-                                  ? 'Empty channel'
-                                  : 'Double-click to edit channel',
-                              child: InkWell(
-                                onDoubleTap: () => widget.onOpen(entry.key),
-                                child: Container(
-                                  height: 45,
-                                  color: entry.key == widget.selected
-                                      ? const Color(0xFFE8F3ED)
-                                      : isCleared
-                                      ? const Color(0xFFFAFAFA)
-                                      : Colors.white,
-                                  child: Row(
-                                    children: [
-                                      for (final column in columns)
-                                        SizedBox(
-                                          width: column.width,
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 10,
-                                            ),
-                                            child: Align(
-                                              alignment: Alignment.centerLeft,
-                                              child: Text(
-                                                isCleared && column.label != '#'
-                                                    ? '—'
-                                                    : column.value(entry.value),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  fontWeight:
-                                                      column.label == 'NAME'
-                                                      ? FontWeight.w600
-                                                      : FontWeight.w400,
-                                                  color: isCleared
-                                                      ? Colors.black38
-                                                      : column.label == '#'
-                                                      ? Colors.black54
-                                                      : null,
-                                                  fontFeatures:
-                                                      column.label ==
-                                                          'RX FREQUENCY'
-                                                      ? const [
-                                                          FontFeature.tabularFigures(),
-                                                        ]
-                                                      : null,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                        return _channelRow(
+                          context,
+                          entry,
+                          columns,
+                          dragHandleWidth,
                         );
                       },
                     ),

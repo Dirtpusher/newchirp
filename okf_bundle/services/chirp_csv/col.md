@@ -2,15 +2,15 @@
 okf_version: "0.2"
 type: Function
 title: col
-resource: services\chirp_csv.dart
+resource: services/chirp_csv.dart
 tags:
   - "lang:dart"
   - "type:Function"
   - "module:services"
   - "domain:chirp_csv.dart"
-  - "git:branch:main"
+  - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-08-23T13:43:31Z"
+timestamp: "2026-08-23T23:14:49Z"
 concept_id: services/chirp_csv/col
 language: dart
 ---
@@ -24,7 +24,7 @@ intcol(String name)
 ```
 
 ## Source
-Lines 64–64 in `services\chirp_csv.dart`
+Lines 64–64 in `services/chirp_csv.dart`
 
 ## Relationships
 

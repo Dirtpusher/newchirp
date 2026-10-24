@@ -12,6 +12,7 @@ implementation history, architecture, known risks, and prioritized next work.
 - CHIRP-compatible CSV import and export
 - CSV/GMRS template insertion starting at any channel number
 - Searchable channel library with validation and detailed editing
+- Drag-and-drop channel rearrangement across the radio's occupied memory slots
 - Right-click copy, cut, paste, and duplicate for channel rows
 - Right-click clear channel, which clears it from the radio on the next write
 - Undo/redo with keyboard shortcuts

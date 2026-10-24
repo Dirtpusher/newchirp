@@ -7,9 +7,9 @@ tags:
   - "lang:dart"
   - "type:Function"
   - "module:main.dart"
-  - "git:branch:main"
+  - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-24T09:07:22Z"
+timestamp: "2026-10-24T09:26:32Z"
 concept_id: main/transferTask
 language: dart
 ---
@@ -23,7 +23,7 @@ Future_transferTask_transferTask
 ```
 
 ## Source
-Lines 1635–1638 in `main.dart`
+Lines 1685–1688 in `main.dart`
 
 ## Relationships
 
