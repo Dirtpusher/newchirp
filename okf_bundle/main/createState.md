@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-24T14:28:58Z"
+timestamp: "2026-10-24T14:45:32Z"
 concept_id: main/createState
 language: dart
 ---
@@ -23,7 +23,7 @@ StatecreateStatecreateState
 ```
 
 ## Source
-Lines 5844–5844 in `main.dart`
+Lines 5975–5975 in `main.dart`
 
 ## Relationships
 

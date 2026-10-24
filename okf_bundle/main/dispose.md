@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-24T14:28:58Z"
+timestamp: "2026-10-24T14:45:32Z"
 concept_id: main/dispose
 language: dart
 ---
@@ -23,7 +23,7 @@ voiddispose()
 ```
 
 ## Source
-Lines 5883–5883 in `main.dart`
+Lines 6014–6014 in `main.dart`
 
 ## Relationships
 

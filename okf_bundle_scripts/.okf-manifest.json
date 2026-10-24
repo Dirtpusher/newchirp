@@ -38,8 +38,8 @@
     },
     "chirp_bridge.py": {
       "path": "chirp_bridge.py",
-      "mtime_ns": 1792851557349996531,
-      "hash": "a0cdae15fac447c629078a5b1615451349fdae86f72e04e2ff8d9f4fffba841a",
+      "mtime_ns": 1792852762168449132,
+      "hash": "3e079b67979436045627a3e8b4fe3177b90f336edc1baf81e022bc88b2fefdee",
       "concept_ids": [
         "chirp_bridge",
         "chirp_bridge/emit_progress",
@@ -56,6 +56,7 @@
         "chirp_bridge/open_serial",
         "chirp_bridge/radio_for",
         "chirp_bridge/radio_from_image",
+        "chirp_bridge/channel_context",
         "chirp_bridge/channel_radio_for",
         "chirp_bridge/settings_payload",
         "chirp_bridge/main"
@@ -68,7 +69,7 @@
       "type": "Module",
       "resource": "chirp_bridge.py",
       "render_hash": "stale",
-      "edge_hash": "59cfb629b18eb95b01b1828f4dd972da36f82cedc9fb4fdc271d2ad4f0a2f0df",
+      "edge_hash": "feeda29de55d9a843d9164ca3d8356bd09f26d30ba1bef835df7784d0b9b0d50",
       "enriched": false
     },
     "chirp_bridge/emit_progress": {
@@ -196,7 +197,7 @@
       "type": "Function",
       "resource": "chirp_bridge.py",
       "render_hash": "stale",
-      "edge_hash": "d3254eb4cb1d57d47090e39e457831da034ec2a776a91cd1c744ab1488b699f3",
+      "edge_hash": "e85c39636cf7dfb3ae9273f027e79cc6547278ed5c2bbd251c9a3ee3acf40a3d",
       "enriched": false
     },
     "build_macos_dmg": {
@@ -356,9 +357,17 @@
       "type": "Function",
       "resource": "chirp_bridge.py",
       "render_hash": "stale",
-      "edge_hash": "03f7d47fab4c5e055fc9cbe171f905280fc75adae34dbee13aaeb0a3f0f650a9",
+      "edge_hash": "cb2b36116cd8bb4ba4965ae54b16d7a04a33a47fc3cb1fddd7ce7707e8a4c53d",
+      "enriched": false
+    },
+    "chirp_bridge/channel_context": {
+      "concept_id": "chirp_bridge/channel_context",
+      "type": "Function",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "55fbb6ad1f5437116e085ad31e7118c2834c26044d7f9bfae87c2d4e2f9f5e96",
       "enriched": false
     }
   },
-  "generated_at": "2026-10-24T14:19:17Z"
+  "generated_at": "2026-10-24T14:39:22Z"
 }

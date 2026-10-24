@@ -98,6 +98,24 @@ class RadioCapabilities {
   }
 }
 
+class RadioZone {
+  const RadioZone({
+    required this.index,
+    required this.name,
+    required this.channelCount,
+  });
+
+  final int index;
+  final String name;
+  final int channelCount;
+
+  factory RadioZone.fromJson(Map<String, dynamic> json) => RadioZone(
+    index: (json['index'] as num).toInt(),
+    name: '${json['name'] ?? 'Zone'}',
+    channelCount: (json['channelCount'] as num?)?.toInt() ?? 0,
+  );
+}
+
 class RadioProgress {
   const RadioProgress({required this.label, this.fraction});
 
@@ -299,10 +317,17 @@ class RadioBridge {
       String model,
       String imagePath,
       RadioCapabilities capabilities,
+      List<RadioZone> zones,
+      int? zone,
     })
   >
-  readImage(String imagePath) async {
-    final data = await _run(['read-image', '--image', imagePath]);
+  readImage(String imagePath, {int? zone}) async {
+    final data = await _run([
+      'read-image',
+      '--image',
+      imagePath,
+      if (zone != null) ...['--zone', '$zone'],
+    ]);
     return (
       channels: (data['channels'] as List)
           .map(
@@ -315,31 +340,54 @@ class RadioBridge {
       capabilities: RadioCapabilities.fromJson(
         (data['features'] as Map).cast<String, dynamic>(),
       ),
+      zones: (data['zones'] as List? ?? const [])
+          .map(
+            (entry) =>
+                RadioZone.fromJson((entry as Map).cast<String, dynamic>()),
+          )
+          .toList(),
+      zone: (data['zone'] as num?)?.toInt(),
     );
   }
 
-  Future<RadioCapabilities> imageCapabilities(String imagePath) async {
+  Future<({RadioCapabilities capabilities, List<RadioZone> zones, int? zone})>
+  imageInfo(String imagePath) async {
     final data = await _run([
       'read-image',
       '--image',
       imagePath,
       '--metadata-only',
     ]);
-    return RadioCapabilities.fromJson(
-      (data['features'] as Map).cast<String, dynamic>(),
+    return (
+      capabilities: RadioCapabilities.fromJson(
+        (data['features'] as Map).cast<String, dynamic>(),
+      ),
+      zones: (data['zones'] as List? ?? const [])
+          .map(
+            (entry) =>
+                RadioZone.fromJson((entry as Map).cast<String, dynamic>()),
+          )
+          .toList(),
+      zone: (data['zone'] as num?)?.toInt(),
     );
   }
+
+  Future<RadioCapabilities> imageCapabilities(String imagePath) async =>
+      (await imageInfo(imagePath)).capabilities;
 
   Future<
     ({
       List<RadioChannel> channels,
       String imagePath,
       RadioCapabilities capabilities,
+      List<RadioZone> zones,
+      int? zone,
     })
   >
   download({
     required String model,
     required String port,
+    int? zone,
     void Function(RadioProgress)? onProgress,
   }) async {
     final data = await _run([
@@ -348,6 +396,7 @@ class RadioBridge {
       model,
       '--port',
       port,
+      if (zone != null) ...['--zone', '$zone'],
     ], onProgress: onProgress);
     return (
       channels: (data['channels'] as List)
@@ -357,6 +406,13 @@ class RadioBridge {
       capabilities: RadioCapabilities.fromJson(
         (data['features'] as Map).cast<String, dynamic>(),
       ),
+      zones: (data['zones'] as List? ?? const [])
+          .map(
+            (entry) =>
+                RadioZone.fromJson((entry as Map).cast<String, dynamic>()),
+          )
+          .toList(),
+      zone: (data['zone'] as num?)?.toInt(),
     );
   }
 
@@ -366,6 +422,7 @@ class RadioBridge {
     required String imagePath,
     required List<RadioChannel> channels,
     required List<int> cleared,
+    int? zone,
     void Function(RadioProgress)? onProgress,
   }) async {
     final temp = File('${Directory.systemTemp.path}/newchirp-upload.json');
@@ -378,6 +435,7 @@ class RadioBridge {
       model,
       '--port',
       port,
+      if (zone != null) ...['--zone', '$zone'],
       '--image',
       imagePath,
       '--channels',

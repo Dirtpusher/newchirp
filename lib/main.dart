@@ -307,6 +307,8 @@ class _NewChirpHomeState extends State<NewChirpHome> {
   String? _model;
   String? _radioImage;
   RadioCapabilities? _capabilities;
+  List<RadioZone> _radioZones = [];
+  int? _selectedZone;
   bool _transferActive = false;
   bool _transferCancelling = false;
   String _transferLabel = '';
@@ -397,6 +399,8 @@ class _NewChirpHomeState extends State<NewChirpHome> {
     libraryOpen: _libraryOpen,
     dirty: _dirty,
     capabilities: _capabilities,
+    zones: List.of(_radioZones),
+    selectedZone: _selectedZone,
     clearedLocations: Set.of(_clearedLocations),
   );
 
@@ -409,6 +413,8 @@ class _NewChirpHomeState extends State<NewChirpHome> {
       _libraryOpen = state.libraryOpen;
       _dirty = state.dirty;
       _capabilities = state.capabilities;
+      _radioZones = List.of(state.zones);
+      _selectedZone = state.selectedZone;
       _clearedLocations
         ..clear()
         ..addAll(state.clearedLocations);
@@ -455,6 +461,8 @@ class _NewChirpHomeState extends State<NewChirpHome> {
       _model = selection.model;
       _port = selection.port;
       _capabilities = null;
+      _radioZones = [];
+      _selectedZone = null;
       final model = selection.model;
       if (model != null && _imageStore.hasForModel(model)) {
         _radioImage = _imageStore.pathForModel(model);
@@ -468,12 +476,66 @@ class _NewChirpHomeState extends State<NewChirpHome> {
 
   Future<void> _loadImageCapabilities(String imagePath) async {
     try {
-      final capabilities = await _bridge.imageCapabilities(imagePath);
+      final info = await _bridge.imageInfo(imagePath);
       if (!mounted || _radioImage != imagePath) return;
-      setState(() => _capabilities = capabilities);
+      setState(() {
+        _capabilities = info.capabilities;
+        _radioZones = info.zones;
+        _selectedZone = info.zone;
+      });
     } catch (_) {
       // Stored images still support transfer; capabilities are an enhancement.
     }
+  }
+
+  Future<void> _switchRadioZone(int zoneIndex) async {
+    final image = _radioImage;
+    final model = _model;
+    final zone = _radioZones
+        .where((item) => item.index == zoneIndex)
+        .firstOrNull;
+    if (image == null || model == null || zone == null) return;
+    if (_selectedZone == zoneIndex) return;
+    if (_dirty) {
+      final proceed = await _confirmReplaceLibrary(
+        destination: 'zone ${zone.name}',
+      );
+      if (!proceed) return;
+    }
+    late final ({
+      List<RadioChannel> channels,
+      String model,
+      String imagePath,
+      RadioCapabilities capabilities,
+      List<RadioZone> zones,
+      int? zone,
+    })
+    imported;
+    try {
+      imported = await _bridge.readImage(image, zone: zoneIndex);
+    } catch (error) {
+      if (mounted) await _showActionError(error);
+      return;
+    }
+    if (!mounted || _radioImage != image) return;
+    _recordHistory();
+    setState(() {
+      _channels = [...imported.channels]
+        ..sort((left, right) => left.location.compareTo(right.location));
+      _selected = _channels.isEmpty ? -1 : 0;
+      _clearedLocations.clear();
+      _capabilities = imported.capabilities;
+      _radioZones = imported.zones;
+      _selectedZone = imported.zone;
+      _libraryName = '${model.replaceAll('_', ' ')} — ${zone.name}';
+      _libraryPath = null;
+      _libraryOpen = true;
+      _dirty = false;
+      _page = 0;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _channelTableKey.currentState?.revealSelectedChannel();
+    });
   }
 
   Future<void> _saveRadioSelection() async {
@@ -528,6 +590,8 @@ class _NewChirpHomeState extends State<NewChirpHome> {
         _models = models;
         _model ??= models.firstOrNull;
         _capabilities = null;
+        _radioZones = [];
+        _selectedZone = null;
         final model = _model;
         if (model != null && _imageStore.hasForModel(model)) {
           _radioImage = _imageStore.pathForModel(model);
@@ -742,6 +806,8 @@ class _NewChirpHomeState extends State<NewChirpHome> {
       String model,
       String imagePath,
       RadioCapabilities capabilities,
+      List<RadioZone> zones,
+      int? zone,
     })
     imported;
     try {
@@ -778,6 +844,8 @@ class _NewChirpHomeState extends State<NewChirpHome> {
         _model = imported.model;
         _radioImage = storedImage;
         _capabilities = imported.capabilities;
+        _radioZones = imported.zones;
+        _selectedZone = imported.zone;
         if (!_models.contains(imported.model)) {
           _models = [..._models, imported.model]..sort();
         }
@@ -823,6 +891,8 @@ class _NewChirpHomeState extends State<NewChirpHome> {
         _page = 0;
         _dirty = false;
         _capabilities = null;
+        _radioZones = [];
+        _selectedZone = null;
         _clearedLocations.clear();
       });
       return;
@@ -996,6 +1066,8 @@ class _NewChirpHomeState extends State<NewChirpHome> {
       _page = 0;
       _dirty = false;
       _capabilities = null;
+      _radioZones = [];
+      _selectedZone = null;
     });
   }
 
@@ -1453,6 +1525,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
         final result = await _bridge.download(
           model: _model!,
           port: _port!,
+          zone: _selectedZone,
           onProgress: _reportTransferProgress,
         );
         final storedImage = await _imageStore.saveForModel(
@@ -1466,6 +1539,8 @@ class _NewChirpHomeState extends State<NewChirpHome> {
           _selected = _channels.isEmpty ? -1 : 0;
           _radioImage = storedImage;
           _capabilities = result.capabilities;
+          _radioZones = result.zones;
+          _selectedZone = result.zone;
           _libraryName = _model!.replaceAll('_', ' ');
           _libraryOpen = true;
           _dirty = false;
@@ -1613,6 +1688,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
         imagePath: _radioImage!,
         channels: _activeChannels,
         cleared: _clearedLocations.toList(),
+        zone: _selectedZone,
         onProgress: _reportTransferProgress,
       );
       final nameChanges = changes.where((entry) {
@@ -2362,6 +2438,55 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                   ],
                 ),
               ),
+            ),
+          ],
+          if (_radioZones.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(
+                  Icons.account_tree_outlined,
+                  color: Color(0xFF1F7455),
+                ),
+                const SizedBox(width: 10),
+                SizedBox(
+                  width: 300,
+                  child: DropdownButtonFormField<int>(
+                    key: ValueKey('radio-zone-$_selectedZone-$_radioImage'),
+                    initialValue: _selectedZone,
+                    decoration: const InputDecoration(
+                      labelText: 'Zone',
+                      isDense: true,
+                    ),
+                    items: _radioZones
+                        .map(
+                          (zone) => DropdownMenuItem(
+                            value: zone.index,
+                            child: Text(
+                              '${zone.name} (${zone.channelCount} channels)',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: _busy
+                        ? null
+                        : (value) {
+                            if (value != null) {
+                              unawaited(_switchRadioZone(value));
+                            }
+                          },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const _HelpButton(
+                  title: 'Radio zones',
+                  details:
+                      'This radio stores channels in separate zones. Choose a '
+                      'zone to view and edit its channels. Writing preserves '
+                      'the other zones in the saved radio image.',
+                ),
+              ],
             ),
           ],
           const SizedBox(height: 16),
@@ -3635,6 +3760,8 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                             setState(() {
                               _model = model;
                               _capabilities = null;
+                              _radioZones = [];
+                              _selectedZone = null;
                               _radioImage =
                                   model != null &&
                                       _imageStore.hasForModel(model)
@@ -4458,6 +4585,8 @@ class _LibraryState {
     required this.libraryOpen,
     required this.dirty,
     required this.capabilities,
+    required this.zones,
+    required this.selectedZone,
     required this.clearedLocations,
   });
 
@@ -4468,6 +4597,8 @@ class _LibraryState {
   final bool libraryOpen;
   final bool dirty;
   final RadioCapabilities? capabilities;
+  final List<RadioZone> zones;
+  final int? selectedZone;
   final Set<int> clearedLocations;
 }
 

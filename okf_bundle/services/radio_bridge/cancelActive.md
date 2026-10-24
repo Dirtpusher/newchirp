@@ -10,7 +10,7 @@ tags:
   - "domain:radio_bridge.dart"
   - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-23T19:03:53Z"
+timestamp: "2026-10-24T14:45:32Z"
 concept_id: services/radio_bridge/cancelActive
 language: dart
 ---
@@ -24,7 +24,7 @@ boolcancelActive()
 ```
 
 ## Source
-Lines 212–212 in `services/radio_bridge.dart`
+Lines 230–230 in `services/radio_bridge.dart`
 
 ## Relationships
 

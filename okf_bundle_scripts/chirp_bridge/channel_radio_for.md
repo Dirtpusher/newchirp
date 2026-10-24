@@ -10,7 +10,7 @@ tags:
   - "module:chirp_bridge.py"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-24T14:19:17Z"
+timestamp: "2026-10-24T14:39:22Z"
 concept_id: chirp_bridge/channel_radio_for
 language: python
 ---
@@ -22,7 +22,7 @@ Return the radio object that owns channel memories.
 ## Signature
 
 ```python
-def channel_radio_for(radio)
+def channel_radio_for(radio, zone = None)
 ```
 
 ## Docstring
@@ -35,12 +35,14 @@ Return the radio object that owns channel memories.
 |------|------|---------|
 | `radio` | `—` | `—` |
 
+| `zone` | `—` | `None` |
+
 ## Source
-Lines 455–473 in `chirp_bridge.py`
+Lines 488–490 in `chirp_bridge.py`
 
 ## Relationships
 
 | Type | Target |
 |------|--------|
 | related | [chirp_bridge](/chirp_bridge.md) |
-| called_by | [main](/chirp_bridge/main.md) |
+| calls | [channel_context](/chirp_bridge/channel_context.md) |

@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-24T14:28:58Z"
+timestamp: "2026-10-24T14:45:32Z"
 concept_id: main/NewChirpHomeState
 language: dart
 ---
@@ -36,6 +36,7 @@ class _NewChirpHomeState
 - `_syncMenuState`
 - `_loadRadioSelection`
 - `_loadImageCapabilities`
+- `_switchRadioZone`
 - `_saveRadioSelection`
 - `_setColumnOrder`
 - `_setColumnWidth`
@@ -110,7 +111,7 @@ class _NewChirpHomeState
 - `_buildRadio`
 
 ## Source
-Lines 281–3772 in `main.dart`
+Lines 281–3899 in `main.dart`
 
 ## Relationships
 

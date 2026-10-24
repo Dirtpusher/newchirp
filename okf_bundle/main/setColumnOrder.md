@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-24T14:28:58Z"
+timestamp: "2026-10-24T14:45:32Z"
 concept_id: main/setColumnOrder
 language: dart
 ---
@@ -23,7 +23,7 @@ void_setColumnOrder(List<String> order)
 ```
 
 ## Source
-Lines 489–489 in `main.dart`
+Lines 551–551 in `main.dart`
 
 ## Relationships
 

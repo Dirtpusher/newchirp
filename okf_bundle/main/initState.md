@@ -9,7 +9,7 @@ tags:
   - "module:main.dart"
   - "git:branch:HEAD"
   - "git:repo:newchirp"
-timestamp: "2026-10-24T14:28:58Z"
+timestamp: "2026-10-24T14:45:32Z"
 concept_id: main/initState
 language: dart
 ---
@@ -23,7 +23,7 @@ voidinitState()
 ```
 
 ## Source
-Lines 5854–5854 in `main.dart`
+Lines 5985–5985 in `main.dart`
 
 ## Relationships
 

@@ -70,20 +70,35 @@ void main() {
     expect(channel.step, 5.0);
   });
 
-  test('TK-880 images read channels through their populated subdevice', () async {
-    final source = Directory('build_support/chirp-20261023').existsSync()
-        ? 'build_support/chirp-20261023'
-        : '../chirp-20260626';
-    final image = File('$source/tests/images/Kenwood_TK-880.img');
-    expect(await image.exists(), isTrue);
+  test(
+    'TK-880 images read channels through their populated subdevice',
+    () async {
+      final source = Directory('build_support/chirp-20261023').existsSync()
+          ? 'build_support/chirp-20261023'
+          : '../chirp-20260626';
+      final image = File('$source/tests/images/Kenwood_TK-880.img');
+      expect(await image.exists(), isTrue);
 
-    final imported = await RadioBridge(sourcePath: source).readImage(image.path);
+      final imported = await RadioBridge(
+        sourcePath: source,
+      ).readImage(image.path);
 
-    expect(imported.model, 'Kenwood_TK-880');
-    expect(imported.channels, isNotEmpty);
-    expect(imported.channels.first.location, 1);
-    expect(imported.channels.last.location, 30);
-    expect(imported.capabilities.memoryStart, 1);
-    expect(imported.capabilities.memoryEnd, 250);
-  });
+      expect(imported.model, 'Kenwood_TK-880');
+      expect(imported.channels, isNotEmpty);
+      expect(imported.channels.first.location, 1);
+      expect(imported.channels.last.location, 30);
+      expect(imported.capabilities.memoryStart, 1);
+      expect(imported.capabilities.memoryEnd, 250);
+      expect(imported.zone, 0);
+      expect(imported.zones, hasLength(2));
+      expect(imported.zones.first.name, '1');
+      expect(imported.zones.first.channelCount, 30);
+
+      final secondZone = await RadioBridge(
+        sourcePath: source,
+      ).readImage(image.path, zone: 1);
+      expect(secondZone.zone, 1);
+      expect(secondZone.channels, hasLength(1));
+    },
+  );
 }

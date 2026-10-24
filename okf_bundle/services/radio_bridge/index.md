@@ -6,6 +6,7 @@
 - [RadioInstructions](RadioInstructions.md)
 - [RadioProgress](RadioProgress.md)
 - [RadioSettings](RadioSettings.md)
+- [RadioZone](RadioZone.md)
 
 ## Functions
 
@@ -21,6 +22,7 @@
 - [cancelActive](cancelActive.md)
 - [download](download.md)
 - [imageCapabilities](imageCapabilities.md)
+- [imageInfo](imageInfo.md)
 - [instructions](instructions.md)
 - [models](models.md)
 - [RadioBridge](RadioBridge.md)

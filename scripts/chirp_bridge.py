@@ -452,25 +452,42 @@ def radio_from_image(directory, model, image):
     return radio
 
 
-def channel_radio_for(radio):
-    """Return the radio object that owns channel memories."""
+def channel_context(radio, zone=None):
+    """Return the selected channel owner plus available radio zones."""
     features = radio.get_features()
     if not features.has_sub_devices:
-        return radio
+        return radio, [], None
     subdevices = radio.get_sub_devices()
     if not subdevices:
-        return radio
-    # Dynamic-zone radios use the parent only for clone/settings operations.
-    # Prefer the first populated zone so channel reads are immediately useful.
-    for subdevice in subdevices:
+        return radio, [], None
+    zones = []
+    populated = []
+    for index, subdevice in enumerate(subdevices):
         start, end = subdevice.get_features().memory_bounds
+        count = 0
         for location in range(start, end + 1):
             try:
                 if not subdevice.get_memory(location).empty:
-                    return subdevice
+                    count += 1
             except Exception:
                 continue
-    return subdevices[0]
+        name = str(getattr(subdevice, "VARIANT", "")).strip()
+        zones.append({
+            "index": index,
+            "name": name or "Zone %i" % (index + 1),
+            "channelCount": count,
+        })
+        if count:
+            populated.append(index)
+    selected = zone if zone is not None and 0 <= zone < len(subdevices) else None
+    if selected is None:
+        selected = populated[0] if populated else 0
+    return subdevices[selected], zones, selected
+
+
+def channel_radio_for(radio, zone=None):
+    """Return the radio object that owns channel memories."""
+    return channel_context(radio, zone)[0]
 
 
 def settings_payload(radio):
@@ -495,10 +512,12 @@ def main():
     read_image = sub.add_parser("read-image")
     read_image.add_argument("--image", required=True)
     read_image.add_argument("--metadata-only", action="store_true")
+    read_image.add_argument("--zone", type=int)
     for name in ("download", "upload"):
         command = sub.add_parser(name)
         command.add_argument("--model", required=True)
         command.add_argument("--port", required=True)
+        command.add_argument("--zone", type=int)
         if name == "upload":
             command.add_argument("--image", required=True)
             command.add_argument("--channels", required=True)
@@ -537,7 +556,7 @@ def main():
                 model = directory.get_driver(radio.__class__)
             except Exception:
                 model = directory.radio_class_id(radio.__class__)
-            channel_radio = channel_radio_for(radio)
+            channel_radio, zones, selected_zone = channel_context(radio, args.zone)
             channels = []
             if not args.metadata_only:
                 start, end = channel_radio.get_features().memory_bounds
@@ -549,6 +568,8 @@ def main():
                 "model": model,
                 "channels": channels,
                 "imagePath": image_path,
+                "zones": zones,
+                "zone": selected_zone,
                 "features": features_json(channel_radio),
             }))
             return
@@ -601,7 +622,9 @@ def main():
                 fd, image = tempfile.mkstemp(prefix="newchirp-", suffix=".img")
                 os.close(fd)
                 radio.save_mmap(image)
-                channel_radio = channel_radio_for(radio)
+                channel_radio, zones, selected_zone = channel_context(
+                    radio, args.zone
+                )
                 start, end = channel_radio.get_features().memory_bounds
                 locations = list(range(start, end + 1))
                 channels = []
@@ -620,12 +643,16 @@ def main():
                 print(json.dumps({
                     "channels": channels,
                     "imagePath": image,
+                    "zones": zones,
+                    "zone": selected_zone,
                     "features": features_json(channel_radio),
                 }))
             elif args.command == "upload":
                 emit_progress("Preparing channels...", 0.02)
                 radio.load_mmap(args.image)
-                channel_radio = channel_radio_for(radio)
+                channel_radio, zones, selected_zone = channel_context(
+                    radio, args.zone
+                )
                 with open(args.channels, encoding="utf-8") as handle:
                     items = json.load(handle)
                 from chirp import chirp_common
@@ -633,7 +660,7 @@ def main():
                 adjusted = []
                 for index, item in enumerate(items):
                     requested_name = str(item.get("name", ""))
-                    filtered_name = radio.filter_name(requested_name)
+                    filtered_name = channel_radio.filter_name(requested_name)
                     item = dict(item)
                     item["name"] = filtered_name
                     try:

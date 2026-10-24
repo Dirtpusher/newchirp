@@ -129,10 +129,14 @@ class UploadHandshakeTest(unittest.TestCase):
             str(image),
         )
 
-        channel_radio = bridge.channel_radio_for(radio)
+        channel_radio, zones, selected_zone = bridge.channel_context(radio)
 
         self.assertIsNot(channel_radio, radio)
         self.assertFalse(channel_radio.get_memory(1).empty)
+        self.assertGreaterEqual(len(zones), 2)
+        self.assertEqual(selected_zone, 0)
+        self.assertEqual(zones[0]["name"], "1")
+        self.assertEqual(zones[0]["channelCount"], 30)
         self.assertEqual(
             channel_radio.get_features().memory_bounds,
             (1, 250),

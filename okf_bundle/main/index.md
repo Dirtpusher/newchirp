@@ -112,6 +112,7 @@
 - [_showUpToDate](showUpToDate.md)
 - [_snapshotLibrary](snapshotLibrary.md)
 - [_sortChannelsByLocation](sortChannelsByLocation.md)
+- [_switchRadioZone](switchRadioZone.md)
 - [_syncMenuState](syncMenuState.md)
 - [_systemPrinters](systemPrinters.md)
 - [_task](task.md)
