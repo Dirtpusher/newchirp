@@ -121,6 +121,23 @@ class UploadHandshakeTest(unittest.TestCase):
             radio.sync_out()
         self.assertEqual(serial.ident_count, 2)
 
+    def test_tk880_image_uses_populated_channel_subdevice(self):
+        image = SOURCE / "tests/images/Kenwood_TK-880.img"
+        radio = bridge.radio_from_image(
+            self.directory,
+            "Kenwood_TK-880",
+            str(image),
+        )
+
+        channel_radio = bridge.channel_radio_for(radio)
+
+        self.assertIsNot(channel_radio, radio)
+        self.assertFalse(channel_radio.get_memory(1).empty)
+        self.assertEqual(
+            channel_radio.get_features().memory_bounds,
+            (1, 250),
+        )
+
 
 class FrequencyPrecisionTest(unittest.TestCase):
     @classmethod

@@ -4,6 +4,7 @@
 
 - [apply_json](apply_json.md)
 - [apply_setting_changes](apply_setting_changes.md)
+- [channel_radio_for](channel_radio_for.md) — Return the radio object that owns channel memories.
 - [emit_progress](emit_progress.md) — Send structured transfer progress without touching the JSON stdout.
 - [extra_fields_json](extra_fields_json.md)
 - [features_json](features_json.md)

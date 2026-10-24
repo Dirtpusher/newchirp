@@ -1,0 +1,46 @@
+---
+okf_version: "0.2"
+type: Function
+title: channel_radio_for
+description: Return the radio object that owns channel memories.
+resource: chirp_bridge.py
+tags:
+  - "lang:python"
+  - "type:Function"
+  - "module:chirp_bridge.py"
+  - "git:branch:main"
+  - "git:repo:newchirp"
+timestamp: "2026-10-24T14:19:17Z"
+concept_id: chirp_bridge/channel_radio_for
+language: python
+---
+
+# channel_radio_for
+
+Return the radio object that owns channel memories.
+
+## Signature
+
+```python
+def channel_radio_for(radio)
+```
+
+## Docstring
+
+Return the radio object that owns channel memories.
+
+## Parameters
+
+| Name | Type | Default |
+|------|------|---------|
+| `radio` | `—` | `—` |
+
+## Source
+Lines 455–473 in `chirp_bridge.py`
+
+## Relationships
+
+| Type | Target |
+|------|--------|
+| related | [chirp_bridge](/chirp_bridge.md) |
+| called_by | [main](/chirp_bridge/main.md) |

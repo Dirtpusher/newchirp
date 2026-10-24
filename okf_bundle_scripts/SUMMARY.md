@@ -1,28 +1,28 @@
 ---
-description: 'Top-level OKF summary: 36 concepts across 3 domains and 3 modules'
-git_branch: HEAD
+description: 'Top-level OKF summary: 37 concepts across 3 domains and 3 modules'
+git_branch: main
 git_repo: newchirp
 okf_version: '0.2'
-timestamp: '2026-10-24T09:26:33Z'
+timestamp: '2026-10-24T14:19:17Z'
 title: okf_bundle_scripts — Knowledge Summary
 type: Index
 ---
 
 # okf_bundle_scripts — Knowledge Summary
 
-> OKF v0.2 bundle | 36 concepts | 3 domains | 3 modules
+> OKF v0.2 bundle | 37 concepts | 3 domains | 3 modules
 
 ## Stats
 
 | Type | Count |
 |------|-------|
-| Function | 32 |
+| Function | 33 |
 | Module | 3 |
 | Class | 1 |
 
 | Language | Concepts |
 |----------|----------|
-| python | 36 |
+| python | 37 |
 
 ## Domain Map
 
@@ -32,9 +32,9 @@ Use these links to navigate the bundle or prime an AI agent with focused context
 
 - [build_macos_dmg](build_macos_dmg/index.md) (4 concepts) — Build a styled NewChirp macOS DMG with a drag-to-Applications window.
 
-### [chirp_bridge.py](chirp_bridge.py/index.md) — 17 concepts
+### [chirp_bridge.py](chirp_bridge.py/index.md) — 18 concepts
 
-- [chirp_bridge](chirp_bridge/index.md) (17 concepts) — Small JSON boundary between NewChirp and the audited CHIRP driver tree.
+- [chirp_bridge](chirp_bridge/index.md) (18 concepts) — Small JSON boundary between NewChirp and the audited CHIRP driver tree.
 
 ### [generate_gmrs_frs_pdf.py](generate_gmrs_frs_pdf.py/index.md) — 15 concepts
 
@@ -49,6 +49,7 @@ Highest-value concepts across all domains (Classes and Functions with rich descr
 | [emit_progress](/chirp_bridge/emit_progress.md) | Function | `chirp_bridge.py` | Send structured transfer progress without touching the JSON … |
 | [status_progress](/chirp_bridge/status_progress.md) | Function | `chirp_bridge.py` | Translate a CHIRP Status message into a structured progress … |
 | [radio_from_image](/chirp_bridge/radio_from_image.md) | Function | `chirp_bridge.py` | Build a driver instance backed only by a saved radio image. |
+| [channel_radio_for](/chirp_bridge/channel_radio_for.md) | Function | `chirp_bridge.py` | Return the radio object that owns channel memories. |
 
 ## Usage with OpenCode
 

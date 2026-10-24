@@ -3,10 +3,43 @@
   "manifest_version": 2,
   "source_root": "/Volumes/RICKEXT/desktop/newchirp/scripts",
   "files": {
+    "build_macos_dmg.py": {
+      "path": "build_macos_dmg.py",
+      "mtime_ns": 1792753027569896057,
+      "hash": "e624279571e421cd54757125bdf976d42233cf8a45bc400b912bde09bbd246e9",
+      "concept_ids": [
+        "build_macos_dmg/build_background",
+        "build_macos_dmg/main",
+        "build_macos_dmg/project_version",
+        "build_macos_dmg"
+      ]
+    },
+    "generate_gmrs_frs_pdf.py": {
+      "path": "generate_gmrs_frs_pdf.py",
+      "mtime_ns": 1787526889873622751,
+      "hash": "df1a1f0a1b83f1e4347450ea7480e921a0268146a2aa1ad640f71d44348ff7ac",
+      "concept_ids": [
+        "generate_gmrs_frs_pdf/PdfWriter",
+        "generate_gmrs_frs_pdf/as_pdf",
+        "generate_gmrs_frs_pdf/esc",
+        "generate_gmrs_frs_pdf/init",
+        "generate_gmrs_frs_pdf/line",
+        "generate_gmrs_frs_pdf/main",
+        "generate_gmrs_frs_pdf/rect",
+        "generate_gmrs_frs_pdf/rgb",
+        "generate_gmrs_frs_pdf/row_color",
+        "generate_gmrs_frs_pdf/set_fill",
+        "generate_gmrs_frs_pdf/set_stroke",
+        "generate_gmrs_frs_pdf/table_cell",
+        "generate_gmrs_frs_pdf/text",
+        "generate_gmrs_frs_pdf/text_in_rect",
+        "generate_gmrs_frs_pdf"
+      ]
+    },
     "chirp_bridge.py": {
       "path": "chirp_bridge.py",
-      "mtime_ns": 1792833992552526714,
-      "hash": "287df7a38e0913c48cfcc0fe2181be752713fa7bb457f5c5ac4e6b5aa67e51f0",
+      "mtime_ns": 1792851557349996531,
+      "hash": "a0cdae15fac447c629078a5b1615451349fdae86f72e04e2ff8d9f4fffba841a",
       "concept_ids": [
         "chirp_bridge",
         "chirp_bridge/emit_progress",
@@ -23,41 +56,9 @@
         "chirp_bridge/open_serial",
         "chirp_bridge/radio_for",
         "chirp_bridge/radio_from_image",
+        "chirp_bridge/channel_radio_for",
         "chirp_bridge/settings_payload",
         "chirp_bridge/main"
-      ]
-    },
-    "build_macos_dmg.py": {
-      "path": "build_macos_dmg.py",
-      "mtime_ns": 1792753027569896057,
-      "hash": "e624279571e421cd54757125bdf976d42233cf8a45bc400b912bde09bbd246e9",
-      "concept_ids": [
-        "build_macos_dmg",
-        "build_macos_dmg/project_version",
-        "build_macos_dmg/build_background",
-        "build_macos_dmg/main"
-      ]
-    },
-    "generate_gmrs_frs_pdf.py": {
-      "path": "generate_gmrs_frs_pdf.py",
-      "mtime_ns": 1787526889873622751,
-      "hash": "df1a1f0a1b83f1e4347450ea7480e921a0268146a2aa1ad640f71d44348ff7ac",
-      "concept_ids": [
-        "generate_gmrs_frs_pdf",
-        "generate_gmrs_frs_pdf/esc",
-        "generate_gmrs_frs_pdf/rgb",
-        "generate_gmrs_frs_pdf/init",
-        "generate_gmrs_frs_pdf/set_fill",
-        "generate_gmrs_frs_pdf/set_stroke",
-        "generate_gmrs_frs_pdf/rect",
-        "generate_gmrs_frs_pdf/line",
-        "generate_gmrs_frs_pdf/text",
-        "generate_gmrs_frs_pdf/text_in_rect",
-        "generate_gmrs_frs_pdf/table_cell",
-        "generate_gmrs_frs_pdf/as_pdf",
-        "generate_gmrs_frs_pdf/row_color",
-        "generate_gmrs_frs_pdf/main",
-        "generate_gmrs_frs_pdf/PdfWriter"
       ]
     }
   },
@@ -67,7 +68,7 @@
       "type": "Module",
       "resource": "chirp_bridge.py",
       "render_hash": "stale",
-      "edge_hash": "f03dfede32c0bea42ec42bce8bffe186d68f90a27a148b197f6b3f50e8cd3fa7",
+      "edge_hash": "59cfb629b18eb95b01b1828f4dd972da36f82cedc9fb4fdc271d2ad4f0a2f0df",
       "enriched": false
     },
     "chirp_bridge/emit_progress": {
@@ -195,7 +196,7 @@
       "type": "Function",
       "resource": "chirp_bridge.py",
       "render_hash": "stale",
-      "edge_hash": "573d319aa49580dfcae2e43e8c3ad88b0a599c479ca4dfda5a2f0b504c5dc8d5",
+      "edge_hash": "d3254eb4cb1d57d47090e39e457831da034ec2a776a91cd1c744ab1488b699f3",
       "enriched": false
     },
     "build_macos_dmg": {
@@ -349,7 +350,15 @@
       "render_hash": "stale",
       "edge_hash": "b99bd08529bdcdb4dfd5a13bebfcf0a7de864709aefaa04f647fc65d2c4f4e92",
       "enriched": false
+    },
+    "chirp_bridge/channel_radio_for": {
+      "concept_id": "chirp_bridge/channel_radio_for",
+      "type": "Function",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "03f7d47fab4c5e055fc9cbe171f905280fc75adae34dbee13aaeb0a3f0f650a9",
+      "enriched": false
     }
   },
-  "generated_at": "2026-10-24T09:26:33Z"
+  "generated_at": "2026-10-24T14:19:17Z"
 }

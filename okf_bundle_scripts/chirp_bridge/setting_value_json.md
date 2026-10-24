@@ -7,9 +7,9 @@ tags:
   - "lang:python"
   - "type:Function"
   - "module:chirp_bridge.py"
-  - "git:branch:HEAD"
+  - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-24T09:26:32Z"
+timestamp: "2026-10-24T14:19:17Z"
 concept_id: chirp_bridge/setting_value_json
 language: python
 ---

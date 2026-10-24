@@ -452,6 +452,27 @@ def radio_from_image(directory, model, image):
     return radio
 
 
+def channel_radio_for(radio):
+    """Return the radio object that owns channel memories."""
+    features = radio.get_features()
+    if not features.has_sub_devices:
+        return radio
+    subdevices = radio.get_sub_devices()
+    if not subdevices:
+        return radio
+    # Dynamic-zone radios use the parent only for clone/settings operations.
+    # Prefer the first populated zone so channel reads are immediately useful.
+    for subdevice in subdevices:
+        start, end = subdevice.get_features().memory_bounds
+        for location in range(start, end + 1):
+            try:
+                if not subdevice.get_memory(location).empty:
+                    return subdevice
+            except Exception:
+                continue
+    return subdevices[0]
+
+
 def settings_payload(radio):
     settings = radio.get_settings()
     return {
@@ -516,18 +537,19 @@ def main():
                 model = directory.get_driver(radio.__class__)
             except Exception:
                 model = directory.radio_class_id(radio.__class__)
+            channel_radio = channel_radio_for(radio)
             channels = []
             if not args.metadata_only:
-                start, end = radio.get_features().memory_bounds
+                start, end = channel_radio.get_features().memory_bounds
                 for location in range(start, end + 1):
-                    mem = radio.get_memory(location)
+                    mem = channel_radio.get_memory(location)
                     if not mem.empty:
                         channels.append(memory_json(mem))
             print(json.dumps({
                 "model": model,
                 "channels": channels,
                 "imagePath": image_path,
-                "features": features_json(radio),
+                "features": features_json(channel_radio),
             }))
             return
         if args.command == "read-settings":
@@ -579,11 +601,12 @@ def main():
                 fd, image = tempfile.mkstemp(prefix="newchirp-", suffix=".img")
                 os.close(fd)
                 radio.save_mmap(image)
-                start, end = radio.get_features().memory_bounds
+                channel_radio = channel_radio_for(radio)
+                start, end = channel_radio.get_features().memory_bounds
                 locations = list(range(start, end + 1))
                 channels = []
                 for index, location in enumerate(locations):
-                    mem = radio.get_memory(location)
+                    mem = channel_radio.get_memory(location)
                     if not mem.empty:
                         channels.append(memory_json(mem))
                     if locations and (
@@ -597,11 +620,12 @@ def main():
                 print(json.dumps({
                     "channels": channels,
                     "imagePath": image,
-                    "features": features_json(radio),
+                    "features": features_json(channel_radio),
                 }))
             elif args.command == "upload":
                 emit_progress("Preparing channels...", 0.02)
                 radio.load_mmap(args.image)
+                channel_radio = channel_radio_for(radio)
                 with open(args.channels, encoding="utf-8") as handle:
                     items = json.load(handle)
                 from chirp import chirp_common
@@ -613,12 +637,12 @@ def main():
                     item = dict(item)
                     item["name"] = filtered_name
                     try:
-                        mem = radio.get_memory(int(item["location"]))
+                        mem = channel_radio.get_memory(int(item["location"]))
                     except Exception:
                         mem = chirp_common.Memory()
                     try:
-                        locked_fields = apply_json(radio, mem, item)
-                        errors = radio.validate_memory(mem)
+                        locked_fields = apply_json(channel_radio, mem, item)
+                        errors = channel_radio.validate_memory(mem)
                         if errors:
                             if locked_fields:
                                 skipped.append({
@@ -633,7 +657,7 @@ def main():
                                 continue
                             raise RuntimeError(
                                 f"Channel {mem.number}: {errors[0]}")
-                        radio.set_memory(mem)
+                        channel_radio.set_memory(mem)
                         if locked_fields or filtered_name != requested_name:
                             adjusted.append({
                                 "location": int(item["location"]),
@@ -661,9 +685,9 @@ def main():
                 ]
                 for location in cleared:
                     try:
-                        mem = radio.get_memory(location)
+                        mem = channel_radio.get_memory(location)
                         mem.empty = True
-                        radio.set_memory(mem)
+                        channel_radio.set_memory(mem)
                     except Exception:
                         continue
                 emit_progress("Writing the image to the radio...", 0.10)
@@ -699,7 +723,7 @@ def main():
         finally:
             radio.pipe.close()
     except Exception as exc:
-        print(str(exc), file=sys.stderr)
+        print(str(exc).strip() or exc.__class__.__name__, file=sys.stderr)
         raise SystemExit(1)
 
 

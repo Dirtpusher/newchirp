@@ -69,4 +69,21 @@ void main() {
     expect(channel.mode, 'AM');
     expect(channel.step, 5.0);
   });
+
+  test('TK-880 images read channels through their populated subdevice', () async {
+    final source = Directory('build_support/chirp-20261023').existsSync()
+        ? 'build_support/chirp-20261023'
+        : '../chirp-20260626';
+    final image = File('$source/tests/images/Kenwood_TK-880.img');
+    expect(await image.exists(), isTrue);
+
+    final imported = await RadioBridge(sourcePath: source).readImage(image.path);
+
+    expect(imported.model, 'Kenwood_TK-880');
+    expect(imported.channels, isNotEmpty);
+    expect(imported.channels.first.location, 1);
+    expect(imported.channels.last.location, 30);
+    expect(imported.capabilities.memoryStart, 1);
+    expect(imported.capabilities.memoryEnd, 250);
+  });
 }
