@@ -359,8 +359,8 @@ def apply_json(radio, mem, item):
         setattr(mem, name, value)
 
     set_mem("number", int(item["location"]))
-    set_mem("freq", int(float(item["frequency"]) * 1_000_000))
-    set_mem("offset", int(float(item["offset"]) * 1_000_000))
+    set_mem("freq", int(round(float(item["frequency"]) * 1_000_000)))
+    set_mem("offset", int(round(float(item["offset"]) * 1_000_000)))
     for source, target in fields.items():
         set_mem(target, item[source])
     if item.get("power"):

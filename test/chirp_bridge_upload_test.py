@@ -18,6 +18,7 @@ SOURCE = (
 )
 VENDOR = ROOT / "assets/python/pyserial-3.5-py2.py3-none-any.whl"
 TD_H3_IMAGE = SOURCE / "tests/images/TIDRADIO_TD-H3.img"
+A36PLUS_IMAGE = SOURCE / "tests/images/Talkpod_A36plus.img"
 
 spec = importlib.util.spec_from_file_location(
     "newchirp_chirp_bridge", ROOT / "scripts/chirp_bridge.py"
@@ -119,6 +120,25 @@ class UploadHandshakeTest(unittest.TestCase):
         with self.assertRaises(self.errors.RadioNoResponse):
             radio.sync_out()
         self.assertEqual(serial.ident_count, 2)
+
+
+class FrequencyPrecisionTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.directory = bridge.load_chirp(str(SOURCE), str(VENDOR))
+
+    def test_a36plus_airband_frequency_rounds_to_whole_hertz(self):
+        radio = bridge.radio_from_image(
+            self.directory, "Talkpod_A36plus", str(A36PLUS_IMAGE)
+        )
+        memory = radio.get_memory(83)
+        item = bridge.memory_json(memory)
+        item.update({"frequency": 131.325, "step": 25.0})
+
+        bridge.apply_json(radio, memory, item)
+
+        self.assertEqual(memory.freq, 131325000)
+        self.assertEqual(radio.validate_memory(memory), [])
 
 
 if __name__ == "__main__":
