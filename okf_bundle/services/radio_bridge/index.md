@@ -7,6 +7,7 @@
 - [RadioProgress](RadioProgress.md)
 - [RadioSettings](RadioSettings.md)
 - [RadioZone](RadioZone.md)
+- [SerialPortInfo](SerialPortInfo.md)
 
 ## Functions
 
@@ -18,18 +19,21 @@
 - [_parseComPorts](parseComPorts.md)
 - [_resolvePython](resolvePython.md) — The bundled CHIRP tree uses Python 3.10+ syntax, so prefer an interpreter
 - [_run](run.md)
-- [_windowsSerialPorts](windowsSerialPorts.md) — Windows: read the live COM ports from the SERIALCOMM registry key, then
+- [_windowsSerialPortDetails](windowsSerialPortDetails.md)
+- [_windowsSerialPortNames](windowsSerialPortNames.md) — Windows: read the live COM ports from the SERIALCOMM registry key, then
 - [cancelActive](cancelActive.md)
 - [download](download.md)
 - [imageCapabilities](imageCapabilities.md)
 - [imageInfo](imageInfo.md)
 - [instructions](instructions.md)
 - [models](models.md)
+- [parseWindowsSerialPortDetails](parseWindowsSerialPortDetails.md)
 - [RadioBridge](RadioBridge.md)
 - [RadioBridgeException](RadioBridgeException.md)
 - [RadioSettingNode](RadioSettingNode.md)
 - [readImage](readImage.md)
 - [readSettings](readSettings.md)
+- [serialPortDetails](serialPortDetails.md)
 - [serialPorts](serialPorts.md)
 - [strings](strings.md)
 - [toChangeJson](toChangeJson.md)

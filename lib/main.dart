@@ -301,7 +301,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
   bool _busy = false;
   bool _checkingForUpdates = false;
   String _status = 'Ready';
-  List<String> _ports = [];
+  List<SerialPortInfo> _ports = [];
   List<String> _models = [];
   String? _port;
   String? _model;
@@ -572,11 +572,13 @@ class _NewChirpHomeState extends State<NewChirpHome> {
   }
 
   Future<void> _refreshPorts() async {
-    final ports = await _bridge.serialPorts();
+    final ports = await _bridge.serialPortDetails();
     if (!mounted) return;
     setState(() {
       _ports = ports;
-      if (!_ports.contains(_port)) _port = _ports.firstOrNull;
+      if (!_ports.any((port) => port.port == _port)) {
+        _port = _ports.firstOrNull?.port;
+      }
     });
   }
 
@@ -3654,9 +3656,11 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                         children: [
                           Expanded(
                             child: DropdownButtonFormField<String>(
-                              initialValue: _ports.contains(_port)
+                              initialValue:
+                                  _ports.any((port) => port.port == _port)
                                   ? _port
                                   : null,
+                              isExpanded: true,
                               decoration: const InputDecoration(
                                 labelText: 'Serial port',
                                 prefixIcon: Icon(Icons.cable),
@@ -3664,8 +3668,11 @@ class _NewChirpHomeState extends State<NewChirpHome> {
                               items: _ports
                                   .map(
                                     (p) => DropdownMenuItem(
-                                      value: p,
-                                      child: Text(p),
+                                      value: p.port,
+                                      child: Text(
+                                        p.label,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
                                   )
                                   .toList(),

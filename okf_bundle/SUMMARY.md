@@ -1,28 +1,28 @@
 ---
-description: 'Top-level OKF summary: 230 concepts across 3 domains and 9 modules'
-git_branch: HEAD
+description: 'Top-level OKF summary: 234 concepts across 3 domains and 9 modules'
+git_branch: main
 git_repo: newchirp
 okf_version: '0.2'
-timestamp: '2026-10-24T14:45:33Z'
+timestamp: '2026-10-24T14:48:57Z'
 title: okf_bundle — Knowledge Summary
 type: Index
 ---
 
 # okf_bundle — Knowledge Summary
 
-> OKF v0.2 bundle | 230 concepts | 3 domains | 9 modules
+> OKF v0.2 bundle | 234 concepts | 3 domains | 9 modules
 
 ## Stats
 
 | Type | Count |
 |------|-------|
-| Function | 180 |
-| Class | 41 |
+| Function | 183 |
+| Class | 42 |
 | Module | 9 |
 
 | Language | Concepts |
 |----------|----------|
-| dart | 230 |
+| dart | 234 |
 
 ## Domain Map
 
@@ -36,15 +36,15 @@ Use these links to navigate the bundle or prime an AI agent with focused context
 
 - [models/radio_channel](models/radio_channel/index.md) (9 concepts)
 
-### [services](services/index.md) — 80 concepts
+### [services](services/index.md) — 84 concepts
 
-- [services/radio_bridge](services/radio_bridge/index.md) (32 concepts)
+- [services/radio_bridge](services/radio_bridge/index.md) (36 concepts)
 - [services/update_checker](services/update_checker/index.md) (13 concepts)
 - [services/chirp_csv](services/chirp_csv/index.md) (10 concepts)
 - [services/window_state_store](services/window_state_store/index.md) (7 concepts)
-- [services/radio_selection_store](services/radio_selection_store/index.md) (6 concepts)
-- [services/column_layout_store](services/column_layout_store/index.md) (6 concepts)
 - [services/radio_image_store](services/radio_image_store/index.md) (6 concepts)
+- [services/column_layout_store](services/column_layout_store/index.md) (6 concepts)
+- [services/radio_selection_store](services/radio_selection_store/index.md) (6 concepts)
 
 ## Key Concepts
 
@@ -53,7 +53,7 @@ Highest-value concepts across all domains (Classes and Functions with rich descr
 | Concept | Type | Module | Description |
 |---------|------|--------|-------------|
 | [_resolvePython](/services/radio_bridge/resolvePython.md) | Function | `services/radio_bridge.dart` | The bundled CHIRP tree uses Python 3.10+ syntax, so prefer a… |
-| [_windowsSerialPorts](/services/radio_bridge/windowsSerialPorts.md) | Function | `services/radio_bridge.dart` | Windows: read the live COM ports from the SERIALCOMM registr… |
+| [_windowsSerialPortNames](/services/radio_bridge/windowsSerialPortNames.md) | Function | `services/radio_bridge.dart` | Windows: read the live COM ports from the SERIALCOMM registr… |
 | [UpdateCheckResult](/services/update_checker/UpdateCheckResult.md) | Class | `services/update_checker.dart` | Outcome of comparing the installed NewChirp version against … |
 | [compareVersions](/services/update_checker/compareVersions.md) | Function | `services/update_checker.dart` | Compares two dotted version strings, ignoring any `+build` m… |
 | [openExternalUrl](/services/update_checker/openExternalUrl.md) | Function | `services/update_checker.dart` | Opens [url] in the operating system's default browser. |

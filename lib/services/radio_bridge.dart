@@ -8,6 +8,28 @@ import '../models/radio_channel.dart';
 
 const _progressPrefix = '__NEWCHIRP_PROGRESS__ ';
 
+const _windowsSerialPortDeviceScript = r'''
+$ports = @(
+  Get-CimInstance Win32_PnPEntity |
+    Where-Object { $_.Name -match '\((COM\d+)\)$' } |
+    ForEach-Object {
+      $match = [regex]::Match($_.Name, '\((COM\d+)\)$')
+      [pscustomobject]@{
+        port = $match.Groups[1].Value
+        deviceName = ($_.Name -replace '\s*\(COM\d+\)$', '')
+      }
+    }
+  Get-CimInstance Win32_SerialPort |
+    ForEach-Object {
+      [pscustomobject]@{
+        port = $_.DeviceID
+        deviceName = $_.Description
+      }
+    }
+)
+ConvertTo-Json -InputObject $ports -Compress
+''';
+
 class RadioBridgeException implements Exception {
   RadioBridgeException(this.message);
   final String message;
@@ -123,6 +145,18 @@ class RadioProgress {
   final double? fraction;
 }
 
+class SerialPortInfo {
+  const SerialPortInfo({required this.port, this.deviceName});
+
+  final String port;
+  final String? deviceName;
+
+  String get label {
+    final name = deviceName?.trim() ?? '';
+    return name.isEmpty ? port : '$port — $name';
+  }
+}
+
 class RadioSettingNode {
   RadioSettingNode({
     required this.id,
@@ -233,8 +267,8 @@ class RadioBridge {
     return process == null || process.kill(ProcessSignal.sigterm);
   }
 
-  Future<List<String>> serialPorts() async {
-    if (Platform.isWindows) return _windowsSerialPorts();
+  Future<List<SerialPortInfo>> serialPortDetails() async {
+    if (Platform.isWindows) return _windowsSerialPortDetails();
     final dev = Directory('/dev');
     if (!dev.existsSync()) return [];
     final patterns = Platform.isMacOS
@@ -248,12 +282,17 @@ class RadioBridge {
             .where((path) => patterns.any(path.contains))
             .toList()
           ..sort();
-    return ports;
+    return ports.map((port) => SerialPortInfo(port: port)).toList();
+  }
+
+  Future<List<String>> serialPorts() async {
+    final ports = await serialPortDetails();
+    return ports.map((port) => port.port).toList();
   }
 
   /// Windows: read the live COM ports from the SERIALCOMM registry key, then
   /// fall back to .NET's SerialPort.GetPortNames() so only real ports show up.
-  Future<List<String>> _windowsSerialPorts() async {
+  Future<List<String>> _windowsSerialPortNames() async {
     try {
       final result = await Process.run('reg', [
         'query',
@@ -277,6 +316,60 @@ class RadioBridge {
       // Fall through; no ports available.
     }
     return const [];
+  }
+
+  Future<List<SerialPortInfo>> _windowsSerialPortDetails() async {
+    final ports = await _windowsSerialPortNames();
+    if (ports.isEmpty) return const [];
+    String deviceOutput = '';
+    try {
+      final result = await Process.run('powershell', [
+        '-NoProfile',
+        '-Command',
+        _windowsSerialPortDeviceScript,
+      ]);
+      if (result.exitCode == 0) deviceOutput = '${result.stdout}';
+    } on ProcessException {
+      // Device names are optional; the COM port list remains usable.
+    }
+    return parseWindowsSerialPortDetails(deviceOutput, ports);
+  }
+
+  static List<SerialPortInfo> parseWindowsSerialPortDetails(
+    String output,
+    Iterable<String> livePorts,
+  ) {
+    final deviceNames = <String, String>{};
+    try {
+      final decoded = jsonDecode(output.trim());
+      final entries = decoded is List ? decoded : [decoded];
+      for (final entry in entries) {
+        if (entry is! Map) continue;
+        final port = '${entry['port'] ?? ''}'.trim().toUpperCase();
+        final deviceName = '${entry['deviceName'] ?? ''}'.trim();
+        if (RegExp(r'^COM\d+$').hasMatch(port) && deviceName.isNotEmpty) {
+          deviceNames.putIfAbsent(port, () => deviceName);
+        }
+      }
+    } on FormatException {
+      // Missing or malformed device metadata should not hide the ports.
+    }
+    final ports =
+        livePorts
+            .map((port) => port.trim().toUpperCase())
+            .where((port) => RegExp(r'^COM\d+$').hasMatch(port))
+            .toSet()
+            .toList()
+          ..sort((a, b) {
+            return int.parse(
+              a.substring(3),
+            ).compareTo(int.parse(b.substring(3)));
+          });
+    return ports
+        .map(
+          (port) => SerialPortInfo(port: port, deviceName: deviceNames[port]),
+        )
+        .toList();
   }
 
   List<String> _parseComPorts(String output) {

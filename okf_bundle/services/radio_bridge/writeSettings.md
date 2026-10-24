@@ -8,9 +8,9 @@ tags:
   - "type:Function"
   - "module:services"
   - "domain:radio_bridge.dart"
-  - "git:branch:HEAD"
+  - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-24T14:45:32Z"
+timestamp: "2026-10-24T14:48:07Z"
 concept_id: services/radio_bridge/writeSettings
 language: dart
 ---
@@ -24,7 +24,7 @@ FuturewriteSettingswriteSettings
 ```
 
 ## Source
-Lines 475–481 in `services/radio_bridge.dart`
+Lines 568–574 in `services/radio_bridge.dart`
 
 ## Relationships
 

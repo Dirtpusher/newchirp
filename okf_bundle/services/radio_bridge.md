@@ -8,9 +8,9 @@ tags:
   - "type:Module"
   - "module:services"
   - "domain:radio_bridge.dart"
-  - "git:branch:HEAD"
+  - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-24T14:45:32Z"
+timestamp: "2026-10-24T14:48:07Z"
 concept_id: services/radio_bridge
 language: dart
 ---
@@ -26,6 +26,7 @@ language: dart
 | related | [RadioCapabilities](/services/radio_bridge/RadioCapabilities.md) |
 | related | [RadioZone](/services/radio_bridge/RadioZone.md) |
 | related | [RadioProgress](/services/radio_bridge/RadioProgress.md) |
+| related | [SerialPortInfo](/services/radio_bridge/SerialPortInfo.md) |
 | related | [RadioSettingNode](/services/radio_bridge/RadioSettingNode.md) |
 | related | [RadioSettings](/services/radio_bridge/RadioSettings.md) |
 | related | [RadioBridge](/services/radio_bridge/RadioBridge.md) |
@@ -36,8 +37,11 @@ language: dart
 | related | [toChangeJson](/services/radio_bridge/toChangeJson.md) |
 | related | [RadioSettingNode](/services/radio_bridge/RadioSettingNode.md) |
 | related | [cancelActive](/services/radio_bridge/cancelActive.md) |
+| related | [serialPortDetails](/services/radio_bridge/serialPortDetails.md) |
 | related | [serialPorts](/services/radio_bridge/serialPorts.md) |
-| related | [_windowsSerialPorts](/services/radio_bridge/windowsSerialPorts.md) |
+| related | [_windowsSerialPortNames](/services/radio_bridge/windowsSerialPortNames.md) |
+| related | [_windowsSerialPortDetails](/services/radio_bridge/windowsSerialPortDetails.md) |
+| related | [parseWindowsSerialPortDetails](/services/radio_bridge/parseWindowsSerialPortDetails.md) |
 | related | [_parseComPorts](/services/radio_bridge/parseComPorts.md) |
 | related | [models](/services/radio_bridge/models.md) |
 | related | [instructions](/services/radio_bridge/instructions.md) |

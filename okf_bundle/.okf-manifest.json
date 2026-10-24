@@ -1,12 +1,12 @@
 {
   "okf_version": "0.2",
   "manifest_version": 2,
-  "source_root": "/Volumes/RICKEXT/desktop/newchirp/lib",
+  "source_root": "C:/Users/rlopez/newchirp/lib",
   "files": {
     "services/radio_bridge.dart": {
       "path": "services/radio_bridge.dart",
-      "mtime_ns": 1792853132679750277,
-      "hash": "8526ad4d6f5d7fc3c54e6f49d8bd69ab515cff24d7ca30b4d45187e204c83d02",
+      "mtime_ns": 1792853287346242800,
+      "hash": "4c9f7bf1e117ff9ab2adbacb44040acb12daf0c4e972e650ba003f864492813d",
       "concept_ids": [
         "services/radio_bridge",
         "services/radio_bridge/RadioBridgeException",
@@ -14,6 +14,7 @@
         "services/radio_bridge/RadioCapabilities",
         "services/radio_bridge/RadioZone",
         "services/radio_bridge/RadioProgress",
+        "services/radio_bridge/SerialPortInfo",
         "services/radio_bridge/RadioSettingNode",
         "services/radio_bridge/RadioSettings",
         "services/radio_bridge/RadioBridge",
@@ -21,8 +22,11 @@
         "services/radio_bridge/toString",
         "services/radio_bridge/toChangeJson",
         "services/radio_bridge/cancelActive",
+        "services/radio_bridge/serialPortDetails",
         "services/radio_bridge/serialPorts",
-        "services/radio_bridge/windowsSerialPorts",
+        "services/radio_bridge/windowsSerialPortNames",
+        "services/radio_bridge/windowsSerialPortDetails",
+        "services/radio_bridge/parseWindowsSerialPortDetails",
         "services/radio_bridge/parseComPorts",
         "services/radio_bridge/models",
         "services/radio_bridge/instructions",
@@ -42,69 +46,10 @@
         "services/radio_bridge/findNewChirpDrivers"
       ]
     },
-    "services/radio_selection_store.dart": {
-      "path": "services/radio_selection_store.dart",
-      "mtime_ns": 1787526889854243083,
-      "hash": "aefeaa9ad666caf79e256acf1d1af15cf468495cde4e4dd3515b715ba57bd97c",
-      "concept_ids": [
-        "services/radio_selection_store",
-        "services/radio_selection_store/RadioSelection",
-        "services/radio_selection_store/RadioSelectionStore",
-        "services/radio_selection_store/load",
-        "services/radio_selection_store/save",
-        "services/radio_selection_store/defaultPath"
-      ]
-    },
-    "services/chirp_csv.dart": {
-      "path": "services/chirp_csv.dart",
-      "mtime_ns": 1787526889853586163,
-      "hash": "1d0d2204b57a9fe4753793712ec972cdd40ba6099dca82b4b249a2165a80806f",
-      "concept_ids": [
-        "services/chirp_csv",
-        "services/chirp_csv/ChirpCsv",
-        "services/chirp_csv/col",
-        "services/chirp_csv/value",
-        "services/chirp_csv/number",
-        "services/chirp_csv/integer",
-        "services/chirp_csv/encode",
-        "services/chirp_csv/decode",
-        "services/chirp_csv/escape",
-        "services/chirp_csv/parse"
-      ]
-    },
-    "models/radio_channel.dart": {
-      "path": "models/radio_channel.dart",
-      "mtime_ns": 1792779541396339291,
-      "hash": "1b5abdf776a3bd0f585c6a9d68670357136522e78ec2c8ae4c2635c3f9b7050a",
-      "concept_ids": [
-        "models/radio_channel",
-        "models/radio_channel/RadioChannel",
-        "models/radio_channel/ChannelExtraField",
-        "models/radio_channel/gmrsStarterChannels",
-        "models/radio_channel/copy",
-        "models/radio_channel/clear",
-        "models/radio_channel/toJson",
-        "models/radio_channel/nextAvailableLocation",
-        "models/radio_channel/validate"
-      ]
-    },
-    "services/column_layout_store.dart": {
-      "path": "services/column_layout_store.dart",
-      "mtime_ns": 1787526889853744664,
-      "hash": "3cbc77b232410ab3567a72cdc0fc28a7edd906c0dc0c62cf73150e5e3172f566",
-      "concept_ids": [
-        "services/column_layout_store",
-        "services/column_layout_store/ColumnLayout",
-        "services/column_layout_store/ColumnLayoutStore",
-        "services/column_layout_store/load",
-        "services/column_layout_store/save",
-        "services/column_layout_store/defaultPath"
-      ]
-    },
     "services/radio_image_store.dart": {
       "path": "services/radio_image_store.dart",
-      "mtime_ns": 1787526889854147624,
-      "hash": "01dbc10ad65696e5c963128028ba7d55ab035eba80b6d5da424c7127c7eb8fa7",
+      "mtime_ns": 1792772818143250900,
+      "hash": "b56c0540855fec698d1e824868cdecd288d3e8c1ce0df7c33b2612554f060a88",
       "concept_ids": [
         "services/radio_image_store",
         "services/radio_image_store/RadioImageStore",
@@ -116,8 +61,8 @@
     },
     "services/window_state_store.dart": {
       "path": "services/window_state_store.dart",
-      "mtime_ns": 1787526889854324166,
-      "hash": "86c6b4a01b10d3a881e9437259adb1984e015cf75e552fdaa395c8b89c7fffb0",
+      "mtime_ns": 1792772818147248800,
+      "hash": "8e6f93272dcc8422b9f3b715307dc67a7055936bcb5e909e3362557a7e8e3fd3",
       "concept_ids": [
         "services/window_state_store",
         "services/window_state_store/WindowState",
@@ -128,10 +73,23 @@
         "services/window_state_store/defaultPath"
       ]
     },
+    "services/column_layout_store.dart": {
+      "path": "services/column_layout_store.dart",
+      "mtime_ns": 1787492611595091600,
+      "hash": "f58d072266772dab196bcd5ec5e4f4b87186a42fc152c965220c23514c79f263",
+      "concept_ids": [
+        "services/column_layout_store",
+        "services/column_layout_store/ColumnLayout",
+        "services/column_layout_store/ColumnLayoutStore",
+        "services/column_layout_store/load",
+        "services/column_layout_store/save",
+        "services/column_layout_store/defaultPath"
+      ]
+    },
     "main.dart": {
       "path": "main.dart",
-      "mtime_ns": 1792853132679357901,
-      "hash": "0037f2da9a3c3278055fbe294dfbe3345d6b77c0be389c83e198a81a9ab4b0d6",
+      "mtime_ns": 1792853287338244300,
+      "hash": "cd10b8c7a523f3f6fc2d1cc27e1052cd54974e6db46e1142784511fdddcee2dd",
       "concept_ids": [
         "main",
         "main/WindowStateManager",
@@ -278,8 +236,8 @@
     },
     "services/update_checker.dart": {
       "path": "services/update_checker.dart",
-      "mtime_ns": 1792782233304002774,
-      "hash": "d7f9a158bc3625666936a097255deca9fe7a2b11bb8727c8422912782eb8958b",
+      "mtime_ns": 1792779505459555600,
+      "hash": "20602604207cca35f2b9ed5249fc15efd8c9138a0099c4d3e83dd57c5dad7d47",
       "concept_ids": [
         "services/update_checker",
         "services/update_checker/UpdateCheckResult",
@@ -295,6 +253,52 @@
         "services/update_checker/check",
         "services/update_checker/parseManifest"
       ]
+    },
+    "services/chirp_csv.dart": {
+      "path": "services/chirp_csv.dart",
+      "mtime_ns": 1787492611593899500,
+      "hash": "79bbe30927315aff31f2f3b4464839af84fe6775fe40fdf7f3b052224a5f6eac",
+      "concept_ids": [
+        "services/chirp_csv",
+        "services/chirp_csv/ChirpCsv",
+        "services/chirp_csv/col",
+        "services/chirp_csv/value",
+        "services/chirp_csv/number",
+        "services/chirp_csv/integer",
+        "services/chirp_csv/encode",
+        "services/chirp_csv/decode",
+        "services/chirp_csv/escape",
+        "services/chirp_csv/parse"
+      ]
+    },
+    "models/radio_channel.dart": {
+      "path": "models/radio_channel.dart",
+      "mtime_ns": 1792779716113462100,
+      "hash": "1b083705cd9979879208f460af5d989b5adf97b4fe0ac4930685cdbf3f3b12bd",
+      "concept_ids": [
+        "models/radio_channel",
+        "models/radio_channel/RadioChannel",
+        "models/radio_channel/ChannelExtraField",
+        "models/radio_channel/gmrsStarterChannels",
+        "models/radio_channel/copy",
+        "models/radio_channel/clear",
+        "models/radio_channel/toJson",
+        "models/radio_channel/nextAvailableLocation",
+        "models/radio_channel/validate"
+      ]
+    },
+    "services/radio_selection_store.dart": {
+      "path": "services/radio_selection_store.dart",
+      "mtime_ns": 1787492611598568300,
+      "hash": "6ff1fd32e34b5072cdbb11549588fdcb7bcb2236ecc9c33fc2f3dabefbb1eebc",
+      "concept_ids": [
+        "services/radio_selection_store",
+        "services/radio_selection_store/RadioSelection",
+        "services/radio_selection_store/RadioSelectionStore",
+        "services/radio_selection_store/load",
+        "services/radio_selection_store/save",
+        "services/radio_selection_store/defaultPath"
+      ]
     }
   },
   "concepts": {
@@ -303,7 +307,7 @@
       "type": "Module",
       "resource": "services/radio_bridge.dart",
       "render_hash": "stale",
-      "edge_hash": "a4df4836e2abc54fcd013f2c4305bc348141ab5145e0082a9c0019d49b4b1ae1",
+      "edge_hash": "a6b1b307e7ed324774831ac9a29f9efcc59dfe103e50d656713b6bf36f21fbf2",
       "enriched": false
     },
     "services/radio_bridge/RadioBridgeException": {
@@ -2137,7 +2141,47 @@
       "render_hash": "stale",
       "edge_hash": "65fa1c0d9985a476f5e611903a1939d4bd0fe0606483c3c6f570495f15f2ad72",
       "enriched": false
+    },
+    "services/radio_bridge/SerialPortInfo": {
+      "concept_id": "services/radio_bridge/SerialPortInfo",
+      "type": "Class",
+      "resource": "services/radio_bridge.dart",
+      "render_hash": "stale",
+      "edge_hash": "6833dfaf2aa53628ffbb361a89079471aa02a71f43c5a1916aedb0c89d6f478b",
+      "enriched": false
+    },
+    "services/radio_bridge/serialPortDetails": {
+      "concept_id": "services/radio_bridge/serialPortDetails",
+      "type": "Function",
+      "resource": "services/radio_bridge.dart",
+      "render_hash": "stale",
+      "edge_hash": "6833dfaf2aa53628ffbb361a89079471aa02a71f43c5a1916aedb0c89d6f478b",
+      "enriched": false
+    },
+    "services/radio_bridge/windowsSerialPortNames": {
+      "concept_id": "services/radio_bridge/windowsSerialPortNames",
+      "type": "Function",
+      "resource": "services/radio_bridge.dart",
+      "render_hash": "stale",
+      "edge_hash": "6833dfaf2aa53628ffbb361a89079471aa02a71f43c5a1916aedb0c89d6f478b",
+      "enriched": false
+    },
+    "services/radio_bridge/windowsSerialPortDetails": {
+      "concept_id": "services/radio_bridge/windowsSerialPortDetails",
+      "type": "Function",
+      "resource": "services/radio_bridge.dart",
+      "render_hash": "stale",
+      "edge_hash": "6833dfaf2aa53628ffbb361a89079471aa02a71f43c5a1916aedb0c89d6f478b",
+      "enriched": false
+    },
+    "services/radio_bridge/parseWindowsSerialPortDetails": {
+      "concept_id": "services/radio_bridge/parseWindowsSerialPortDetails",
+      "type": "Function",
+      "resource": "services/radio_bridge.dart",
+      "render_hash": "stale",
+      "edge_hash": "6833dfaf2aa53628ffbb361a89079471aa02a71f43c5a1916aedb0c89d6f478b",
+      "enriched": false
     }
   },
-  "generated_at": "2026-10-24T14:45:33Z"
+  "generated_at": "2026-10-24T14:48:57Z"
 }
