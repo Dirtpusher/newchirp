@@ -121,6 +121,7 @@
 - [_useGmrsStarter](useGmrsStarter.md)
 - [_WindowStateManager](WindowStateManager.md)
 - [_writeRadioSettings](writeRadioSettings.md)
+- [adaptRadioPromptButton](adaptRadioPromptButton.md)
 - [build](build.md)
 - [cell](cell.md)
 - [choices](choices.md)

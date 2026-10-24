@@ -46,6 +46,23 @@ Future<void> openGmrsStarter(WidgetTester tester) async {
 }
 
 void main() {
+  test('radio prompts use the actual NewChirp ready button', () {
+    expect(
+      adaptRadioPromptButton(
+        '6. Click OK to download image from device.',
+        'Radio is ready',
+      ),
+      '6. Click "Radio is ready" to download image from device.',
+    );
+    expect(
+      adaptRadioPromptButton(
+        'Select the settings, then press the OK button.',
+        'Radio is ready to receive',
+      ),
+      'Select the settings, then click "Radio is ready to receive".',
+    );
+  });
+
   testWidgets('startup update check offers a newer release', (tester) async {
     tester.view.physicalSize = const Size(1440, 900);
     tester.view.devicePixelRatio = 1;

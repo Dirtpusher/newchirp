@@ -21,6 +21,22 @@ const _menuChannel = MethodChannel('newchirp/menu');
 
 const String _newChirpVersion = '1.0.9';
 
+String adaptRadioPromptButton(String message, String buttonLabel) {
+  return message.replaceAllMapped(
+    RegExp(
+      r'\b(?:Click|Press)\s+(?:the\s+)?["“]?OK["”]?(?:\s+button)?',
+      caseSensitive: false,
+    ),
+    (match) {
+      final original = match.group(0)!;
+      final action = original[0] == original[0].toUpperCase()
+          ? 'Click'
+          : 'click';
+      return '$action "$buttonLabel"';
+    },
+  );
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   LicenseRegistry.addLicense(() async* {
@@ -1468,10 +1484,12 @@ class _NewChirpHomeState extends State<NewChirpHome> {
     RadioInstructions instructions, {
     required bool writing,
   }) async {
+    final readyLabel = writing ? 'Radio is ready to receive' : 'Radio is ready';
     final messages =
         (writing ? instructions.writeMessages : instructions.readMessages)
             .map((message) => message.trim())
             .where((message) => message.isNotEmpty)
+            .map((message) => adaptRadioPromptButton(message, readyLabel))
             .toList();
     if (messages.isEmpty) return true;
     final ready = await showDialog<bool>(
@@ -1501,9 +1519,7 @@ class _NewChirpHomeState extends State<NewChirpHome> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              writing ? 'Radio is ready to receive' : 'Radio is ready',
-            ),
+            child: Text(readyLabel),
           ),
         ],
       ),
