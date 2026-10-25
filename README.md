@@ -17,6 +17,9 @@ implementation history, architecture, known risks, and prioritized next work.
 - Right-click clear channel, which clears it from the radio on the next write
 - Undo/redo with keyboard shortcuts
 - 22-channel GMRS starter library
+- RepeaterBook search with state, location, radius, mode, and open-repeater
+  filters; preview on a synchronized interactive map and selectively insert
+  amateur or GMRS repeater channels
 - USB serial-port discovery
 - CHIRP radio-model catalog and guarded read/write workflow
 - Session-scoped loading of experimental CHIRP `.py` and `.mod` driver modules
@@ -165,6 +168,23 @@ hidden until verified with real hardware.
 Use an SCU-56 USB cable or CT-163 serial cable on the DATA jack. Keep a complete
 microSD ALL backup before uploading. The radio-side menu entries are
 **59 Other -> This** for download and **58 This -> Other** for upload.
+
+### Experimental RT-950 support
+
+NewChirp also includes a read-only driver for the Radtel RT-950. Select
+**Radtel RT-950**, connect the USB programming cable, and download to inspect
+the 960 channel memories. Uploads are disabled because the CPS write path has
+not yet been independently validated. Protocol details and reverse-engineering
+evidence are recorded in `docs/RT950_PROTOCOL.md`.
+
+### Experimental CS750 codeplug support
+
+NewChirp includes a read-only Connect Systems CS750 transport for macOS. It
+uses NewChirp's own raw SCSI/RAP bridge instead of CHIRP's serial drivers, and
+exposes ordered channels, RX/TX frequencies, channel names, and analog/DMR
+mode from M100000/2000-channel radios. `.rdb` codeplugs saved by the official
+CPS can also be imported directly. Uploads remain disabled. Protocol and
+reverse-engineering notes are recorded in `docs/CS750_PROTOCOL.md`.
 
 ## Code knowledge graph
 

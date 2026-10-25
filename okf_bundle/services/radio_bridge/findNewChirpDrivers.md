@@ -10,7 +10,7 @@ tags:
   - "domain:radio_bridge.dart"
   - "git:branch:main"
   - "git:repo:newchirp"
-timestamp: "2026-10-24T18:37:55Z"
+timestamp: "2026-10-25T01:56:40Z"
 concept_id: services/radio_bridge/findNewChirpDrivers
 language: dart
 ---
@@ -24,7 +24,7 @@ String_findNewChirpDrivers_findNewChirpDrivers
 ```
 
 ## Source
-Lines 830–830 in `services/radio_bridge.dart`
+Lines 943–943 in `services/radio_bridge.dart`
 
 ## Relationships
 

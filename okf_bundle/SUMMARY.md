@@ -1,44 +1,46 @@
 ---
-description: 'Top-level OKF summary: 243 concepts across 3 domains and 9 modules'
-git_branch: HEAD
+description: 'Top-level OKF summary: 268 concepts across 3 domains and 10 modules'
+git_branch: main
 git_repo: newchirp
 okf_version: '0.2'
-timestamp: '2026-10-24T18:51:12Z'
+timestamp: '2026-10-25T01:56:41Z'
 title: okf_bundle — Knowledge Summary
 type: Index
 ---
 
 # okf_bundle — Knowledge Summary
 
-> OKF v0.2 bundle | 243 concepts | 3 domains | 9 modules
+> OKF v0.2 bundle | 268 concepts | 3 domains | 10 modules
 
 ## Stats
 
 | Type | Count |
 |------|-------|
-| Function | 190 |
-| Class | 44 |
-| Module | 9 |
+| Function | 208 |
+| Class | 49 |
+| Module | 10 |
+| Enum | 1 |
 
 | Language | Concepts |
 |----------|----------|
-| dart | 243 |
+| dart | 268 |
 
 ## Domain Map
 
 Use these links to navigate the bundle or prime an AI agent with focused context.
 
-### [main.dart](main.dart/index.md) — 146 concepts
+### [main.dart](main.dart/index.md) — 157 concepts
 
-- [main](main/index.md) (146 concepts)
+- [main](main/index.md) (157 concepts)
 
-### [models](models/index.md) — 9 concepts
+### [models](models/index.md) — 16 concepts
 
 - [models/radio_channel](models/radio_channel/index.md) (9 concepts)
+- [models/repeater_search](models/repeater_search/index.md) (7 concepts)
 
-### [services](services/index.md) — 88 concepts
+### [services](services/index.md) — 95 concepts
 
-- [services/radio_bridge](services/radio_bridge/index.md) (38 concepts)
+- [services/radio_bridge](services/radio_bridge/index.md) (45 concepts)
 - [services/update_checker](services/update_checker/index.md) (15 concepts)
 - [services/chirp_csv](services/chirp_csv/index.md) (10 concepts)
 - [services/window_state_store](services/window_state_store/index.md) (7 concepts)
@@ -55,8 +57,8 @@ Highest-value concepts across all domains (Classes and Functions with rich descr
 | [isAllowedDownloadUrl](/services/update_checker/isAllowedDownloadUrl.md) | Function | `services/update_checker.dart` | True when [url] is an https link on newchirp.net, with no lo… |
 | [trustedDownloadUrl](/services/update_checker/trustedDownloadUrl.md) | Function | `services/update_checker.dart` | Address the Update button may open. Untrusted links use the … |
 | [_resolvePython](/services/radio_bridge/resolvePython.md) | Function | `services/radio_bridge.dart` | The bundled CHIRP tree uses Python 3.10+ syntax, so prefer a… |
-| [_windowsSerialPortNames](/services/radio_bridge/windowsSerialPortNames.md) | Function | `services/radio_bridge.dart` | Windows: read the live COM ports from the SERIALCOMM registr… |
 | [UpdateCheckResult](/services/update_checker/UpdateCheckResult.md) | Class | `services/update_checker.dart` | Outcome of comparing the installed NewChirp version against … |
+| [_windowsSerialPortNames](/services/radio_bridge/windowsSerialPortNames.md) | Function | `services/radio_bridge.dart` | Windows: read the live COM ports from the SERIALCOMM registr… |
 | [compareVersions](/services/update_checker/compareVersions.md) | Function | `services/update_checker.dart` | Compares two dotted version strings, ignoring any `+build` m… |
 | [check](/services/update_checker/check.md) | Function | `services/update_checker.dart` | Opens a newchirp.net download page in the default browser. |
 | [openExternalUrl](/services/update_checker/openExternalUrl.md) | Function | `services/update_checker.dart` | Opens a newchirp.net download page in the default browser. |

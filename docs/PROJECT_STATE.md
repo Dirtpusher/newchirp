@@ -8,10 +8,13 @@ release requirements.
 
 ## Resume here
 
-- The macOS `1.0.17` release is built, signed, notarized, stapled, uploaded,
-  and live. It includes session-scoped CHIRP `.py` and `.mod` module loading.
-- GitHub HEAD is the independently published Linux `1.0.13` release commit.
-- No source change, build, upload, or deployment is currently in progress.
+- The Linux `1.0.17` release is built, uploaded, and live as DEB, RPM, and
+  AppImage. It includes the FT-60 manual-read timing fix.
+- The macOS `1.0.18` release is built, signed, notarized, stapled, uploaded,
+  and live. It includes the FT-60 manual-read timing fix.
+- Unreleased working-tree work adds RepeaterBook search/import, headless
+  live-radio support, and radio-specific field help. No release build, upload,
+  or deployment is in progress.
 - `tshirt - i chirp often.png` is an untracked user asset and must not be
   committed or deleted.
 - `pubspec.lock` may be locally modified by the installed Flutter SDK. Do not
@@ -24,15 +27,13 @@ release requirements.
 
 - Local path: `/Volumes/RICKEXT/desktop/newchirp`
 - Branch: `main`
-- Latest release commit fetched from GitHub: `964acc0`
-  (`Release Linux 1.0.13`)
-- Previous release commit: `f69b325` (`Release macOS 1.0.17`)
+- Latest release commit fetched from GitHub: `9e51ea4`
+  (`Record Linux 1.0.17 release`)
+- Previous source commit: `8802cd2` (`Record macOS 1.0.18 release`)
 - Open pull requests: none
-- Checked-out source version: `1.0.13+13`
-  - The Linux release commit changed the shared app version after the macOS
-    release was published.
-  - Do not assume this is the next macOS version; wait for the requested
-    version before changing it.
+- Checked-out source version: `1.0.17+17`
+- macOS builds are pinned to CocoaPods with
+  `flutter.config.enable-swift-package-manager: false`.
 - Intended untracked file: `tshirt - i chirp often.png`
   - This is a user asset, not application source.
   - Do not commit or delete it unless explicitly requested.
@@ -44,21 +45,39 @@ Latest public artifacts reported by
 
 | Platform | Version |
 |---|---:|
-| macOS | 1.0.17 |
-| Windows | 1.0.15 |
-| Linux | 1.0.13 |
-| Legacy shared manifest version | 1.0.13 |
+| macOS | 1.0.18 |
+| Windows | 1.0.17 |
+| Linux | 1.0.17 |
+| Legacy shared manifest version | 1.0.17 |
 
 macOS artifact:
 
-- URL: `https://newchirp.net/downloads/NewChirp-1.0.17.dmg`
-- Version/build: `1.0.17` / `17`
+- URL: `https://newchirp.net/downloads/NewChirp-1.0.18.dmg`
+- Version/build: `1.0.18` / `18`
 - Architectures: `arm64` and `x86_64`
 - SHA-256:
-  `72a5b43363b33f7dd0aa698a4fe1fab72d543c066171d8c8ae68d39ccb85daaa`
-- Notarization submission: `4715fccb-b65b-4098-9297-562c6d7733af`
+  `968876788c807cf9beba53977884b1c02f38539fb3a3737a4520721e853b98aa`
+- Notarization submission: `50b1cef6-dd9a-4896-9bc1-74aa773b725a`
 - Gatekeeper result: accepted as Notarized Developer ID
 - Server checksum matched the local artifact
+
+Linux artifacts:
+
+- DEB URL:
+  `https://newchirp.net/downloads/NewChirp-linux-x64-1.0.17.deb`
+- RPM URL:
+  `https://newchirp.net/downloads/NewChirp-linux-x64-1.0.17.rpm`
+- AppImage URL:
+  `https://newchirp.net/downloads/NewChirp-linux-x64-1.0.17.AppImage`
+- DEB metadata: `newchirp` `1.0.17-1` `amd64`
+- RPM metadata: `newchirp` `1.0.17-1` `x86_64`
+- SHA-256:
+  - DEB:
+    `0d2a770a77c92b6c4631a62bf0314cb2098a53bc37ded1d6daec458c8b69e77f`
+  - RPM:
+    `10aaf78b534a41d2c5f562dcc5e92b12d3629f3482e9d40b914e3a08fad98690`
+  - AppImage:
+    `f575d8820a138061b5aec91afabb70fa803b2545745328e2f5772805c19b1b63`
 
 ## Recently completed
 
@@ -81,19 +100,41 @@ macOS artifact:
   **Help > Load CHIRP driver module…** for the current session.
 - Loaded modules can add or override radio drivers; the radio catalog refreshes
   after loading and unloading.
+- FT-60 reads now tell the user to hold PTT only after the serial port is open,
+  with read-specific recovery guidance if the initial frame times out.
+- RepeaterBook search supports amateur and GMRS results, optional proximity
+  filtering, city/county sorting, local result filtering, an interactive map,
+  multi-select, and insertion into the current library.
 
-## macOS 1.0.17 verification status
+## macOS 1.0.18 verification status
 
-Full verification before the macOS `1.0.17` release:
+Full verification before the macOS `1.0.18` release:
 
 - `flutter analyze`: clean
 - `flutter test`: all 70 tests passed
-- `python3 test/chirp_bridge_upload_test.py -v`: all 4 tests passed
+- `python3 test/chirp_bridge_upload_test.py -v`: all 6 tests passed
 - Release app: universal, signed, notarized, stapled, and Gatekeeper-accepted
 - Server SHA-256 matched the final stapled DMG
 
+## Linux 1.0.17 verification status
+
+Full verification before the Linux `1.0.17` release:
+
+- `flutter analyze`: clean
+- `flutter test`: all 70 tests passed
+- `python3 test/chirp_bridge_upload_test.py -v`: all 6 tests passed
+- `flutter build linux --release`: succeeded
+- `scripts/bundle_linux_runtime.sh`: succeeded
+- `scripts/build_linux_deb.sh`: built
+  `build/NewChirp-linux-x64-1.0.17.deb`
+- Server packaging built and published DEB, RPM, and AppImage artifacts
+- Public download URLs returned HTTP 200
+- `/api/releases/latest` reports Linux `1.0.17`
+
 ## Known limitations and follow-ups
 
+- Confirm the FT-60 manual-read sequence on physical hardware. The fix waits
+  to tell the user to hold PTT until after the serial port is open.
 - TK-880 multi-zone support still needs a report from a physical five-zone
   radio. The automated test uses CHIRP's `Kenwood_TK-880.img`.
 - TD-H3 upload uses a protocol-level fake serial test. Physical hardware

@@ -14,6 +14,44 @@
         "build_macos_dmg"
       ]
     },
+    "chirp_bridge.py": {
+      "path": "chirp_bridge.py",
+      "mtime_ns": 1792893254084322294,
+      "hash": "c9746367d50f2fc13ddd36dcb670d208f4938b226fddc83978549d87e73314ff",
+      "concept_ids": [
+        "chirp_bridge/apply_json",
+        "chirp_bridge/apply_setting_changes",
+        "chirp_bridge/bridge_error_message",
+        "chirp_bridge/channel_context",
+        "chirp_bridge/channel_radio_for",
+        "chirp_bridge/emit_progress",
+        "chirp_bridge/emit_read_ready",
+        "chirp_bridge/extra_field_doc",
+        "chirp_bridge/extra_fields_json",
+        "chirp_bridge/features_json",
+        "chirp_bridge/fetch_repeaterbook_data",
+        "chirp_bridge/headless_live_adapter",
+        "chirp_bridge/load_chirp",
+        "chirp_bridge/load_module",
+        "chirp_bridge/main",
+        "chirp_bridge/memory_json",
+        "chirp_bridge/normalize_repeaterbook_query",
+        "chirp_bridge/open_serial",
+        "chirp_bridge/radio_for",
+        "chirp_bridge/radio_from_image",
+        "chirp_bridge/repeaterbook_cache_path",
+        "chirp_bridge/repeaterbook_item_to_channel",
+        "chirp_bridge/repeaterbook_resource_name",
+        "chirp_bridge/repeaterbook_tone",
+        "chirp_bridge/search_repeaterbook",
+        "chirp_bridge/setting_doc",
+        "chirp_bridge/setting_value_json",
+        "chirp_bridge/settings_payload",
+        "chirp_bridge/settings_tree_json",
+        "chirp_bridge/status_progress",
+        "chirp_bridge"
+      ]
+    },
     "generate_gmrs_frs_pdf.py": {
       "path": "generate_gmrs_frs_pdf.py",
       "mtime_ns": 1787526889873622751,
@@ -36,31 +74,31 @@
         "generate_gmrs_frs_pdf"
       ]
     },
-    "chirp_bridge.py": {
-      "path": "chirp_bridge.py",
-      "mtime_ns": 1792867072064610373,
-      "hash": "8cdcbb1144413aed09e60aa6d0de789be600a41f325d19b5bf7a02eb020f842b",
+    "newchirp_mass_storage.py": {
+      "path": "newchirp_mass_storage.py",
+      "mtime_ns": 1792893456081463146,
+      "hash": "d656ec355db5ff1c38821454873eaca53a4cf0eb44563afc18d312785f9de32b",
       "concept_ids": [
-        "chirp_bridge",
-        "chirp_bridge/emit_progress",
-        "chirp_bridge/status_progress",
-        "chirp_bridge/load_module",
-        "chirp_bridge/load_chirp",
-        "chirp_bridge/memory_json",
-        "chirp_bridge/extra_fields_json",
-        "chirp_bridge/features_json",
-        "chirp_bridge/setting_doc",
-        "chirp_bridge/setting_value_json",
-        "chirp_bridge/settings_tree_json",
-        "chirp_bridge/apply_setting_changes",
-        "chirp_bridge/apply_json",
-        "chirp_bridge/open_serial",
-        "chirp_bridge/radio_for",
-        "chirp_bridge/radio_from_image",
-        "chirp_bridge/channel_context",
-        "chirp_bridge/channel_radio_for",
-        "chirp_bridge/settings_payload",
-        "chirp_bridge/main"
+        "newchirp_mass_storage",
+        "newchirp_mass_storage/helper_path",
+        "newchirp_mass_storage/init",
+        "newchirp_mass_storage/read_exact",
+        "newchirp_mass_storage/transfer",
+        "newchirp_mass_storage/close",
+        "newchirp_mass_storage/list_devices",
+        "newchirp_mass_storage/rap_packet",
+        "newchirp_mass_storage/parse_rap_packet",
+        "newchirp_mass_storage/send",
+        "newchirp_mass_storage/receive",
+        "newchirp_mass_storage/command",
+        "newchirp_mass_storage/read_codeplug",
+        "newchirp_mass_storage/MassStorageError",
+        "newchirp_mass_storage/MacScsiPassthrough",
+        "newchirp_mass_storage/WindowsScsiPassthrough",
+        "newchirp_mass_storage/LinuxScsiPassthrough",
+        "newchirp_mass_storage/ScsiPassthrough",
+        "newchirp_mass_storage/RapMassStorageRadio",
+        "newchirp_mass_storage/CS750Profile"
       ]
     }
   },
@@ -70,7 +108,7 @@
       "type": "Module",
       "resource": "chirp_bridge.py",
       "render_hash": "stale",
-      "edge_hash": "70863996a1992806ec8dacf0633fc467cc953bbb2deafdc5841a5bc2676eeea2",
+      "edge_hash": "0504903224af6a2f5f06942a4a0f76422176e56c0f28f1cfdd9a711b0ea96ccb",
       "enriched": false
     },
     "chirp_bridge/emit_progress": {
@@ -78,7 +116,7 @@
       "type": "Function",
       "resource": "chirp_bridge.py",
       "render_hash": "stale",
-      "edge_hash": "6c86185ccef5982d1f5c1ca688ac610a7fdd6549a8ae12037ae1a43746b92959",
+      "edge_hash": "433fa1038f7b7559594c0b5e284cd65b11d9afdf981f27429d41b7cc23568ee5",
       "enriched": false
     },
     "chirp_bridge/status_progress": {
@@ -102,7 +140,7 @@
       "type": "Function",
       "resource": "chirp_bridge.py",
       "render_hash": "stale",
-      "edge_hash": "e80c6c28dad0dcd043a3e1c849867509c741729ca2a009d9da78bdf6eba108f0",
+      "edge_hash": "0780573db23fe5d1306058dadff1780eac272ff9125bfa2702dd8dad04fa3df0",
       "enriched": false
     },
     "chirp_bridge/extra_fields_json": {
@@ -110,7 +148,7 @@
       "type": "Function",
       "resource": "chirp_bridge.py",
       "render_hash": "stale",
-      "edge_hash": "a742bdf7921c9f6afb1e4c0d2d3db7e1f42f849b1e55a511eed9762fcb651b23",
+      "edge_hash": "cd403cb9e52886fa0196ce792ea05acae20c1f39e16afeef421e7f646b74c9fa",
       "enriched": false
     },
     "chirp_bridge/features_json": {
@@ -126,7 +164,7 @@
       "type": "Function",
       "resource": "chirp_bridge.py",
       "render_hash": "stale",
-      "edge_hash": "f957be007efd42ff2e8b0ab1a4dcd96ace84a3ef8339bd275c719d5c4fd42b29",
+      "edge_hash": "2dee80b1c35a5bad78c4b3cd08f52b1817808ade6ad047260df4bbac5e4d71c0",
       "enriched": false
     },
     "chirp_bridge/setting_value_json": {
@@ -174,7 +212,7 @@
       "type": "Function",
       "resource": "chirp_bridge.py",
       "render_hash": "stale",
-      "edge_hash": "d11599c3ecbad46becb6142ad842b7d80cd6262a8f1847c23ec8e782dfc4e3bd",
+      "edge_hash": "cad4f36ae64e47ac073f85ea4f7816f7ea2909f1eda95145964c1cff0c60769b",
       "enriched": false
     },
     "chirp_bridge/radio_from_image": {
@@ -198,7 +236,7 @@
       "type": "Function",
       "resource": "chirp_bridge.py",
       "render_hash": "stale",
-      "edge_hash": "e85c39636cf7dfb3ae9273f027e79cc6547278ed5c2bbd251c9a3ee3acf40a3d",
+      "edge_hash": "e2b9d86cbb5747da45bf109b81545b560070eacc4dfdfc3601169ad1bc2c2feb",
       "enriched": false
     },
     "build_macos_dmg": {
@@ -262,7 +300,7 @@
       "type": "Function",
       "resource": "generate_gmrs_frs_pdf.py",
       "render_hash": "stale",
-      "edge_hash": "ad5a96287a56ed6e24a754dd8aadf312d2438657a7f182b0653a2d9d59366b5e",
+      "edge_hash": "d7539626adf96d5bac285dd0e8fd817a800d70a64589d5e2ef6c47dd0ebecf09",
       "enriched": false
     },
     "generate_gmrs_frs_pdf/set_fill": {
@@ -376,7 +414,263 @@
       "render_hash": "stale",
       "edge_hash": "8aa8fdb1b459587776dee4b9c57cb1577d7beadf7da79a62c68c8ac6fe2df34d",
       "enriched": false
+    },
+    "chirp_bridge/emit_read_ready": {
+      "concept_id": "chirp_bridge/emit_read_ready",
+      "type": "Function",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "77fae6e3faea335ec3c06a0a2627d5b6078c6475162f4f2bcabed87a064425b5",
+      "enriched": false
+    },
+    "chirp_bridge/bridge_error_message": {
+      "concept_id": "chirp_bridge/bridge_error_message",
+      "type": "Function",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "03f7d47fab4c5e055fc9cbe171f905280fc75adae34dbee13aaeb0a3f0f650a9",
+      "enriched": false
+    },
+    "chirp_bridge/extra_field_doc": {
+      "concept_id": "chirp_bridge/extra_field_doc",
+      "type": "Function",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "1658c6319fd78858b7daa5537eed58ea0ba7e6d2c0b5df23cad4f59270600204",
+      "enriched": false
+    },
+    "chirp_bridge/headless_live_adapter": {
+      "concept_id": "chirp_bridge/headless_live_adapter",
+      "type": "Function",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "f30f60bdc352103a4ded1ea6bdaae9cb50e805685bba8ee63ed923ede55356aa",
+      "enriched": false
+    },
+    "chirp_bridge/repeaterbook_resource_name": {
+      "concept_id": "chirp_bridge/repeaterbook_resource_name",
+      "type": "Function",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "53e765dcdf21c294cea9e400599fb36199f356a821d396ab6f32ba4306ed67a1",
+      "enriched": false
+    },
+    "chirp_bridge/repeaterbook_cache_path": {
+      "concept_id": "chirp_bridge/repeaterbook_cache_path",
+      "type": "Function",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "53e765dcdf21c294cea9e400599fb36199f356a821d396ab6f32ba4306ed67a1",
+      "enriched": false
+    },
+    "chirp_bridge/fetch_repeaterbook_data": {
+      "concept_id": "chirp_bridge/fetch_repeaterbook_data",
+      "type": "Function",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "cd062a6118db2700be51f91418b423f4efc0592cb2bc6e1562495d343e7706d5",
+      "enriched": false
+    },
+    "chirp_bridge/repeaterbook_tone": {
+      "concept_id": "chirp_bridge/repeaterbook_tone",
+      "type": "Function",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "c000bd1c57e8d1140e2b9e5e223bc97208214cf1316063d1733a86b7e9f93f4f",
+      "enriched": false
+    },
+    "chirp_bridge/repeaterbook_item_to_channel": {
+      "concept_id": "chirp_bridge/repeaterbook_item_to_channel",
+      "type": "Function",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "92433af5159836680b489dc84d0016e66076fd51ff6c33dd71288acb05673d73",
+      "enriched": false
+    },
+    "chirp_bridge/search_repeaterbook": {
+      "concept_id": "chirp_bridge/search_repeaterbook",
+      "type": "Function",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "00473a05ded1ce8339d79cc02529db6fb7fd70cdb1bc7216f9d5fecc0b6d7f72",
+      "enriched": false
+    },
+    "chirp_bridge/normalize_repeaterbook_query": {
+      "concept_id": "chirp_bridge/normalize_repeaterbook_query",
+      "type": "Function",
+      "resource": "chirp_bridge.py",
+      "render_hash": "stale",
+      "edge_hash": "58fad39fa8db87c0b2c8649bf4298c87947e73365efb33906c89d7e5774b5556",
+      "enriched": false
+    },
+    "newchirp_mass_storage": {
+      "concept_id": "newchirp_mass_storage",
+      "type": "Module",
+      "resource": "newchirp_mass_storage.py",
+      "render_hash": "stale",
+      "edge_hash": "8ac69fb97459f4591148f0957aa6eb6cf0696cd73f11f8c98533d13b0085c42d",
+      "enriched": false
+    },
+    "newchirp_mass_storage/helper_path": {
+      "concept_id": "newchirp_mass_storage/helper_path",
+      "type": "Function",
+      "resource": "newchirp_mass_storage.py",
+      "render_hash": "stale",
+      "edge_hash": "7b54cbf7a325d0fbf8f4ae383bd355e95be9529647064865f122394e871ef1ba",
+      "enriched": false
+    },
+    "newchirp_mass_storage/list_devices": {
+      "concept_id": "newchirp_mass_storage/list_devices",
+      "type": "Function",
+      "resource": "newchirp_mass_storage.py",
+      "render_hash": "stale",
+      "edge_hash": "7b54cbf7a325d0fbf8f4ae383bd355e95be9529647064865f122394e871ef1ba",
+      "enriched": false
+    },
+    "newchirp_mass_storage/list_macos": {
+      "concept_id": "newchirp_mass_storage/list_macos",
+      "type": "Function",
+      "resource": "newchirp_mass_storage.py",
+      "render_hash": "stale",
+      "edge_hash": "920f2b924d2a304a166652e1900c13d424b741bd6839111490966640a3763afe",
+      "enriched": false
+    },
+    "newchirp_mass_storage/init": {
+      "concept_id": "newchirp_mass_storage/init",
+      "type": "Function",
+      "resource": "newchirp_mass_storage.py",
+      "render_hash": "stale",
+      "edge_hash": "bc9afc54ce28e83e16df6ee9982fa97781b86371cf46883cfb9be06205e9db20",
+      "enriched": false
+    },
+    "newchirp_mass_storage/transfer": {
+      "concept_id": "newchirp_mass_storage/transfer",
+      "type": "Function",
+      "resource": "newchirp_mass_storage.py",
+      "render_hash": "stale",
+      "edge_hash": "900aaea1bf41e8f64fbcacdba270a0b2c3887be6b1bace77e8d448a4f8fbca9b",
+      "enriched": false
+    },
+    "newchirp_mass_storage/close": {
+      "concept_id": "newchirp_mass_storage/close",
+      "type": "Function",
+      "resource": "newchirp_mass_storage.py",
+      "render_hash": "stale",
+      "edge_hash": "bc9afc54ce28e83e16df6ee9982fa97781b86371cf46883cfb9be06205e9db20",
+      "enriched": false
+    },
+    "newchirp_mass_storage/rap_packet": {
+      "concept_id": "newchirp_mass_storage/rap_packet",
+      "type": "Function",
+      "resource": "newchirp_mass_storage.py",
+      "render_hash": "stale",
+      "edge_hash": "3696cca081b054fa70cc480d3f60f16eed7655f7546313ad2da67e388f8fdf8d",
+      "enriched": false
+    },
+    "newchirp_mass_storage/parse_rap_packet": {
+      "concept_id": "newchirp_mass_storage/parse_rap_packet",
+      "type": "Function",
+      "resource": "newchirp_mass_storage.py",
+      "render_hash": "stale",
+      "edge_hash": "f925085b8740f49e90f965856fa4422febf9adaf6582587af74223a68ae06c80",
+      "enriched": false
+    },
+    "newchirp_mass_storage/send": {
+      "concept_id": "newchirp_mass_storage/send",
+      "type": "Function",
+      "resource": "newchirp_mass_storage.py",
+      "render_hash": "stale",
+      "edge_hash": "a3adcfb9fa72cc2cc0201ecefc94f7aca22ea4c3198dedfd50f9249892595a8e",
+      "enriched": false
+    },
+    "newchirp_mass_storage/receive": {
+      "concept_id": "newchirp_mass_storage/receive",
+      "type": "Function",
+      "resource": "newchirp_mass_storage.py",
+      "render_hash": "stale",
+      "edge_hash": "6613e3bfa48896d923eb5402cce7f4cd2eebf6530e33067598f1f9a1c2f979f3",
+      "enriched": false
+    },
+    "newchirp_mass_storage/command": {
+      "concept_id": "newchirp_mass_storage/command",
+      "type": "Function",
+      "resource": "newchirp_mass_storage.py",
+      "render_hash": "stale",
+      "edge_hash": "643577ccebc7f088637d6ef2b915f36c99ae0310d193d8ab987baa134c53d145",
+      "enriched": false
+    },
+    "newchirp_mass_storage/read_codeplug": {
+      "concept_id": "newchirp_mass_storage/read_codeplug",
+      "type": "Function",
+      "resource": "newchirp_mass_storage.py",
+      "render_hash": "stale",
+      "edge_hash": "4b53c67d19473c460b870a81947c38ed32d9727f7bfb24d6388439bf796c89b8",
+      "enriched": false
+    },
+    "newchirp_mass_storage/MassStorageError": {
+      "concept_id": "newchirp_mass_storage/MassStorageError",
+      "type": "Class",
+      "resource": "newchirp_mass_storage.py",
+      "render_hash": "stale",
+      "edge_hash": "1fe4705e1e98924f945358619f5125325bf8569f16c6f851b868741037463ee3",
+      "enriched": false
+    },
+    "newchirp_mass_storage/ScsiPassthrough": {
+      "concept_id": "newchirp_mass_storage/ScsiPassthrough",
+      "type": "Class",
+      "resource": "newchirp_mass_storage.py",
+      "render_hash": "stale",
+      "edge_hash": "c78434dd0f39c033982ea8749518c6ebf1b6c14fe02d00e8b995d221b6ced4e9",
+      "enriched": false
+    },
+    "newchirp_mass_storage/RapMassStorageRadio": {
+      "concept_id": "newchirp_mass_storage/RapMassStorageRadio",
+      "type": "Class",
+      "resource": "newchirp_mass_storage.py",
+      "render_hash": "stale",
+      "edge_hash": "ecb727797b9d42d33cb960c2e1db297fce61bb7872d1f4296808958a2a0a809f",
+      "enriched": false
+    },
+    "newchirp_mass_storage/CS750Profile": {
+      "concept_id": "newchirp_mass_storage/CS750Profile",
+      "type": "Class",
+      "resource": "newchirp_mass_storage.py",
+      "render_hash": "stale",
+      "edge_hash": "601a3429e911565a0e5b67bf274bd70e3b749361f324524d447011e373602e0b",
+      "enriched": false
+    },
+    "newchirp_mass_storage/read_exact": {
+      "concept_id": "newchirp_mass_storage/read_exact",
+      "type": "Function",
+      "resource": "newchirp_mass_storage.py",
+      "render_hash": "stale",
+      "edge_hash": "5f37da631fcb9ccb37eb9b76c35d357a880131429e4890c8fc3dc577a3abfdad",
+      "enriched": false
+    },
+    "newchirp_mass_storage/MacScsiPassthrough": {
+      "concept_id": "newchirp_mass_storage/MacScsiPassthrough",
+      "type": "Class",
+      "resource": "newchirp_mass_storage.py",
+      "render_hash": "stale",
+      "edge_hash": "413ff69fccfec6d9253a0662c044d38c2410cd748191444c2682b28f6663f067",
+      "enriched": false
+    },
+    "newchirp_mass_storage/WindowsScsiPassthrough": {
+      "concept_id": "newchirp_mass_storage/WindowsScsiPassthrough",
+      "type": "Class",
+      "resource": "newchirp_mass_storage.py",
+      "render_hash": "stale",
+      "edge_hash": "af34890fa0a1802fe4542f592275fe245d4fdfc6ae54cc5cb48569909724f693",
+      "enriched": false
+    },
+    "newchirp_mass_storage/LinuxScsiPassthrough": {
+      "concept_id": "newchirp_mass_storage/LinuxScsiPassthrough",
+      "type": "Class",
+      "resource": "newchirp_mass_storage.py",
+      "render_hash": "stale",
+      "edge_hash": "af34890fa0a1802fe4542f592275fe245d4fdfc6ae54cc5cb48569909724f693",
+      "enriched": false
     }
   },
-  "generated_at": "2026-10-24T18:37:52Z"
+  "generated_at": "2026-10-25T01:57:36Z"
 }

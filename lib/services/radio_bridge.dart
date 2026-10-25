@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 
 import '../models/radio_channel.dart';
+import '../models/repeater_search.dart';
 
 const _progressPrefix = '__NEWCHIRP_PROGRESS__ ';
 
@@ -270,9 +271,13 @@ class RadioBridge {
   }
 
   Future<List<SerialPortInfo>> serialPortDetails() async {
-    if (Platform.isWindows) return _windowsSerialPortDetails();
+    final interfaces = await _massStoragePortDetails();
+    if (Platform.isWindows) {
+      final serial = await _windowsSerialPortDetails();
+      return _deduplicatePorts([...serial, ...interfaces]);
+    }
     final dev = Directory('/dev');
-    if (!dev.existsSync()) return [];
+    if (!dev.existsSync()) return interfaces;
     final patterns = Platform.isMacOS
         ? ['cu.usb', 'cu.SLAB', 'cu.wch', 'tty.usb']
         : ['ttyUSB', 'ttyACM'];
@@ -284,7 +289,35 @@ class RadioBridge {
             .where((path) => patterns.any(path.contains))
             .toList()
           ..sort();
-    return ports.map((port) => SerialPortInfo(port: port)).toList();
+    return _deduplicatePorts([
+      ...ports.map((port) => SerialPortInfo(port: port)),
+      ...interfaces,
+    ]);
+  }
+
+  Future<List<SerialPortInfo>> _massStoragePortDetails() async {
+    try {
+      final data = await _run(['list-interfaces']);
+      final entries = data['interfaces'] as List? ?? const [];
+      return entries
+          .whereType<Map>()
+          .map(
+            (entry) => SerialPortInfo(
+              port: '${entry['port'] ?? ''}',
+              deviceName: '${entry['deviceName'] ?? ''}',
+            ),
+          )
+          .where((entry) => entry.port.isNotEmpty)
+          .toList();
+    } catch (_) {
+      // A missing platform helper must not hide serial clone-mode radios.
+      return const [];
+    }
+  }
+
+  List<SerialPortInfo> _deduplicatePorts(List<SerialPortInfo> ports) {
+    final seen = <String>{};
+    return ports.where((entry) => seen.add(entry.port)).toList();
   }
 
   Future<List<String>> serialPorts() async {
@@ -544,7 +577,10 @@ class RadioBridge {
     int? zone,
     void Function(RadioProgress)? onProgress,
   }) async {
-    final temp = File('${Directory.systemTemp.path}/newchirp-upload.json');
+    final temp = File(
+      '${Directory.systemTemp.path}/newchirp-upload-$pid-'
+      '${DateTime.now().microsecondsSinceEpoch}.json',
+    );
     await temp.writeAsString(
       jsonEncode(channels.map((e) => e.toJson()).toList()),
     );
@@ -624,24 +660,73 @@ class RadioBridge {
     List<String> args, {
     void Function(RadioProgress)? onProgress,
   }) async {
+    final runtime = await Directory.systemTemp.createTemp('newchirp-run-');
+    try {
+      return await _runWithRuntime(args, runtime, onProgress: onProgress);
+    } finally {
+      if (await runtime.exists()) await runtime.delete(recursive: true);
+    }
+  }
+
+  Future<RepeaterSearchResults> searchRepeaters({
+    required String state,
+    required String service,
+    String filter = '',
+    double? latitude,
+    double? longitude,
+    double? distance,
+    bool fmOnly = true,
+    bool openOnly = true,
+    void Function(RadioProgress)? onProgress,
+  }) async {
+    final data = await _run([
+      'repeaterbook-search',
+      '--state',
+      state,
+      '--service',
+      service,
+      '--filter',
+      filter,
+      if (latitude != null) ...['--latitude', '$latitude'],
+      if (longitude != null) ...['--longitude', '$longitude'],
+      if (distance != null) ...['--distance', '$distance'],
+      if (fmOnly) '--fm-only',
+      if (openOnly) '--open-only',
+      '--limit',
+      '200',
+    ], onProgress: onProgress);
+    return RepeaterSearchResults.fromJson(data);
+  }
+
+  Future<Map<String, dynamic>> _runWithRuntime(
+    List<String> args,
+    Directory runtime, {
+    void Function(RadioProgress)? onProgress,
+  }) async {
     _cancelRequested = false;
-    final script = await _materializeBridge();
-    final vendor = await _materializePythonDependencies();
+    final script = await _materializeBridge(runtime);
+    final vendor = await _materializePythonDependencies(runtime);
     final source = _findChirpSource();
     final newDrivers = _findNewChirpDrivers();
     final python = await _resolvePython();
+    final scsiHelper = _findScsiHelper();
     late final Process process;
     try {
-      process = await Process.start(python, [
-        script,
-        '--source',
-        source,
-        '--vendor',
-        vendor,
-        if (newDrivers != null) ...['--newchirp-driver-dir', newDrivers],
-        if (_loadedModulePath != null) ...['--module', _loadedModulePath!],
-        ...args,
-      ]);
+      process = await Process.start(
+        python,
+        [
+          script,
+          '--source',
+          source,
+          '--vendor',
+          vendor,
+          if (newDrivers != null) ...['--newchirp-driver-dir', newDrivers],
+          if (_loadedModulePath != null) ...['--module', _loadedModulePath!],
+          ...args,
+        ],
+        environment: {'NEWCHIRP_SCSI_HELPER': ?scsiHelper},
+        includeParentEnvironment: true,
+      );
     } on ProcessException catch (error) {
       throw RadioBridgeException(
         'NewChirp could not start its CHIRP helper. Python 3 was not found '
@@ -775,26 +860,54 @@ class RadioBridge {
     return executable.parent;
   }
 
-  Future<String> _materializeBridge() async {
-    final file = File('${Directory.systemTemp.path}/newchirp-chirp-bridge.py');
-    await file.writeAsString(
-      await rootBundle.loadString('scripts/chirp_bridge.py'),
+  Future<String> _materializeBridge(Directory runtime) async {
+    final file = File('${runtime.path}/chirp_bridge.py');
+    final data = await _loadAssetBytes('scripts/chirp_bridge.py');
+    await file.writeAsString(utf8.decode(data), flush: true);
+    final massStorage = File('${runtime.path}/newchirp_mass_storage.py');
+    final massStorageData = await _loadAssetBytes(
+      'scripts/newchirp_mass_storage.py',
     );
+    await massStorage.writeAsBytes(massStorageData, flush: true);
     return file.path;
   }
 
-  Future<String> _materializePythonDependencies() async {
-    final file = File(
-      '${Directory.systemTemp.path}/pyserial-3.5-py2.py3-none-any.whl',
-    );
-    final data = await rootBundle.load(
+  Future<String> _materializePythonDependencies(Directory runtime) async {
+    final file = File('${runtime.path}/pyserial-3.5-py2.py3-none-any.whl');
+    final data = await _loadAssetBytes(
       'assets/python/pyserial-3.5-py2.py3-none-any.whl',
     );
-    await file.writeAsBytes(
-      data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
-      flush: true,
-    );
+    await file.writeAsBytes(data, flush: true);
     return file.path;
+  }
+
+  Future<List<int>> _loadAssetBytes(String key) async {
+    try {
+      final data = await rootBundle.load(key);
+      return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    } catch (bundleError, bundleStack) {
+      for (final candidate in _bundledAssetCandidates(key)) {
+        if (await candidate.exists()) return candidate.readAsBytes();
+      }
+      Error.throwWithStackTrace(bundleError, bundleStack);
+    }
+  }
+
+  Iterable<File> _bundledAssetCandidates(String key) sync* {
+    if (!key.contains('..') && !key.startsWith('/')) {
+      yield File(key);
+    }
+    final executable = File(Platform.resolvedExecutable);
+    if (Platform.isMacOS) {
+      final contents = executable.parent.parent;
+      yield File(
+        '${contents.path}/Frameworks/App.framework/Versions/A/Resources/'
+        'flutter_assets/$key',
+      );
+      yield File('${contents.path}/Resources/flutter_assets/$key');
+    } else {
+      yield File('${executable.parent.path}/data/flutter_assets/$key');
+    }
   }
 
   String _findChirpSource() {
@@ -834,5 +947,20 @@ class RadioBridge {
     final directory = Directory(configured);
     if (!directory.existsSync()) return null;
     return directory.absolute.path;
+  }
+
+  String? _findScsiHelper() {
+    final configured = Platform.environment['NEWCHIRP_SCSI_HELPER'];
+    final resources = _bundledResourcesDirectory();
+    final candidates = <String>[
+      if (configured != null && configured.isNotEmpty) configured,
+      if (resources != null) '${resources.path}/newchirp_scsi',
+      'tools/newchirp_scsi_mac',
+      'build/newchirp_scsi_mac',
+    ];
+    for (final candidate in candidates) {
+      if (File(candidate).existsSync()) return File(candidate).absolute.path;
+    }
+    return null;
   }
 }

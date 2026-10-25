@@ -318,6 +318,7 @@ class ChannelExtraField {
     required this.value,
     this.choices = const [],
     this.mutable = true,
+    this.documentation,
   });
 
   final String name;
@@ -326,6 +327,7 @@ class ChannelExtraField {
   dynamic value;
   final List<String> choices;
   final bool mutable;
+  final String? documentation;
 
   Map<String, dynamic> toJson() => {
     'name': name,
@@ -334,6 +336,7 @@ class ChannelExtraField {
     'value': value,
     'choices': choices,
     'mutable': mutable,
+    'documentation': documentation,
   };
 
   factory ChannelExtraField.fromJson(Map<String, dynamic> json) =>
@@ -346,6 +349,7 @@ class ChannelExtraField {
             .map((choice) => choice.toString())
             .toList(),
         mutable: json['mutable'] as bool? ?? true,
+        documentation: json['documentation']?.toString(),
       );
 }
 
