@@ -5,6 +5,15 @@ RadioChannel channelAt(int location) =>
     RadioChannel(location: location, name: 'CH $location', frequency: 146.52);
 
 void main() {
+  test('scan codes use the same words in the list and the editor', () {
+    expect(scanLabel(''), 'Include');
+    expect(scanLabel('S'), 'Skip');
+    expect(scanLabel('P'), 'Priority');
+    expect(scanLabel('X'), 'X');
+    expect(scanChoices(const ['', 'S']), {'': 'Include', 'S': 'Skip'});
+    expect(scanChoices(null).keys.toList(), ['', 'S', 'P']);
+  });
+
   test('provides the standard DTCS code set without a radio image', () {
     expect(standardDtcsCodes, hasLength(104));
     expect(standardDtcsCodes.first, 23);

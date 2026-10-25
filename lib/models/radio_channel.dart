@@ -105,6 +105,23 @@ const standardDtcsCodes = <int>[
   754,
 ];
 
+const _scanLabels = <String, String>{
+  '': 'Include',
+  'S': 'Skip',
+  'P': 'Priority',
+};
+
+/// Word shown for a stored scan code. Unknown codes stay visible.
+String scanLabel(String skip) => _scanLabels[skip] ?? skip;
+
+/// Edit-screen choices for the scan codes this radio allows.
+Map<String, String> scanChoices(List<String>? allowed) {
+  final values = (allowed == null || allowed.isEmpty)
+      ? _scanLabels.keys.toList()
+      : allowed;
+  return {for (final value in values) value: scanLabel(value)};
+}
+
 class RadioChannel {
   RadioChannel({
     required this.location,

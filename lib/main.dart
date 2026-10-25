@@ -5466,7 +5466,7 @@ class _ChannelTableState extends State<_ChannelTable> {
       _ChannelColumn(
         'SCAN',
         72,
-        (channel) => channel.skip.isEmpty ? 'Include' : channel.skip,
+        (channel) => scanLabel(channel.skip),
         help: 'Whether the channel is included in scanning.',
       ),
       _ChannelColumn(
@@ -6152,11 +6152,7 @@ class _ChannelEditor extends StatelessWidget {
                 _ChoiceField(
                   label: 'Scan',
                   value: channel.skip,
-                  choices: choices(capabilities?.skips, const {
-                    '': 'Include',
-                    'S': 'Skip',
-                    'P': 'Priority',
-                  }),
+                  choices: scanChoices(capabilities?.skips),
                   onValue: (v) => onChanged(() => channel.skip = v),
                 ),
                 if ((capabilities?.powers ?? const []).isNotEmpty) ...[
