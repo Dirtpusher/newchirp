@@ -7,9 +7,9 @@ tags:
   - "lang:dart"
   - "type:Module"
   - "module:main.dart"
-  - "git:branch:main"
+  - "git:branch:mxt295-experimental"
   - "git:repo:newchirp"
-timestamp: "2026-10-25T01:54:38Z"
+timestamp: "2026-10-25T07:59:46Z"
 concept_id: main
 language: dart
 ---
@@ -142,6 +142,8 @@ language: dart
 | related | [_confirmOverwriteChannel](/main/confirmOverwriteChannel.md) |
 | related | [_deleteChannel](/main/deleteChannel.md) |
 | related | [_clearChannel](/main/clearChannel.md) |
+| related | [_keepMidlandRepeater](/main/keepMidlandRepeater.md) |
+| related | [_noteRepeaterRowKept](/main/noteRepeaterRowKept.md) |
 | related | [_downloadRadio](/main/downloadRadio.md) |
 | related | [_confirmRadioInstructions](/main/confirmRadioInstructions.md) |
 | related | [_loadRadioInstructions](/main/loadRadioInstructions.md) |

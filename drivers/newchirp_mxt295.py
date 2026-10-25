@@ -19,6 +19,10 @@ Built from one MXPG15 read and one write of a single radio. The radio
 answers as SMP558 at 115200 8N1. Channel rows are 32 bytes. 107 rows
 start at 0x0000. One settings block lives at 0xE000 and is copied
 through unchanged. The gap between those areas is never written.
+NewChirp shows Midland's channel numbers on top of that order. Slots
+16, 18, 20, 22, 24, 26, 28, and 30 are RPTR 15 through RPTR 22. Those
+eight rows are never written empty. Clearing one puts the plain GMRS
+repeater frequency back. A write puts each row in the same slot.
 """
 
 import logging
@@ -35,6 +39,19 @@ SLOT_COUNT = 107
 SLOT_SIZE = 32
 SETTINGS_ADDR = 0xE000
 MEM_SIZE = SETTINGS_ADDR + SLOT_SIZE
+
+# RPTR 15 through RPTR 22. The radio always keeps these rows. An empty
+# one makes channel-down skip channels when repeater channels are off.
+PLAIN_REPEATER_RX = {
+    16: 462550000,
+    18: 462575000,
+    20: 462600000,
+    22: 462625000,
+    24: 462650000,
+    26: 462675000,
+    28: 462700000,
+    30: 462725000,
+}
 DCS_BASE = 0x2800
 
 POWER_LOW = chirp_common.PowerLevel("Low", watts=5)
@@ -163,11 +180,9 @@ class MXT295Radio(chirp_common.CloneModeRadio,
             "the Midland program."
         )
         radio_prompts.info = (
-            "Channel numbers follow the radio's memory order. "
-            "1 through 14 are GMRS 1 through 14. "
-            "15 through 30 are GMRS 15 through 22, with the normal "
-            "channel and then its repeater row. "
-            "31 through 107 are GMRS 23 through 99. "
+            "The channel list uses Midland's numbers. "
+            "Channels 1 through 99 match the Midland screen. "
+            "Repeater rows are labeled RPTR 15 through RPTR 22. "
             "Use the MXPG15 cable on the radio base."
         )
         radio_prompts.pre_download = (
@@ -281,6 +296,10 @@ class MXT295Radio(chirp_common.CloneModeRadio,
     def set_memory(self, mem):
         _mem = self._slot(mem.number)
         if mem.empty:
+            plain_rx = PLAIN_REPEATER_RX.get(int(mem.number))
+            if plain_rx is not None:
+                self._write_plain_repeater(_mem, plain_rx)
+                return
             # An already-empty slot keeps the padding from the radio.
             # Clearing a programmed slot uses the Midland empty pattern.
             if int(_mem.rx_freq) != 0:
@@ -353,6 +372,19 @@ class MXT295Radio(chirp_common.CloneModeRadio,
                     "Use uppercase letters, numbers, and spaces in the name"
                 )
         return name.ljust(8, "\x00")
+
+    def _write_plain_repeater(self, _mem, rx_freq):
+        _mem.name = "\x00" * 8
+        _mem.rx_freq = rx_freq
+        _mem.tx_freq = rx_freq + 5000000
+        _mem.rx_tone = 0xFFFF
+        _mem.tx_tone = 0xFFFF
+        _mem.unknown7 = 0
+        _mem.scan = 0
+        _mem.wide = 1
+        _mem.unknown2 = 0
+        _mem.high = 1
+        _mem.repeater = 1
 
     def _clear_slot(self, _mem):
         _mem.name = "\x00" * 8

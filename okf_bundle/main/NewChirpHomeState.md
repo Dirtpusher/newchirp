@@ -7,9 +7,9 @@ tags:
   - "lang:dart"
   - "type:Class"
   - "module:main.dart"
-  - "git:branch:main"
+  - "git:branch:mxt295-experimental"
   - "git:repo:newchirp"
-timestamp: "2026-10-25T01:54:38Z"
+timestamp: "2026-10-25T07:59:46Z"
 concept_id: main/NewChirpHomeState
 language: dart
 ---
@@ -82,6 +82,8 @@ class _NewChirpHomeState
 - `_confirmOverwriteChannel`
 - `_deleteChannel`
 - `_clearChannel`
+- `_keepMidlandRepeater`
+- `_noteRepeaterRowKept`
 - `_downloadRadio`
 - `_confirmRadioInstructions`
 - `_loadRadioInstructions`
@@ -114,7 +116,7 @@ class _NewChirpHomeState
 - `_buildRadio`
 
 ## Source
-Lines 298–4102 in `main.dart`
+Lines 298–4172 in `main.dart`
 
 ## Relationships
 

@@ -7,9 +7,9 @@ tags:
   - "lang:dart"
   - "type:Function"
   - "module:main.dart"
-  - "git:branch:main"
+  - "git:branch:mxt295-experimental"
   - "git:repo:newchirp"
-timestamp: "2026-10-25T01:54:38Z"
+timestamp: "2026-10-25T07:59:46Z"
 concept_id: main/choices
 language: dart
 ---
@@ -23,7 +23,7 @@ Mapchoiceschoices
 ```
 
 ## Source
-Lines 6804–6807 in `main.dart`
+Lines 6880–6883 in `main.dart`
 
 ## Relationships
 

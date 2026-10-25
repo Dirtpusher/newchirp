@@ -5,6 +5,59 @@ RadioChannel channelAt(int location) =>
     RadioChannel(location: location, name: 'CH $location', frequency: 146.52);
 
 void main() {
+  test('Midland MXT295 shows Midland channel numbers', () {
+    expect(channelNumberLabel('Baofeng_UV-5R', 16), '16');
+    expect(showsMidlandChannelNumbers('Baofeng_UV-5R'), isFalse);
+    expect(showsMidlandChannelNumbers(midlandMxt295Model), isTrue);
+    expect(channelNumberLabel(midlandMxt295Model, 1), '1');
+    expect(channelNumberLabel(midlandMxt295Model, 15), '15');
+    expect(channelNumberLabel(midlandMxt295Model, 16), 'RPTR 15');
+    expect(channelNumberLabel(midlandMxt295Model, 17), '16');
+    expect(channelNumberLabel(midlandMxt295Model, 18), 'RPTR 16');
+    expect(channelNumberLabel(midlandMxt295Model, 19), '17');
+    expect(channelNumberLabel(midlandMxt295Model, 29), '22');
+    expect(channelNumberLabel(midlandMxt295Model, 30), 'RPTR 22');
+    expect(channelNumberLabel(midlandMxt295Model, 31), '23');
+    expect(channelNumberLabel(midlandMxt295Model, 107), '99');
+    expect(channelNumberLabel(midlandMxt295Model, 0), '0');
+  });
+
+  test('Midland repeater rows reset to the plain GMRS repeater', () {
+    expect(isMidlandRepeaterRow('Baofeng_UV-5R', 16), isFalse);
+    expect(isMidlandRepeaterRow(midlandMxt295Model, 15), isFalse);
+    expect(isMidlandRepeaterRow(midlandMxt295Model, 17), isFalse);
+    expect(isMidlandRepeaterRow(midlandMxt295Model, 31), isFalse);
+    expect(isMidlandRepeaterRow(midlandMxt295Model, 16), isTrue);
+    expect(isMidlandRepeaterRow(midlandMxt295Model, 30), isTrue);
+    expect(midlandRepeaterRxMhz[16], 462.550);
+    expect(midlandRepeaterRxMhz[30], 462.725);
+
+    final row = RadioChannel(
+      location: 24,
+      name: 'CALICO',
+      frequency: 146.52,
+      duplex: '',
+      skip: '',
+      power: 'Low',
+    );
+    row.restorePlainMidlandRepeater();
+    expect(row.cleared, isFalse);
+    expect(row.name, isEmpty);
+    expect(row.frequency, 462.650);
+    expect(row.duplex, '+');
+    expect(row.offset, 5);
+    expect(row.tone, isEmpty);
+    expect(row.mode, 'FM');
+    expect(row.step, 12.5);
+    expect(row.skip, 'S');
+    expect(row.power, 'High');
+
+    final normal = channelAt(17);
+    normal.restorePlainMidlandRepeater();
+    expect(normal.name, 'CH 17');
+    expect(normal.frequency, 146.52);
+  });
+
   test('scan codes use the same words in the list and the editor', () {
     expect(scanLabel(''), 'Include');
     expect(scanLabel('S'), 'Skip');

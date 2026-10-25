@@ -7,9 +7,9 @@ tags:
   - "lang:dart"
   - "type:Class"
   - "module:main.dart"
-  - "git:branch:main"
+  - "git:branch:mxt295-experimental"
   - "git:repo:newchirp"
-timestamp: "2026-10-25T01:54:38Z"
+timestamp: "2026-10-25T07:59:46Z"
 concept_id: main/RepeaterBookDialogState
 language: dart
 ---
@@ -35,7 +35,7 @@ class _RepeaterBookDialogState
 - `resizeBy`
 
 ## Source
-Lines 5182–5974 in `main.dart`
+Lines 5252–6044 in `main.dart`
 
 ## Relationships
 

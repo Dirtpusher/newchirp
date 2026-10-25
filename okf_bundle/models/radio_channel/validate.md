@@ -8,9 +8,9 @@ tags:
   - "type:Function"
   - "module:models"
   - "domain:radio_channel.dart"
-  - "git:branch:main"
+  - "git:branch:mxt295-experimental"
   - "git:repo:newchirp"
-timestamp: "2026-10-24T21:43:18Z"
+timestamp: "2026-10-25T07:59:03Z"
 concept_id: models/radio_channel/validate
 language: dart
 ---
@@ -24,7 +24,7 @@ Listvalidatevalidate
 ```
 
 ## Source
-Lines 258–258 in `models/radio_channel.dart`
+Lines 346–346 in `models/radio_channel.dart`
 
 ## Relationships
 

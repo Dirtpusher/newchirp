@@ -7,9 +7,9 @@ tags:
   - "lang:dart"
   - "type:Function"
   - "module:main.dart"
-  - "git:branch:main"
+  - "git:branch:mxt295-experimental"
   - "git:repo:newchirp"
-timestamp: "2026-10-25T01:54:38Z"
+timestamp: "2026-10-25T07:59:46Z"
 concept_id: main/pasteChannel
 language: dart
 ---
@@ -23,7 +23,7 @@ Future_pasteChannel_pasteChannel
 ```
 
 ## Source
-Lines 1543–1543 in `main.dart`
+Lines 1555–1555 in `main.dart`
 
 ## Relationships
 

@@ -95,6 +95,7 @@ class MXT295DriverTest(unittest.TestCase):
         self.assertIs(radio_cls, mxt.MXT295Radio)
         prompts = radio_cls.get_prompts()
         self.assertIn("experimental", prompts.experimental.lower())
+        self.assertIn("RPTR 15", prompts.info)
         self.assertIn("Bluetooth", prompts.pre_download)
         self.assertIn("backup", prompts.pre_upload.lower())
 
@@ -186,6 +187,49 @@ class MXT295DriverTest(unittest.TestCase):
         with self.assertRaises(errors.InvalidValueError):
             radio.set_memory(off_grid)
         self.assertEqual(bytes(radio._mmap[0:32]), before)
+
+    def test_clearing_a_repeater_row_puts_the_plain_frequency_back(self):
+        radio = blank_radio()
+        radio.set_memory(channel(
+            30,
+            name="CALICO",
+            freq=462650000,
+            duplex="+",
+            offset=5000000,
+            tmode="TSQL",
+            ctone=77.0,
+            skip="S",
+            power=mxt.POWER_HIGH,
+        ))
+        programmed = radio.get_memory(30)
+        programmed.empty = True
+        radio.set_memory(programmed)
+        restored = radio.get_memory(30)
+        self.assertFalse(restored.empty)
+        self.assertEqual(restored.name, "")
+        self.assertEqual(restored.freq, 462725000)
+        self.assertEqual(restored.duplex, "+")
+        self.assertEqual(restored.offset, 5000000)
+        self.assertEqual(restored.tmode, "")
+        self.assertEqual(restored.skip, "S")
+        self.assertEqual(restored.mode, "FM")
+        self.assertEqual(restored.power, mxt.POWER_HIGH)
+
+        radio.set_memory(channel(17, name="4X4", freq=462575000))
+        normal = radio.get_memory(17)
+        normal.empty = True
+        radio.set_memory(normal)
+        self.assertTrue(radio.get_memory(17).empty)
+
+        for slot, rx_freq in mxt.PLAIN_REPEATER_RX.items():
+            mem = radio.get_memory(slot)
+            mem.empty = True
+            radio.set_memory(mem)
+            kept = radio.get_memory(slot)
+            self.assertEqual(kept.freq, rx_freq)
+            self.assertEqual(kept.duplex, "+")
+            self.assertEqual(kept.offset, 5000000)
+            self.assertFalse(kept.empty)
 
     def test_empty_slot_keeps_radio_padding_until_deleted(self):
         radio = blank_radio()

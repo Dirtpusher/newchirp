@@ -1,41 +1,41 @@
 ---
-description: 'Top-level OKF summary: 268 concepts across 3 domains and 10 modules'
-git_branch: main
+description: 'Top-level OKF summary: 276 concepts across 3 domains and 10 modules'
+git_branch: mxt295-experimental
 git_repo: newchirp
 okf_version: '0.2'
-timestamp: '2026-10-25T01:56:41Z'
+timestamp: '2026-10-25T08:00:48Z'
 title: okf_bundle — Knowledge Summary
 type: Index
 ---
 
 # okf_bundle — Knowledge Summary
 
-> OKF v0.2 bundle | 268 concepts | 3 domains | 10 modules
+> OKF v0.2 bundle | 276 concepts | 3 domains | 10 modules
 
 ## Stats
 
 | Type | Count |
 |------|-------|
-| Function | 208 |
+| Function | 216 |
 | Class | 49 |
 | Module | 10 |
 | Enum | 1 |
 
 | Language | Concepts |
 |----------|----------|
-| dart | 268 |
+| dart | 276 |
 
 ## Domain Map
 
 Use these links to navigate the bundle or prime an AI agent with focused context.
 
-### [main.dart](main.dart/index.md) — 157 concepts
+### [main.dart](main.dart/index.md) — 159 concepts
 
-- [main](main/index.md) (157 concepts)
+- [main](main/index.md) (159 concepts)
 
-### [models](models/index.md) — 16 concepts
+### [models](models/index.md) — 22 concepts
 
-- [models/radio_channel](models/radio_channel/index.md) (9 concepts)
+- [models/radio_channel](models/radio_channel/index.md) (15 concepts)
 - [models/repeater_search](models/repeater_search/index.md) (7 concepts)
 
 ### [services](services/index.md) — 95 concepts
@@ -57,13 +57,18 @@ Highest-value concepts across all domains (Classes and Functions with rich descr
 | [isAllowedDownloadUrl](/services/update_checker/isAllowedDownloadUrl.md) | Function | `services/update_checker.dart` | True when [url] is an https link on newchirp.net, with no lo… |
 | [trustedDownloadUrl](/services/update_checker/trustedDownloadUrl.md) | Function | `services/update_checker.dart` | Address the Update button may open. Untrusted links use the … |
 | [_resolvePython](/services/radio_bridge/resolvePython.md) | Function | `services/radio_bridge.dart` | The bundled CHIRP tree uses Python 3.10+ syntax, so prefer a… |
-| [UpdateCheckResult](/services/update_checker/UpdateCheckResult.md) | Class | `services/update_checker.dart` | Outcome of comparing the installed NewChirp version against … |
 | [_windowsSerialPortNames](/services/radio_bridge/windowsSerialPortNames.md) | Function | `services/radio_bridge.dart` | Windows: read the live COM ports from the SERIALCOMM registr… |
+| [UpdateCheckResult](/services/update_checker/UpdateCheckResult.md) | Class | `services/update_checker.dart` | Outcome of comparing the installed NewChirp version against … |
+| [showsMidlandChannelNumbers](/models/radio_channel/showsMidlandChannelNumbers.md) | Function | `models/radio_channel.dart` | This radio's list uses Midland's channel numbers instead of … |
+| [restorePlainMidlandRepeater](/models/radio_channel/restorePlainMidlandRepeater.md) | Function | `models/radio_channel.dart` | Puts the standard GMRS repeater back in this row and clears … |
 | [compareVersions](/services/update_checker/compareVersions.md) | Function | `services/update_checker.dart` | Compares two dotted version strings, ignoring any `+build` m… |
+| [isMidlandRepeaterRow](/models/radio_channel/isMidlandRepeaterRow.md) | Function | `models/radio_channel.dart` | Whether [location] is one of the eight repeater rows on this… |
+| [scanLabel](/models/radio_channel/scanLabel.md) | Function | `models/radio_channel.dart` | Word shown for a stored scan code. Unknown codes stay visibl… |
 | [check](/services/update_checker/check.md) | Function | `services/update_checker.dart` | Opens a newchirp.net download page in the default browser. |
 | [openExternalUrl](/services/update_checker/openExternalUrl.md) | Function | `services/update_checker.dart` | Opens a newchirp.net download page in the default browser. |
 | [_parseManifest](/services/update_checker/parseManifest.md) | Function | `services/update_checker.dart` | Opens a newchirp.net download page in the default browser. |
 | [toString](/services/update_checker/toString.md) | Function | `services/update_checker.dart` | Opens a newchirp.net download page in the default browser. |
+| [scanChoices](/models/radio_channel/scanChoices.md) | Function | `models/radio_channel.dart` | Edit-screen choices for the scan codes this radio allows. |
 
 ## Usage with OpenCode
 

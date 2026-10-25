@@ -122,6 +122,51 @@ Map<String, String> scanChoices(List<String>? allowed) {
   return {for (final value in values) value: scanLabel(value)};
 }
 
+/// CHIRP id for the experimental Midland MXT295 driver.
+const midlandMxt295Model = 'Midland_MXT295';
+
+/// This radio's list uses Midland's channel numbers instead of raw slots.
+bool showsMidlandChannelNumbers(String? model) => model == midlandMxt295Model;
+
+/// Channel number shown in the list.
+///
+/// For the MXT295, [location] is still the radio's memory slot. The label
+/// matches the Midland screen: channels 1-99, with RPTR 15-22 between them.
+/// Other radios show the slot number unchanged.
+String channelNumberLabel(String? model, int location) {
+  if (!showsMidlandChannelNumbers(model)) return '$location';
+  if (location < 1 || location > 107) return '$location';
+  if (location <= 15) return '$location';
+  if (location <= 30) {
+    final offset = location - 15;
+    final channel = 15 + offset ~/ 2;
+    if (offset.isOdd) return 'RPTR $channel';
+    return '$channel';
+  }
+  return '${location - 8}';
+}
+
+/// Receive frequency, in MHz, for each MXT295 repeater row.
+///
+/// The keys are memory slots. RPTR 15 through RPTR 22 always stay in the
+/// radio. An empty one makes channel-down skip channels when repeater
+/// channels are turned off.
+const midlandRepeaterRxMhz = <int, double>{
+  16: 462.550,
+  18: 462.575,
+  20: 462.600,
+  22: 462.625,
+  24: 462.650,
+  26: 462.675,
+  28: 462.700,
+  30: 462.725,
+};
+
+/// Whether [location] is one of the eight repeater rows on this radio.
+bool isMidlandRepeaterRow(String? model, int location) =>
+    showsMidlandChannelNumbers(model) &&
+    midlandRepeaterRxMhz.containsKey(location);
+
 class RadioChannel {
   RadioChannel({
     required this.location,
@@ -192,6 +237,32 @@ class RadioChannel {
     step = 5;
     skip = '';
     power = '';
+    comment = '';
+    extras.clear();
+  }
+
+  /// Puts the standard GMRS repeater back in this row and clears the name.
+  ///
+  /// Does nothing when [location] is not one of the eight repeater slots.
+  void restorePlainMidlandRepeater() {
+    final plainFrequency = midlandRepeaterRxMhz[location];
+    if (plainFrequency == null) return;
+    cleared = false;
+    name = '';
+    frequency = plainFrequency;
+    duplex = '+';
+    offset = 5;
+    tone = '';
+    txTone = 88.5;
+    rxTone = 88.5;
+    dtcs = 23;
+    dtcsPolarity = 'NN';
+    rxDtcs = 23;
+    crossMode = 'Tone->Tone';
+    mode = 'FM';
+    step = 12.5;
+    skip = 'S';
+    power = 'High';
     comment = '';
     extras.clear();
   }
