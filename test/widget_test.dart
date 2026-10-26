@@ -1149,6 +1149,14 @@ void main() {
       findsNWidgets(2),
     );
     expect(find.textContaining('rick@newchirp.net'), findsNWidgets(2));
+    expect(
+      find.textContaining('Randolpho Cafe · Contributor'),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('randolpho@notarubicon.com'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('frequency reference is available from the sidebar', (
